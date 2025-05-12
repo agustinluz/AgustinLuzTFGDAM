@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.2" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
+	<persistence-unit name="constuccionBaseDatos">
+		<class>com.ejemplos.DTO.Evento</class>
+		<class>com.ejemplos.DTO.Gasto</class>
+		<class>com.ejemplos.DTO.Grupo</class>
+		<class>com.ejemplos.DTO.Imagene</class>
+		<class>com.ejemplos.DTO.Nota</class>
+		<class>com.ejemplos.DTO.Usuario</class>
+		<class>com.ejemplos.DTO.Votacione</class>
+		<class>com.ejemplos.DTO.Voto</class>
+	</persistence-unit>
+</persistence>
