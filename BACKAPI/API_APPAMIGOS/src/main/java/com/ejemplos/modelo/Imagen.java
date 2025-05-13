@@ -1,12 +1,6 @@
 package com.ejemplos.modelo;
 
-
-
-
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,30 +17,22 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Entity
-@Table(name = "eventos")
-public class Evento implements Serializable {
+@Table(name = "imagenes")
+public class Imagen implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Lob
-    private String descripcion;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fecha;
-
-    private String titulo;
-    private String ubicacion;
+    private String url;
 
     @ManyToOne
-    @JoinColumn(name = "grupo_id")
-    private Grupo grupo;
+    @JoinColumn(name = "evento_id")
+    private Evento evento;
 
-    @OneToMany(mappedBy = "evento")
-    private List<Gasto> gastos;
-
-    @OneToMany(mappedBy = "evento")
-    private List<Imagen> imagenes;
+    @ManyToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
 }
 

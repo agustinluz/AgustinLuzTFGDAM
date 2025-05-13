@@ -24,7 +24,7 @@ import com.ejemplos.excepciones.ProductoNotFoundException;
 import com.ejemplos.modelo.Producto;
 import com.ejemplos.modelo.Categoria;
 import com.ejemplos.modelo.CategoriaRepositorio;
-import com.ejemplos.modelo.ProductoRepositorio;
+import com.ejemplos.modelo.EventoRepositorio;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ejemplos.DTO.CreateProductoDTO;
 
@@ -35,7 +35,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor  
 public class ProductoController {
 	@Autowired
-	private   ProductoRepositorio productoRepositorio; 
+	private   EventoRepositorio productoRepositorio; 
 	
 	@Autowired
 	private   CategoriaRepositorio categoriaRepositorio; 

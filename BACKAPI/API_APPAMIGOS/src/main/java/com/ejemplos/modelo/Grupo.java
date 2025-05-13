@@ -1,21 +1,16 @@
 package com.ejemplos.modelo;
 
 
-
-
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -24,29 +19,29 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "eventos")
-public class Evento implements Serializable {
+@Table(name = "grupos")
+public class Grupo implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Lob
-    private String descripcion;
+    @Column(name = "codigo_invitacion")
+    private String codigoInvitacion;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fecha;
+    private String nombre;
 
-    private String titulo;
-    private String ubicacion;
+    @OneToMany(mappedBy = "grupo")
+    private List<Usuario> usuarios;
 
-    @ManyToOne
-    @JoinColumn(name = "grupo_id")
-    private Grupo grupo;
+    @OneToMany(mappedBy = "grupo")
+    private List<Evento> eventos;
 
-    @OneToMany(mappedBy = "evento")
+    @OneToMany(mappedBy = "grupo")
     private List<Gasto> gastos;
 
-    @OneToMany(mappedBy = "evento")
-    private List<Imagen> imagenes;
-}
+    @OneToMany(mappedBy = "grupo")
+    private List<Nota> notas;
 
+    @OneToMany(mappedBy = "grupo")
+    private List<Votacion> votaciones;
+}
