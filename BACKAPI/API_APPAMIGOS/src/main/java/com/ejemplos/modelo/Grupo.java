@@ -18,6 +18,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Data
 @Entity
 @Table(name = "grupos")
 public class Grupo implements Serializable {
@@ -44,4 +45,14 @@ public class Grupo implements Serializable {
 
     @OneToMany(mappedBy = "grupo")
     private List<Votacion> votaciones;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+    
+    
 }

@@ -1,6 +1,6 @@
 package com.ejemplos.modelo;
 
-import java.io.Serializable;
+import java.io.Serializable; 
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -18,6 +18,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Data
 @Entity
 @Table(name = "usuarios")
 public class Usuario implements Serializable {
@@ -57,5 +58,27 @@ public class Usuario implements Serializable {
 	public void setPassword(String password) {
         this.password = password;
     }
+	
+    public Grupo getGrupo() {
+        return grupo;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setGrupo(Grupo grupo) {
+        this.grupo = grupo;
+    }
+
+
 }
 
