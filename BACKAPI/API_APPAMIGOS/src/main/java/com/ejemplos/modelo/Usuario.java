@@ -78,6 +78,20 @@ public class Usuario implements Serializable {
     public void setGrupo(Grupo grupo) {
         this.grupo = grupo;
     }
+	public Long getId() {
+		// TODO Auto-generated method stub
+		return id;
+	}
+	public String getNombre() {
+		// TODO Auto-generated method stub
+		return nombre;
+	}
+	public String getEmail() {
+		// TODO Auto-generated method stub
+		return email;
+	}
+	
+	
 
 
 }

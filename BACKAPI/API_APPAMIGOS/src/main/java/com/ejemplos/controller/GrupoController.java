@@ -4,6 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.ejemplos.DTO.GrupoCreateDTO;
+import com.ejemplos.DTO.GrupoDTO;
+import com.ejemplos.DTO.GrupoDTOConverter;
+import com.ejemplos.DTO.UsuarioCreateDTO;
+import com.ejemplos.DTO.UsuarioDTO;
 import com.ejemplos.modelo.Evento;
 import com.ejemplos.modelo.Grupo;
 import com.ejemplos.modelo.Usuario;
@@ -28,37 +33,73 @@ public class GrupoController {
 
     @Autowired
     private EventoService eventoService;
+    
+    @Autowired
+    private GrupoDTOConverter grupoDTOConverter;
+
 
     // Obtener grupo por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Grupo> obtenerGrupo(@PathVariable Long id) {
+    public ResponseEntity<GrupoDTO> obtenerGrupo(@PathVariable Long id) {
         return grupoService.obtenerPorId(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+                .map(grupoDTOConverter::convertToDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
+
 
     // Crear nuevo grupo
     @PostMapping
-    public ResponseEntity<Grupo> crearGrupo(@RequestBody Grupo grupo) {
-        return ResponseEntity.ok(grupoService.crear(grupo));
+    public ResponseEntity<GrupoDTO> crearGrupo(@RequestBody GrupoCreateDTO grupoCreateDTO) {
+        Grupo grupo = grupoDTOConverter.convertToEntity(grupoCreateDTO);
+        Grupo grupoGuardado = grupoService.crear(grupo);
+        return ResponseEntity.ok(grupoDTOConverter.convertToDTO(grupoGuardado));
     }
+
 
     // Listar usuarios de un grupo
     @GetMapping("/{id}/usuarios")
-    public List<Usuario> listarUsuariosGrupo(@PathVariable Long id) {
-        return usuarioService.obtenerTodos().stream()
+    public ResponseEntity<List<UsuarioDTO>> listarUsuariosGrupo(@PathVariable Long id) {
+        List<UsuarioDTO> usuariosDTO = usuarioService.obtenerTodos().stream()
                 .filter(u -> u.getGrupo() != null && u.getGrupo().getId().equals(id))
+                .map(u -> {
+                    UsuarioDTO dto = new UsuarioDTO();
+                    dto.setId(u.getId());
+                    dto.setNombre(u.getNombre());
+                    dto.setEmail(u.getEmail());
+                    return dto;
+                })
                 .collect(Collectors.toList());
+
+        return ResponseEntity.ok(usuariosDTO);
     }
+
 
     // Registrar usuario en un grupo específico
     @PostMapping("/{id}/usuarios")
-    public ResponseEntity<Usuario> registrarUsuarioEnGrupo(@PathVariable Long id, @RequestBody Usuario usuario) {
+    public ResponseEntity<UsuarioDTO> registrarUsuarioEnGrupo(
+            @PathVariable Long id,
+            @RequestBody UsuarioCreateDTO usuarioDTO
+    ) {
         Grupo grupo = grupoService.obtenerPorId(id).orElse(null);
         if (grupo == null) return ResponseEntity.notFound().build();
+
+        Usuario usuario = new Usuario();
+        usuario.setNombre(usuarioDTO.getNombre());
+        usuario.setEmail(usuarioDTO.getEmail());
+        usuario.setPassword(usuarioDTO.getPassword());
         usuario.setGrupo(grupo);
-        return ResponseEntity.ok(usuarioService.crear(usuario));
+
+        Usuario creado = usuarioService.crear(usuario);
+
+        UsuarioDTO response = new UsuarioDTO();
+        response.setId(creado.getId());
+        response.setNombre(creado.getNombre());
+        response.setEmail(creado.getEmail());
+
+        return ResponseEntity.ok(response);
     }
+
 
     // Listar eventos de un grupo
     @GetMapping("/{id}/eventos")
