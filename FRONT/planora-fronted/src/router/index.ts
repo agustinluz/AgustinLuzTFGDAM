@@ -9,7 +9,12 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/grupo',
     component: () => import('../views/GrupoPage.vue') // futura pantalla principal del grupo
-  }
+  },
+  {
+  path: '/registro',
+  component: () => import('@/views/RegisterPage.vue')
+}
+
   
 ]
 

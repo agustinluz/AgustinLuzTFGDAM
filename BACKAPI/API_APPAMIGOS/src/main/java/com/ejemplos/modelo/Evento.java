@@ -47,13 +47,6 @@ public class Evento implements Serializable {
 	@OneToMany(mappedBy = "evento")
 	private List<Imagen> imagenes;
 
-	public Grupo getGrupo() {
-		return grupo;
-	}
-
-	public void setGrupo(Grupo grupo) {
-		this.grupo = grupo;
-	}
 	
 	
 

@@ -42,7 +42,6 @@ public class GrupoController {
     @Autowired
     private JwtUtil jwtUtil;
 
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UsuarioLoginDTO loginDTO) {
         Optional<Usuario> usuarioOpt = usuarioService.login(loginDTO.getEmail(), loginDTO.getPassword());
@@ -62,11 +61,33 @@ public class GrupoController {
         usuarioDTO.setNombre(usuario.getNombre());
         usuarioDTO.setEmail(usuario.getEmail());
 
+        
+        if (usuario.getGrupo() != null) {
+            usuarioDTO.setGrupoId(usuario.getGrupo().getId());
+        }
+
         response.put("usuario", usuarioDTO);
 
         return ResponseEntity.ok(response);
     }
+
     
+    @PostMapping("/registro")
+    public ResponseEntity<UsuarioDTO> registrarUsuario(@RequestBody UsuarioCreateDTO dto) {
+        Usuario usuario = new Usuario();
+        usuario.setNombre(dto.getNombre());
+        usuario.setEmail(dto.getEmail());
+        usuario.setPassword(dto.getPassword());
+
+        Usuario creado = usuarioService.crear(usuario);
+
+        UsuarioDTO response = new UsuarioDTO();
+        response.setId(creado.getId());
+        response.setNombre(creado.getNombre());
+        response.setEmail(creado.getEmail());
+
+        return ResponseEntity.ok(response);
+    }
     @GetMapping("/invitacion/{codigo}")
     public ResponseEntity<GrupoDTO> obtenerPorCodigoInvitacion(@PathVariable String codigo) {
         return grupoService.obtenerPorCodigoInvitacion(codigo)
@@ -140,6 +161,24 @@ public class GrupoController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/api/usuarios")
+    public ResponseEntity<UsuarioDTO> crearUsuario(@RequestBody UsuarioCreateDTO usuarioDTO) {
+        Usuario usuario = new Usuario();
+        usuario.setNombre(usuarioDTO.getNombre());
+        usuario.setEmail(usuarioDTO.getEmail());
+        usuario.setPassword(usuarioDTO.getPassword());
+
+        Usuario creado = usuarioService.crear(usuario);
+
+        UsuarioDTO response = new UsuarioDTO();
+        response.setId(creado.getId());
+        response.setNombre(creado.getNombre());
+        response.setEmail(creado.getEmail());
+
+        return ResponseEntity.ok(response);
+    }
+
+    
 
     // Listar eventos de un grupo
     @GetMapping("/{id}/eventos")

@@ -46,33 +46,6 @@ public class Grupo implements Serializable {
     @OneToMany(mappedBy = "grupo")
     private List<Votacion> votaciones;
 
-	public Long getId() {
-		return id;
-	}
 
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getNombre() {
-		// TODO Auto-generated method stub
-		return nombre;
-	}
-
-	public String getCodigoInvitacion() {
-		// TODO Auto-generated method stub
-		return codigoInvitacion;
-	}
-
-	public void setNombre(String nombre2) {
-		// TODO Auto-generated method stub
-		this.nombre=nombre2;
-	}
-
-	public void setCodigoInvitacion(String codigoInvitacion) {
-		// TODO Auto-generated method stub
-		this.codigoInvitacion=codigoInvitacion;
-	}
-    
     
 }

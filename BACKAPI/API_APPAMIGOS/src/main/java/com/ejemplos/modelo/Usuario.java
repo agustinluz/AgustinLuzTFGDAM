@@ -51,45 +51,7 @@ public class Usuario implements Serializable {
     @OneToMany(mappedBy = "usuario")
     private List<Voto> votos;
 
-	public Object getPassword() {
-		// TODO Auto-generated method stub
-		return password;
-	}
-	public void setPassword(String password) {
-        this.password = password;
-    }
-	
-    public Grupo getGrupo() {
-        return grupo;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setGrupo(Grupo grupo) {
-        this.grupo = grupo;
-    }
-	public Long getId() {
-		// TODO Auto-generated method stub
-		return id;
-	}
-	public String getNombre() {
-		// TODO Auto-generated method stub
-		return nombre;
-	}
-	public String getEmail() {
-		// TODO Auto-generated method stub
-		return email;
-	}
 	
 	
 
