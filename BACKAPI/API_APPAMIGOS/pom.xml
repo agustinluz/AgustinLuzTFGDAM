@@ -10,10 +10,10 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.ejemplos</groupId>
-	<artifactId>ApiRest_version05_25_alumnos</artifactId>
+	<artifactId>API_APPAMIGOS</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ApiRest_version05_25_alumnos</name>
-	<description>Demo project for Spring Boot</description>
+	<name>API_APPAMIGOS</name>
+	<description></description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
@@ -39,11 +39,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
     		<groupId>org.projectlombok</groupId>
     		<artifactId>lombok</artifactId>
     		<version>1.18.30</version> 
@@ -54,25 +49,79 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+    		<groupId>io.jsonwebtoken</groupId>
+		    <artifactId>jjwt-api</artifactId>
+    		<version>0.11.5</version>
+		</dependency>
+		<dependency>
+    		<groupId>io.jsonwebtoken</groupId>
+    		<artifactId>jjwt-impl</artifactId>
+    		<version>0.11.5</version>
+    		<scope>runtime</scope>
+		</dependency>
+		<dependency>
+		    <groupId>io.jsonwebtoken</groupId>
+    		<artifactId>jjwt-jackson</artifactId> <!-- usa Jackson para firmar y parsear -->
+    		<version>0.11.5</version>
+    		<scope>runtime</scope>
+		</dependency>
+		
+		<dependency>
+    		<groupId>com.mysql</groupId>
+		    <artifactId>mysql-connector-j</artifactId>
+    		<version>8.0.33</version> <!-- O la versión que prefieras, pero esta es estable -->
+		</dependency>
+
+
+
 		<!-- https://mvnrepository.com/artifact/org.hibernate.orm/hibernate-core -->
 		<!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-core -->
 	</dependencies>
 
 	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+  <resources>
+    <resource>
+      <directory>src/main/resources</directory>
+      <filtering>true</filtering>
+      <excludes>
+        <exclude>application.properties</exclude>
+      </excludes>
+    </resource>
+
+    <!-- application.properties sin filtrado -->
+    <resource>
+      <directory>src/main/resources</directory>
+      <filtering>false</filtering>
+      <includes>
+        <include>application.properties</include>
+      </includes>
+    </resource>
+  </resources>
+
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-resources-plugin</artifactId>
+      <version>3.3.1</version>
+      <configuration>
+        <encoding>UTF-8</encoding>
+      </configuration>
+    </plugin>
+
+    <plugin>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-maven-plugin</artifactId>
+      <configuration>
+        <excludes>
+          <exclude>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+          </exclude>
+        </excludes>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
 
 </project>

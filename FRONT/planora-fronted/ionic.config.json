@@ -1,0 +1,7 @@
+{
+  "name": "planora-fronted",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}

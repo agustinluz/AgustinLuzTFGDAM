@@ -1,6 +1,7 @@
 package com.ejemplos.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,13 +10,14 @@ import com.ejemplos.DTO.GrupoDTO;
 import com.ejemplos.DTO.GrupoDTOConverter;
 import com.ejemplos.DTO.UsuarioCreateDTO;
 import com.ejemplos.DTO.UsuarioDTO;
+import com.ejemplos.DTO.UsuarioLoginDTO;
 import com.ejemplos.modelo.Evento;
 import com.ejemplos.modelo.Grupo;
 import com.ejemplos.modelo.Usuario;
-
-import Service.EventoService;
-import Service.GrupoService;
-import Service.UsuarioService;
+import com.ejemplos.security.JwtUtil;
+import com.ejemplos.service.EventoService;
+import com.ejemplos.service.GrupoService;
+import com.ejemplos.service.UsuarioService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,7 +39,45 @@ public class GrupoController {
     @Autowired
     private GrupoDTOConverter grupoDTOConverter;
 
+    @Autowired
+    private JwtUtil jwtUtil;
 
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody UsuarioLoginDTO loginDTO) {
+        Optional<Usuario> usuarioOpt = usuarioService.login(loginDTO.getEmail(), loginDTO.getPassword());
+
+        if (usuarioOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
+        }
+
+        Usuario usuario = usuarioOpt.get();
+        String token = jwtUtil.generateToken(usuario.getEmail());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+
+        UsuarioDTO usuarioDTO = new UsuarioDTO();
+        usuarioDTO.setId(usuario.getId());
+        usuarioDTO.setNombre(usuario.getNombre());
+        usuarioDTO.setEmail(usuario.getEmail());
+
+        response.put("usuario", usuarioDTO);
+
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/invitacion/{codigo}")
+    public ResponseEntity<GrupoDTO> obtenerPorCodigoInvitacion(@PathVariable String codigo) {
+        return grupoService.obtenerPorCodigoInvitacion(codigo)
+                .map(grupoDTOConverter::convertToDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+
+
+    
     // Obtener grupo por ID
     @GetMapping("/{id}")
     public ResponseEntity<GrupoDTO> obtenerGrupo(@PathVariable Long id) {
