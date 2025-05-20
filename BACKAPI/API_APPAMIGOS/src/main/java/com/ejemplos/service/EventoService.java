@@ -8,6 +8,7 @@ import com.ejemplos.modelo.Evento;
 import com.ejemplos.modelo.EventoRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EventoService {
@@ -22,4 +23,9 @@ public class EventoService {
     public Evento crear(Evento evento) {
         return eventoRepository.save(evento);
     }
+    
+    public Optional<Evento> obtenerPorId(Long id) {
+        return eventoRepository.findById(id);
+    }
+
 }

@@ -36,4 +36,9 @@ public class UsuarioService {
         return usuarioRepository.findByEmail(email)
                 .filter(u -> u.getPassword().equals(password));
     }
+    
+    public List<Usuario> obtenerPorIds(List<Long> ids) {
+        return usuarioRepository.findAllById(ids);
+    }
+
 }

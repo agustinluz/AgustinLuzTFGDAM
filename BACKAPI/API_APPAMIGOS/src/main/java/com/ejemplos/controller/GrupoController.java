@@ -5,6 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.ejemplos.DTO.EventoCreateDTO;
+import com.ejemplos.DTO.GastoCreateDTO;
 import com.ejemplos.DTO.GrupoCreateDTO;
 import com.ejemplos.DTO.GrupoDTO;
 import com.ejemplos.DTO.GrupoDTOConverter;
@@ -12,10 +14,12 @@ import com.ejemplos.DTO.UsuarioCreateDTO;
 import com.ejemplos.DTO.UsuarioDTO;
 import com.ejemplos.DTO.UsuarioLoginDTO;
 import com.ejemplos.modelo.Evento;
+import com.ejemplos.modelo.Gasto;
 import com.ejemplos.modelo.Grupo;
 import com.ejemplos.modelo.Usuario;
 import com.ejemplos.security.JwtUtil;
 import com.ejemplos.service.EventoService;
+import com.ejemplos.service.GastoService;
 import com.ejemplos.service.GrupoService;
 import com.ejemplos.service.UsuarioService;
 
@@ -35,6 +39,9 @@ public class GrupoController {
 
     @Autowired
     private EventoService eventoService;
+    
+    @Autowired
+    private GastoService gastoService;
     
     @Autowired
     private GrupoDTOConverter grupoDTOConverter;
@@ -160,6 +167,41 @@ public class GrupoController {
 
         return ResponseEntity.ok(response);
     }
+    
+    @PostMapping("/grupos/{grupoId}/gastos")
+    public ResponseEntity<Gasto> crearGasto(
+        @PathVariable Long grupoId,
+        @RequestBody GastoCreateDTO gastoDTO
+    ) {
+        Grupo grupo = grupoService.obtenerPorId(grupoId).orElse(null);
+        if (grupo == null) return ResponseEntity.notFound().build();
+
+        Usuario pagadoPor = usuarioService.obtenerPorId(gastoDTO.getPagadoPorId()).orElse(null);
+        if (pagadoPor == null) return ResponseEntity.badRequest().build();
+
+        Gasto gasto = new Gasto();
+        gasto.setTitulo(gastoDTO.getTitulo());
+        gasto.setMonto(gastoDTO.getMonto());
+        gasto.setGrupo(grupo);
+        gasto.setPagadoPor(pagadoPor);
+
+        // Asociar a evento si se ha indicado
+        if (gastoDTO.getEventoId() != null) {
+            Evento evento = eventoService.obtenerPorId(gastoDTO.getEventoId()).orElse(null);
+            if (evento != null) {
+                gasto.setEvento(evento);
+            }
+        }
+
+        // Guardar participantes
+        List<Usuario> participantes = usuarioService.obtenerPorIds(gastoDTO.getParticipantesIds());
+        gasto.setUsuarios(participantes);
+
+        // Guardar gasto
+        Gasto guardado = gastoService.crear(gasto);
+
+        return ResponseEntity.ok(guardado);
+    }
 
     @PostMapping("/api/usuarios")
     public ResponseEntity<UsuarioDTO> crearUsuario(@RequestBody UsuarioCreateDTO usuarioDTO) {
@@ -178,7 +220,21 @@ public class GrupoController {
         return ResponseEntity.ok(response);
     }
 
-    
+    @PostMapping("/{id}/eventos")
+    public ResponseEntity<Evento> crearEventoEnGrupo(@PathVariable Long id, @RequestBody EventoCreateDTO dto) {
+        Grupo grupo = grupoService.obtenerPorId(id).orElse(null);
+        if (grupo == null) return ResponseEntity.notFound().build();
+
+        Evento evento = new Evento();
+        evento.setGrupo(grupo);
+        evento.setTitulo(dto.getTitulo());
+        evento.setDescripcion(dto.getDescripcion());
+        evento.setUbicacion(dto.getUbicacion());
+        evento.setFecha(dto.getFecha());
+
+        return ResponseEntity.ok(eventoService.crear(evento));
+    }
+
 
     // Listar eventos de un grupo
     @GetMapping("/{id}/eventos")
