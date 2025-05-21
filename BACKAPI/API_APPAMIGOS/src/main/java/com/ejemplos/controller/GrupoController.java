@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/grupos")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:8100")
 public class GrupoController {
 
     @Autowired
@@ -242,12 +242,5 @@ public class GrupoController {
         return eventoService.obtenerPorGrupo(id);
     }
 
-    // Crear evento en grupo
-    @PostMapping("/{id}/eventos")
-    public ResponseEntity<Evento> crearEventoEnGrupo(@PathVariable Long id, @RequestBody Evento evento) {
-        Grupo grupo = grupoService.obtenerPorId(id).orElse(null);
-        if (grupo == null) return ResponseEntity.notFound().build();
-        evento.setGrupo(grupo);
-        return ResponseEntity.ok(eventoService.crear(evento));
-    }
+
 }

@@ -12,7 +12,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
   path: '/registro',
-  component: () => import('@/views/RegisterPage.vue')
+  component: () => import('../views/RegisterPage.vue')
 }
 
   
@@ -25,12 +25,15 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  if (to.path !== '/login' && !token) {
+  const publicPages = ['/login', '/registro']
+
+  if (!publicPages.includes(to.path) && !token) {
     next('/login')
   } else {
     next()
   }
 })
+
 
 
 export default router

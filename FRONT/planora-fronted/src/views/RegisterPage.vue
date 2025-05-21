@@ -63,7 +63,7 @@ const router = useIonRouter()
 const registrar = async () => {
   error.value = ''
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/registro`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/grupos/registro`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nombre: nombre.value, email: email.value, password: password.value })
