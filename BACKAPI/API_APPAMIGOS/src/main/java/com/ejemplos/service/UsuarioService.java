@@ -33,12 +33,23 @@ public class UsuarioService {
     }
 
     public Optional<Usuario> login(String email, String password) {
-        return usuarioRepository.findByEmail(email)
-                .filter(u -> u.getPassword().equals(password));
+        Optional<Usuario> user = usuarioRepository.findByEmail(email);
+        if (user.isPresent()) {
+            System.out.println("Usuario encontrado: " + user.get().getEmail());
+            System.out.println("Contraseña en BD: " + user.get().getPassword());
+            System.out.println("Contraseña del login: " + password);
+        } else {
+            System.out.println("No se encontró usuario con el email: " + email);
+        }
+        return user.filter(u -> u.getPassword().equals(password));
     }
-    
+
     public List<Usuario> obtenerPorIds(List<Long> ids) {
         return usuarioRepository.findAllById(ids);
     }
+    public Optional<Usuario> obtenerPorEmail(String email) {
+        return usuarioRepository.findByEmail(email);
+    }
+
 
 }

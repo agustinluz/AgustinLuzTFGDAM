@@ -143,7 +143,6 @@ public class GrupoController {
     }
 
 
-    // Registrar usuario en un grupo específico
     @PostMapping("/{id}/usuarios")
     public ResponseEntity<UsuarioDTO> registrarUsuarioEnGrupo(
             @PathVariable Long id,
@@ -152,21 +151,34 @@ public class GrupoController {
         Grupo grupo = grupoService.obtenerPorId(id).orElse(null);
         if (grupo == null) return ResponseEntity.notFound().build();
 
-        Usuario usuario = new Usuario();
-        usuario.setNombre(usuarioDTO.getNombre());
-        usuario.setEmail(usuarioDTO.getEmail());
-        usuario.setPassword(usuarioDTO.getPassword());
-        usuario.setGrupo(grupo);
+        // Buscar usuario por email
+        Optional<Usuario> existente = usuarioService.obtenerPorEmail(usuarioDTO.getEmail());
 
-        Usuario creado = usuarioService.crear(usuario);
+        Usuario usuario;
+        if (existente.isPresent()) {
+            // Si ya existe, actualizamos su grupo
+            usuario = existente.get();
+            usuario.setGrupo(grupo);
+            // Opcional: podrías actualizar también el nombre, pero **nunca la contraseña** aquí
+        } else {
+            // Si no existe, lo creamos
+            usuario = new Usuario();
+            usuario.setNombre(usuarioDTO.getNombre());
+            usuario.setEmail(usuarioDTO.getEmail());
+            usuario.setPassword(usuarioDTO.getPassword());
+            usuario.setGrupo(grupo);
+        }
+
+        Usuario guardado = usuarioService.crear(usuario);
 
         UsuarioDTO response = new UsuarioDTO();
-        response.setId(creado.getId());
-        response.setNombre(creado.getNombre());
-        response.setEmail(creado.getEmail());
+        response.setId(guardado.getId());
+        response.setNombre(guardado.getNombre());
+        response.setEmail(guardado.getEmail());
 
         return ResponseEntity.ok(response);
     }
+
     
     @PostMapping("/grupos/{grupoId}/gastos")
     public ResponseEntity<Gasto> crearGasto(

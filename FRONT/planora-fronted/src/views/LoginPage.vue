@@ -42,25 +42,35 @@ const password = ref('')
 const error = ref('')
 const router = useIonRouter()
 
+// LoginPage.vue
 const login = async () => {
   error.value = ''
   try {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/grupos/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email.value, password: password.value })
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value
+      })
     })
 
     if (!response.ok) throw new Error('Credenciales incorrectas')
 
     const data = await response.json()
+
+    // Guardamos usuario y token en el almacenamiento
     localStorage.setItem('token', data.token)
     localStorage.setItem('usuario', JSON.stringify(data.usuario))
+
+    // Redirigimos a la pantalla del grupo
     router.push('/grupo')
+
   } catch (err) {
     error.value = err.message
   }
 }
+
 
 const goToRegister = () => {
   router.push('/registro')
