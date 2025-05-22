@@ -17,10 +17,12 @@ import com.ejemplos.modelo.Evento;
 import com.ejemplos.modelo.Gasto;
 import com.ejemplos.modelo.Grupo;
 import com.ejemplos.modelo.Usuario;
+import com.ejemplos.modelo.UsuarioGrupo;
 import com.ejemplos.security.JwtUtil;
 import com.ejemplos.service.EventoService;
 import com.ejemplos.service.GastoService;
 import com.ejemplos.service.GrupoService;
+import com.ejemplos.service.UsuarioGrupoService;
 import com.ejemplos.service.UsuarioService;
 
 import java.util.*;
@@ -49,6 +51,11 @@ public class GrupoController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    
+    @Autowired
+    private UsuarioGrupoService usuarioGrupoService;
+
+    
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UsuarioLoginDTO loginDTO) {
         Optional<Usuario> usuarioOpt = usuarioService.login(loginDTO.getEmail(), loginDTO.getPassword());
@@ -68,15 +75,19 @@ public class GrupoController {
         usuarioDTO.setNombre(usuario.getNombre());
         usuarioDTO.setEmail(usuario.getEmail());
 
-        
-        if (usuario.getGrupo() != null) {
-            usuarioDTO.setGrupoId(usuario.getGrupo().getId());
-        }
+        // Obtener grupos del usuario desde la entidad UsuarioGrupo
+        List<Long> gruposIds = usuario.getUsuarioGrupos().stream()
+            .map(ug -> ug.getGrupo().getId())
+            .toList();
+
+        usuarioDTO.setGrupoIds(gruposIds);
 
         response.put("usuario", usuarioDTO);
 
         return ResponseEntity.ok(response);
     }
+
+
 
     
     @PostMapping("/registro")
@@ -115,6 +126,18 @@ public class GrupoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    
+    @GetMapping("/usuarios/{id}/grupos")
+    public ResponseEntity<List<GrupoDTO>> obtenerGruposDeUsuario(@PathVariable Long id) {
+        List<UsuarioGrupo> asociaciones = usuarioGrupoService.obtenerPorUsuarioId(id);
+        List<GrupoDTO> gruposDTO = asociaciones.stream()
+                .map(UsuarioGrupo::getGrupo)
+                .map(grupoDTOConverter::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(gruposDTO);
+    }
+
+
 
     // Crear nuevo grupo
     @PostMapping
@@ -125,22 +148,23 @@ public class GrupoController {
     }
 
 
-    // Listar usuarios de un grupo
     @GetMapping("/{id}/usuarios")
     public ResponseEntity<List<UsuarioDTO>> listarUsuariosGrupo(@PathVariable Long id) {
-        List<UsuarioDTO> usuariosDTO = usuarioService.obtenerTodos().stream()
-                .filter(u -> u.getGrupo() != null && u.getGrupo().getId().equals(id))
-                .map(u -> {
-                    UsuarioDTO dto = new UsuarioDTO();
-                    dto.setId(u.getId());
-                    dto.setNombre(u.getNombre());
-                    dto.setEmail(u.getEmail());
-                    return dto;
-                })
-                .collect(Collectors.toList());
+        List<Usuario> usuarios = usuarioGrupoService.obtenerUsuariosPorGrupoId(id);
+
+        List<UsuarioDTO> usuariosDTO = usuarios.stream().map(u -> {
+            UsuarioDTO dto = new UsuarioDTO();
+            dto.setId(u.getId());
+            dto.setNombre(u.getNombre());
+            dto.setEmail(u.getEmail());
+            return dto;
+        }).collect(Collectors.toList());
 
         return ResponseEntity.ok(usuariosDTO);
     }
+
+    
+    
 
 
     @PostMapping("/{id}/usuarios")
@@ -151,33 +175,35 @@ public class GrupoController {
         Grupo grupo = grupoService.obtenerPorId(id).orElse(null);
         if (grupo == null) return ResponseEntity.notFound().build();
 
-        // Buscar usuario por email
         Optional<Usuario> existente = usuarioService.obtenerPorEmail(usuarioDTO.getEmail());
-
         Usuario usuario;
+
         if (existente.isPresent()) {
-            // Si ya existe, actualizamos su grupo
             usuario = existente.get();
-            usuario.setGrupo(grupo);
-            // Opcional: podrías actualizar también el nombre, pero **nunca la contraseña** aquí
         } else {
-            // Si no existe, lo creamos
             usuario = new Usuario();
             usuario.setNombre(usuarioDTO.getNombre());
             usuario.setEmail(usuarioDTO.getEmail());
             usuario.setPassword(usuarioDTO.getPassword());
-            usuario.setGrupo(grupo);
+            usuario = usuarioService.crear(usuario);
         }
 
-        Usuario guardado = usuarioService.crear(usuario);
+        // Registrar en la tabla intermedia
+        UsuarioGrupo usuarioGrupo = new UsuarioGrupo();
+        usuarioGrupo.setUsuario(usuario);
+        usuarioGrupo.setGrupo(grupo);
+        usuarioGrupo.setRol("miembro");
+
+        usuarioGrupoService.guardar(usuarioGrupo);
 
         UsuarioDTO response = new UsuarioDTO();
-        response.setId(guardado.getId());
-        response.setNombre(guardado.getNombre());
-        response.setEmail(guardado.getEmail());
+        response.setId(usuario.getId());
+        response.setNombre(usuario.getNombre());
+        response.setEmail(usuario.getEmail());
 
         return ResponseEntity.ok(response);
     }
+
 
     
     @PostMapping("/grupos/{grupoId}/gastos")

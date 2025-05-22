@@ -1,5 +1,7 @@
 package com.ejemplos.DTO;
 
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +12,7 @@ public class UsuarioDTO {
     private String nombre;
     private String email;
     private Long grupoId;
+    private List<Long> grupoIds; // En lugar de solo un grupoId
 
 
 }

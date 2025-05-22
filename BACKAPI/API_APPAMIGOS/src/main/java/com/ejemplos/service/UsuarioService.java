@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ejemplos.modelo.Usuario;
+import com.ejemplos.modelo.UsuarioGrupo;
+import com.ejemplos.modelo.UsuarioGrupoRepository;
 import com.ejemplos.modelo.UsuarioRepository;
 
 import java.util.List;
@@ -15,6 +17,10 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+    
+    @Autowired
+    private UsuarioGrupoRepository usuarioGrupoRepository;
+    
 
     public List<Usuario> obtenerTodos() {
         return usuarioRepository.findAll();
@@ -50,6 +56,15 @@ public class UsuarioService {
     public Optional<Usuario> obtenerPorEmail(String email) {
         return usuarioRepository.findByEmail(email);
     }
+
+    
+    public List<Usuario> obtenerUsuariosPorGrupo(Long grupoId) {
+        return usuarioGrupoRepository.findByGrupoId(grupoId)
+                .stream()
+                .map(UsuarioGrupo::getUsuario)
+                .toList();
+    }
+
 
 
 }
