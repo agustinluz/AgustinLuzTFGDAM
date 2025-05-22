@@ -11,11 +11,35 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/GrupoPage.vue') // futura pantalla principal del grupo
   },
   {
-  path: '/registro',
-  component: () => import('../views/RegisterPage.vue')
-}
+    path: '/registro',
+    component: () => import('../views/RegisterPage.vue')
+  },
+  {
+    path: '/dashboard/:id',
+    component: () => import('../views/Dashboard.vue'),
+    props: true // Esto permite que el componente reciba el id como prop
+  },
+  // Ruta de redirección por si alguien va a /dashboard sin ID
+  {
+    path: '/dashboard',
+    redirect: '/grupo'
+  },
+  {
+    path: '/dashboard/:id/crear',
+    component: () => import('../views/Crear.vue'),
+    props: true // Esto permite que el componente reciba el id como prop
+  },
+  {
+    path: '/dashboard/:id/crear/gasto',
+    component: () => import('../views/CrearGasto.vue'),
+    props: true // Esto permite que el componente reciba el id como prop
+  },
+  {
+    path: '/dashboard/:id/crear/evento',
+    component: () => import('../views/CrearEvento.vue'),
+    props: true // Esto permite que el componente reciba el id como prop
+  },
 
-  
 ]
 
 const router = createRouter({
@@ -33,7 +57,5 @@ router.beforeEach((to, from, next) => {
     next()
   }
 })
-
-
 
 export default router
