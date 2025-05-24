@@ -1,0 +1,16 @@
+package com.ejemplos.DTO;
+
+import lombok.Data;
+import java.util.Date;
+
+@Data
+public class EventoDTO {
+    private Long id;
+    private String titulo;
+    private String descripcion;
+    private String ubicacion;
+    private Date fecha;
+    private Long grupoId;
+    private String grupoNombre;
+}
+

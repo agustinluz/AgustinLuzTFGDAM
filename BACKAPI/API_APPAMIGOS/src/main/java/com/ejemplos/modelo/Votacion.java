@@ -21,7 +21,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
+@Data
 @Entity
 @Table(name = "votaciones")
 public class Votacion implements Serializable {
@@ -37,6 +37,11 @@ public class Votacion implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "fecha_creacion")
     private Date fechaCreacion;
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "fecha_limite")
+    private Date fechaLimite;
+
 
     @ManyToOne
     @JoinColumn(name = "grupo_id")

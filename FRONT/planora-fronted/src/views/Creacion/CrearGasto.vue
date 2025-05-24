@@ -46,6 +46,11 @@ import {
   IonButton, IonText
 } from '@ionic/vue'
 import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const grupoId = route.params.id
+const id = route.params.id
 
 const titulo = ref('')
 const monto = ref('')
@@ -57,33 +62,58 @@ const mensaje = ref('')
 const error = ref('')
 
 onMounted(async () => {
-  const usuario = JSON.parse(localStorage.getItem('usuario'))
-  const grupoId = usuario.grupos[0]?.id
-
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/${grupoId}/usuarios`)
-  const data = await res.json()
-  usuarios.value = data
-  pagadoPorId.value = usuario.id
+  try {
+    // Cargar usuarios del grupo
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/${id}/usuarios`)
+    if (!res.ok) throw new Error('Error al cargar usuarios')
+    
+    const data = await res.json()
+    usuarios.value = data
+    
+    // Establecer usuario actual como pagador por defecto
+    const usuario = JSON.parse(localStorage.getItem('usuario'))
+    if (usuario) {
+      pagadoPorId.value = usuario.id
+    }
+  } catch (err) {
+    error.value = 'Error al cargar los datos: ' + err.message
+  }
 })
 
 const crearGasto = async () => {
+  mensaje.value = ''
+  error.value = ''
+  
+  if (!titulo.value || !monto.value || !pagadoPorId.value || participantesIds.value.length === 0) {
+    error.value = 'Por favor, completa todos los campos'
+    return
+  }
+  
   try {
-    const usuario = JSON.parse(localStorage.getItem('usuario'))
-    const grupoId = usuario.grupos[0]?.id
-
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/grupos/${grupoId}/gastos`, {
+    // URL corregida según el controlador
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/${grupoId}/gastos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         titulo: titulo.value,
-        monto: monto.value,
+        monto: parseFloat(monto.value),
         pagadoPorId: pagadoPorId.value,
         participantesIds: participantesIds.value
       })
     })
 
-    if (!res.ok) throw new Error('Error al crear gasto')
+    if (!res.ok) {
+      const errorText = await res.text()
+      throw new Error(errorText || 'Error al crear gasto')
+    }
+    
     mensaje.value = 'Gasto creado correctamente'
+    
+    // Limpiar formulario
+    titulo.value = ''
+    monto.value = ''
+    participantesIds.value = []
+    
   } catch (err) {
     error.value = err.message
   }

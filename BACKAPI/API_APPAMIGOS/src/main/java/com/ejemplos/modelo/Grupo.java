@@ -46,6 +46,10 @@ public class Grupo implements Serializable {
 
     @OneToMany(mappedBy = "grupo")
     private List<Votacion> votaciones;
+    
+    @OneToMany(mappedBy = "grupo")
+    private List<Imagen> imagenes;
+
 
 
     

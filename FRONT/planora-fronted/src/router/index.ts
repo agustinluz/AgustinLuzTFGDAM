@@ -3,6 +3,10 @@ import { RouteRecordRaw } from 'vue-router';
 
 const routes: Array<RouteRecordRaw> = [
   {
+    path: '/',
+    component: () => import('../views/LoginPage.vue')
+  },
+  {
     path: '/login',
     component: () => import('../views/LoginPage.vue')
   },
@@ -26,19 +30,55 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/dashboard/:id/crear',
-    component: () => import('../views/Crear.vue'),
+    component: () => import('../views/Creacion/Crear.vue'),
     props: true // Esto permite que el componente reciba el id como prop
   },
   {
     path: '/dashboard/:id/crear/gasto',
-    component: () => import('../views/CrearGasto.vue'),
+    component: () => import('../views/Creacion/CrearGasto.vue'),
     props: true // Esto permite que el componente reciba el id como prop
   },
   {
     path: '/dashboard/:id/crear/evento',
-    component: () => import('../views/CrearEvento.vue'),
+    component: () => import('../views/Creacion/CrearEvento.vue'),
     props: true // Esto permite que el componente reciba el id como prop
   },
+  {
+    path: '/dashboard/:id/crear/nota',
+    component: () => import('../views/Creacion/CrearNota.vue'),
+    props: true
+  },
+  {
+    path: '/dashboard/:id/crear/votacion',
+    component: () => import('../views/Creacion/CrearVotacion.vue'),
+    props: true
+  },
+  {
+    path: '/dashboard/:id/eventos',
+    component: () => import('../views/Detalles/EventosPage.vue'),
+    props: true
+  },
+  {
+    path: '/dashboard/:id/votaciones',
+    component: () => import('../views/Detalles/VotacionesPage.vue'),
+    props: true
+  },
+  {
+    path: '/dashboard/:id/gastos',
+    component: () => import('../views/Detalles/GastosPage.vue'),
+    props: true
+  },
+  {
+    path: '/dashboard/:id/notas',
+    component: () => import('../views/Detalles/NotasPage.vue'),
+    props: true
+  },
+  {
+    path: '/dashboard/:id/galeria',
+    component: () => import('../views/Detalles/GaleriaPage.vue'),
+    props: true
+  }
+
 
 ]
 

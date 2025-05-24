@@ -34,5 +34,9 @@ public class Imagen implements Serializable {
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
+    
+    @ManyToOne
+    @JoinColumn(name = "grupo_id")
+    private Grupo grupo;
 }
 

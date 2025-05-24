@@ -18,6 +18,11 @@ public class GastoService {
     public Gasto crear(Gasto gasto) {
         return gastoRepository.save(gasto);
     }
+    
+    public List<Gasto> obtenerPorGrupo(Long grupoId) {
+        return gastoRepository.findByGrupoId(grupoId);
+    }
+
 
     public Optional<Gasto> obtenerPorId(Long id) {
         return gastoRepository.findById(id);
@@ -30,4 +35,6 @@ public class GastoService {
     public void eliminar(Long id) {
         gastoRepository.deleteById(id);
     }
+    
+    
 }

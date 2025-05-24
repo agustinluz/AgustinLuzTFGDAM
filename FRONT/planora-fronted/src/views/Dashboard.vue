@@ -113,13 +113,15 @@ import { add } from 'ionicons/icons'
 import { ref, onMounted } from 'vue'
 import Chart from 'chart.js/auto'
 
+
 const router = useIonRouter()
 const grupo = ref(null)
 const eventos = ref([])
 const chartData = ref({ labels: [], datasets: [] })
 
 const usuario = JSON.parse(localStorage.getItem('usuario'))
-const grupoId = usuario?.grupoId
+const grupoId = localStorage.getItem('grupoActivoId')
+
 
 const fetchEventos = async () => {
   try {
@@ -155,6 +157,20 @@ const fetchGastos = async () => {
     console.error('Error cargando gastos:', err)
   }
 }
+const fetchGrupo = async () => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/${grupoId}`)
+    if (res.ok) {
+      grupo.value = await res.json()
+    } else {
+      grupo.value = { nombre: 'Grupo desconocido' }
+    }
+  } catch (err) {
+    console.error('Error al cargar el grupo:', err)
+    grupo.value = { nombre: 'Error al cargar grupo' }
+  }
+}
+
 
 const renderChart = () => {
   const ctx = document.getElementById('gastosChart')
@@ -188,6 +204,7 @@ onMounted(async () => {
   grupo.value = { nombre: 'Cargando...' }
   await fetchEventos()
   await fetchGastos()
+  await fetchGrupo()
 })
 </script>
 

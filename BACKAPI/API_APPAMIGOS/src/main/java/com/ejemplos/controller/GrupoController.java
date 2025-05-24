@@ -6,24 +6,40 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.ejemplos.DTO.EventoCreateDTO;
+import com.ejemplos.DTO.EventoDTO;
+import com.ejemplos.DTO.EventoDTOConverter;
 import com.ejemplos.DTO.GastoCreateDTO;
 import com.ejemplos.DTO.GrupoCreateDTO;
 import com.ejemplos.DTO.GrupoDTO;
 import com.ejemplos.DTO.GrupoDTOConverter;
+import com.ejemplos.DTO.NotaCreateDTO;
+import com.ejemplos.DTO.NotaDTO;
+import com.ejemplos.DTO.NotaDTOConverter;
 import com.ejemplos.DTO.UsuarioCreateDTO;
 import com.ejemplos.DTO.UsuarioDTO;
 import com.ejemplos.DTO.UsuarioLoginDTO;
+import com.ejemplos.DTO.VotacionCreateDTO;
+import com.ejemplos.DTO.VotacionDTO;
+import com.ejemplos.DTO.VotacionDTOConverter;
 import com.ejemplos.modelo.Evento;
 import com.ejemplos.modelo.Gasto;
 import com.ejemplos.modelo.Grupo;
+import com.ejemplos.modelo.Imagen;
+import com.ejemplos.modelo.Nota;
+import com.ejemplos.modelo.NotaRepository;
 import com.ejemplos.modelo.Usuario;
 import com.ejemplos.modelo.UsuarioGrupo;
+import com.ejemplos.modelo.Votacion;
+import com.ejemplos.modelo.VotacionRepository;
 import com.ejemplos.security.JwtUtil;
 import com.ejemplos.service.EventoService;
 import com.ejemplos.service.GastoService;
 import com.ejemplos.service.GrupoService;
+import com.ejemplos.service.ImagenService;
+import com.ejemplos.service.NotaService;
 import com.ejemplos.service.UsuarioGrupoService;
 import com.ejemplos.service.UsuarioService;
+import com.ejemplos.service.VotacionService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,6 +70,30 @@ public class GrupoController {
     
     @Autowired
     private UsuarioGrupoService usuarioGrupoService;
+    
+    @Autowired
+    private NotaService notaService;
+
+    @Autowired
+    private VotacionService votacionService;
+    
+    @Autowired
+    private ImagenService imagenService;
+    
+    @Autowired
+    private NotaRepository notaRepository;
+    
+    @Autowired
+    private VotacionRepository votacionRepository;
+    
+    @Autowired
+    private NotaDTOConverter notaDTOConverter;
+
+    @Autowired
+    private VotacionDTOConverter votacionDTOConverter;
+    
+    @Autowired
+    private EventoDTOConverter eventoDTOConverter;
 
     
     @PostMapping("/login")
@@ -206,7 +246,7 @@ public class GrupoController {
 
 
     
-    @PostMapping("/grupos/{grupoId}/gastos")
+    @PostMapping("{grupoId}/gastos")
     public ResponseEntity<Gasto> crearGasto(
         @PathVariable Long grupoId,
         @RequestBody GastoCreateDTO gastoDTO
@@ -258,19 +298,39 @@ public class GrupoController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{id}/eventos")
-    public ResponseEntity<Evento> crearEventoEnGrupo(@PathVariable Long id, @RequestBody EventoCreateDTO dto) {
-        Grupo grupo = grupoService.obtenerPorId(id).orElse(null);
-        if (grupo == null) return ResponseEntity.notFound().build();
+    @PostMapping("/{grupoId}/eventos")
+    public ResponseEntity<EventoDTO> crearEventoEnGrupo(
+            @PathVariable Long grupoId, // Cambié 'id' por 'grupoId' para que coincida
+            @RequestBody EventoCreateDTO dto,
+            @RequestHeader("Authorization") String token
+    ) {
+        try {
+            // Validar que el grupo existe
+            Grupo grupo = grupoService.obtenerPorId(grupoId).orElse(null);
+            if (grupo == null) {
+                return ResponseEntity.notFound().build();
+            }
 
-        Evento evento = new Evento();
-        evento.setGrupo(grupo);
-        evento.setTitulo(dto.getTitulo());
-        evento.setDescripcion(dto.getDescripcion());
-        evento.setUbicacion(dto.getUbicacion());
-        evento.setFecha(dto.getFecha());
+            // Validar token y usuario (opcional, según tu lógica de negocio)
+            String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+            Usuario usuario = usuarioService.obtenerPorEmail(email).orElse(null);
+            if (usuario == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
 
-        return ResponseEntity.ok(eventoService.crear(evento));
+            // Crear evento usando el converter
+            Evento evento = eventoDTOConverter.convertToEntity(dto);
+            evento.setGrupo(grupo);
+            
+            Evento eventoGuardado = eventoService.crear(evento);
+            EventoDTO response = eventoDTOConverter.convertToDTO(eventoGuardado);
+
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 
@@ -278,6 +338,113 @@ public class GrupoController {
     @GetMapping("/{id}/eventos")
     public List<Evento> listarEventosGrupo(@PathVariable Long id) {
         return eventoService.obtenerPorGrupo(id);
+    }
+    
+    @GetMapping("/{id}/gastos")
+    public ResponseEntity<List<Gasto>> listarGastosGrupo(@PathVariable Long id) {
+        Grupo grupo = grupoService.obtenerPorId(id).orElse(null);
+        if (grupo == null) return ResponseEntity.notFound().build();
+        List<Gasto> gastos = gastoService.obtenerPorGrupo(id);
+        return ResponseEntity.ok(gastos);
+    }
+
+    
+    @GetMapping("/{grupoId}/votaciones")
+    public ResponseEntity<List<VotacionDTO>> listarVotacionesGrupo(@PathVariable Long grupoId) {
+        try {
+            List<Votacion> votaciones = votacionRepository.findByGrupoId(grupoId);
+            List<VotacionDTO> votacionesDTO = votaciones.stream()
+                    .map(votacionDTOConverter::convertToDTO)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(votacionesDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    @GetMapping("/{grupoId}/notas")
+    public ResponseEntity<List<NotaDTO>> listarNotasGrupo(@PathVariable Long grupoId) {
+        try {
+            List<Nota> notas = notaRepository.findByGrupoId(grupoId);
+            List<NotaDTO> notasDTO = notas.stream()
+                    .map(notaDTOConverter::convertToDTO)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(notasDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+
+    @PostMapping("/{grupoId}/notas")
+    public ResponseEntity<NotaDTO> crearNota(
+            @PathVariable Long grupoId,
+            @RequestBody NotaCreateDTO notaDTO,
+            @RequestHeader("Authorization") String token
+    ) {
+        try {
+            // Validar que el grupo existe
+            Grupo grupo = grupoService.obtenerPorId(grupoId).orElse(null);
+            if (grupo == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Extraer y validar usuario del token
+            String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+            Usuario usuario = usuarioService.obtenerPorEmail(email).orElse(null);
+            if (usuario == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            // Crear la nota
+            Nota nota = notaDTOConverter.convertToEntity(notaDTO);
+            nota.setGrupo(grupo);
+            nota.setUsuario(usuario);
+
+            Nota guardada = notaService.crear(nota);
+            NotaDTO response = notaDTOConverter.convertToDTO(guardada);
+
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            e.printStackTrace(); // Para debugging
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+
+    @PostMapping("/{grupoId}/votaciones")
+    public ResponseEntity<VotacionDTO> crearVotacion(
+        @PathVariable Long grupoId, 
+        @RequestBody VotacionCreateDTO votacionDTO,
+        @RequestHeader("Authorization") String token
+    ) {
+        try {
+            // Verificar que el grupo existe
+            Grupo grupo = grupoService.obtenerPorId(grupoId).orElse(null);
+            if (grupo == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Validar opciones
+            if (votacionDTO.getOpciones() == null || votacionDTO.getOpciones().size() < 2) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // Crear votación
+            Votacion votacion = votacionDTOConverter.convertToEntity(votacionDTO);
+            votacion.setGrupo(grupo);
+            votacion.setFechaCreacion(new Date());
+
+            Votacion guardada = votacionService.crear(votacion);
+            VotacionDTO response = votacionDTOConverter.convertToDTO(guardada);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 
