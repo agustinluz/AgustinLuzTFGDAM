@@ -231,7 +231,7 @@ const cargarGrupos = async () => {
 
   cargando.value = true
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/usuarios/${usuario.value.id}/grupos`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/usuario/${usuario.value.id}`)
     if (res.ok) {
       grupos.value = await res.json()
     } else {

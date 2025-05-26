@@ -1,4 +1,3 @@
-<!-- src/views/CrearEventoPage.vue -->
 <template>
   <ion-page>
     <ion-header>
@@ -462,7 +461,7 @@ const crearEvento = async () => {
     }
 
     const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/grupos/${grupoId.value}/eventos`,
+      `${import.meta.env.VITE_API_URL}/eventos/${grupoId.value}/crear`,
       {
         method: 'POST',
         headers: {

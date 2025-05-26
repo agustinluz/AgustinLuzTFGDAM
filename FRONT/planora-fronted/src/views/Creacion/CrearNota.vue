@@ -158,7 +158,7 @@ const guardarNota = async () => {
     }
 
     const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/grupos/${grupoId.value}/notas`,
+      `${import.meta.env.VITE_API_URL}/nota/${grupoId.value}/nota`,
       {
         method: 'POST',
         headers: {
@@ -203,50 +203,3 @@ const guardarNota = async () => {
 }
 </script>
 
-<style scoped>
-.note-form {
-  padding: 1rem;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.form-section {
-  flex: 1;
-  margin-bottom: 2rem;
-}
-
-.textarea-item {
-  margin-top: 1rem;
-}
-
-.action-section {
-  padding-bottom: 1rem;
-}
-
-ion-item {
-  --padding-start: 0;
-  --padding-end: 0;
-  margin-bottom: 1rem;
-}
-
-ion-input, ion-textarea {
-  --padding-top: 12px;
-  --padding-bottom: 12px;
-}
-
-ion-button[type="submit"] {
-  --border-radius: 8px;
-  height: 48px;
-  font-weight: 600;
-}
-
-/* Responsive */
-@media (min-width: 768px) {
-  .note-form {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-}
-</style>

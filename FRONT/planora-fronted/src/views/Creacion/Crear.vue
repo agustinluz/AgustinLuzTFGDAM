@@ -76,6 +76,22 @@
             </ion-card>
           </ion-col>
         </ion-row>
+<ion-row>
+  <ion-col  size-md="12">
+            <ion-card 
+              button 
+              @click="navigateToCreate('imagen')"
+              class="creation-card"
+            >
+              <ion-card-content class="ion-text-center">
+                <ion-icon name="document-text-outline" class="camera-icon"></ion-icon>
+                <h3>IMAGEN</h3>
+                <p>Comparte información importante</p>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+</ion-row>
+        
       </ion-grid>
     </ion-content>
   </ion-page>

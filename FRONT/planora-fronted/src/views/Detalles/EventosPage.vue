@@ -33,7 +33,7 @@ const grupoId = route.params.id
 const formatFecha = (fecha) => new Date(fecha).toLocaleString('es-ES')
 
 onMounted(async () => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/${grupoId}/eventos`)
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/eventos/${grupoId}/eventos`)
   if (res.ok) eventos.value = await res.json()
 })
 </script>

@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/notas")
+@RequestMapping("/api/nota")
 @CrossOrigin(origins = "http://localhost:8100")
 public class NotaController {
 
@@ -43,22 +43,9 @@ public class NotaController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    // Listar notas de un grupo
-    @GetMapping("/grupos/{grupoId}")
-    public ResponseEntity<List<NotaDTO>> listarNotasGrupo(@PathVariable Long grupoId) {
-        try {
-            List<Nota> notas = notaRepository.findByGrupoId(grupoId);
-            List<NotaDTO> notasDTO = notas.stream()
-                    .map(notaDTOConverter::convertToDTO)
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(notasDTO);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
+    
     // Crear nota en un grupo
-    @PostMapping("/grupos/{grupoId}")
+    @PostMapping("/{grupoId}/crear")
     public ResponseEntity<NotaDTO> crearNota(
             @PathVariable Long grupoId,
             @RequestBody NotaCreateDTO notaDTO,
@@ -92,6 +79,21 @@ public class NotaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    
+ // Listar notas de un grupo
+    @GetMapping("/{grupoId}/notas")
+    public ResponseEntity<List<NotaDTO>> listarNotasGrupo(@PathVariable Long grupoId) {
+        try {
+            List<Nota> notas = notaRepository.findByGrupoId(grupoId);
+            List<NotaDTO> notasDTO = notas.stream()
+                    .map(notaDTOConverter::convertToDTO)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(notasDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
     // Obtener nota específica por ID
     @GetMapping("/{notaId}")

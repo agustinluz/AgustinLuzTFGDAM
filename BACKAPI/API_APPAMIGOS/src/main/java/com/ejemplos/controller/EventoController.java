@@ -38,7 +38,7 @@ public class EventoController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @PostMapping("/grupos/{grupoId}")
+    @PostMapping("/{grupoId}/crear")
     public ResponseEntity<EventoDTO> crearEventoEnGrupo(
             @PathVariable Long grupoId,
             @RequestBody EventoCreateDTO dto,

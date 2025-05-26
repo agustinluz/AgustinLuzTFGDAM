@@ -43,6 +43,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/Creacion/CrearEvento.vue'),
     props: true // Esto permite que el componente reciba el id como prop
   },
+   {
+    path: '/dashboard/:id/crear/imagen',
+    component: () => import('../views/Creacion/CrearImagen.vue'),
+    props: true // Esto permite que el componente reciba el id como prop
+  },
   {
     path: '/dashboard/:id/crear/nota',
     component: () => import('../views/Creacion/CrearNota.vue'),

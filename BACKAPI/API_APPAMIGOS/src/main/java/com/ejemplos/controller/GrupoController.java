@@ -91,7 +91,7 @@ public class GrupoController {
     }
 
     
-    @GetMapping("/usuarios/{id}/grupos")
+    @GetMapping("/usuario/{id}")
     public ResponseEntity<List<GrupoDTO>> obtenerGruposDeUsuario(@PathVariable Long id) {
         List<UsuarioGrupo> asociaciones = usuarioGrupoService.obtenerPorUsuarioId(id);
         List<GrupoDTO> gruposDTO = asociaciones.stream()

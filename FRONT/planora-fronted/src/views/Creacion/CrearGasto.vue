@@ -50,7 +50,6 @@ import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const grupoId = route.params.id
-const id = route.params.id
 
 const titulo = ref('')
 const monto = ref('')
@@ -64,7 +63,7 @@ const error = ref('')
 onMounted(async () => {
   try {
     // Cargar usuarios del grupo
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/${id}/usuarios`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/${grupoId}/usuarios`)
     if (!res.ok) throw new Error('Error al cargar usuarios')
     
     const data = await res.json()
@@ -91,7 +90,7 @@ const crearGasto = async () => {
   
   try {
     // URL corregida según el controlador
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/${grupoId}/gastos`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/gasto/${grupoId}/crear`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

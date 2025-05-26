@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/gastos")
+@RequestMapping("/api/gasto")
 @CrossOrigin(origins = "http://localhost:8100")
 public class GastoController {
 
@@ -41,7 +41,7 @@ public class GastoController {
     @Autowired
     private DeudaGastoService deudaGastoService;
 
-    @PostMapping("/grupos/{grupoId}")
+    @PostMapping("/{grupoId}/crear")
     public ResponseEntity<Gasto> crearGasto(
             @PathVariable Long grupoId,
             @RequestBody GastoCreateDTO gastoDTO) {
@@ -81,7 +81,7 @@ public class GastoController {
     
     
 
-    @GetMapping("/grupos/{grupoId}")
+    @GetMapping("/{grupoId}/gastos")
     public ResponseEntity<List<Gasto>> listarGastosGrupo(@PathVariable Long grupoId) {
         Grupo grupo = grupoService.obtenerPorId(grupoId).orElse(null);
         if (grupo == null) return ResponseEntity.notFound().build();
@@ -143,7 +143,7 @@ public class GastoController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{gastoId}/participantes")
+    @GetMapping("grupos/{gastoId}/participantes")
     public ResponseEntity<List<UsuarioDTO>> obtenerParticipantesGasto(@PathVariable Long gastoId) {
         Optional<Gasto> gastoOpt = gastoService.obtenerPorId(gastoId);
         if (gastoOpt.isEmpty()) {
@@ -161,7 +161,7 @@ public class GastoController {
         return ResponseEntity.ok(participantesDTO);
     }
 
-    @PostMapping("/{gastoId}/participantes/{participanteId}/saldado")
+    @PostMapping("grupos/{gastoId}/participantes/{participanteId}/saldado")
     public ResponseEntity<String> marcarComoSaldado(
             @PathVariable Long gastoId,
             @PathVariable Long participanteId,
