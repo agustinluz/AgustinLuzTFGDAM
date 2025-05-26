@@ -14,6 +14,9 @@ public class GastoService {
 
     @Autowired
     private GastoRepository gastoRepository;
+    
+    @Autowired
+    private DeudaGastoService deudaGastoService;
 
     public Gasto crear(Gasto gasto) {
         return gastoRepository.save(gasto);
@@ -32,7 +35,24 @@ public class GastoService {
         return gastoRepository.findAll();
     }
 
+    public boolean existePorId(Long id) {
+        return gastoRepository.existsById(id);
+    }
+
+    public List<Gasto> obtenerPorGrupoYEvento(Long grupoId, Long eventoId) {
+        return gastoRepository.findByGrupoIdAndEventoId(grupoId, eventoId);
+    }
+    
+ // En GastoService, actualizar el método actualizar:
+    public Gasto actualizar(Gasto gasto) {
+        Gasto actualizado = gastoRepository.save(gasto);
+        deudaGastoService.actualizarDeudasParaGasto(actualizado);
+        return actualizado;
+    }
+
+    // Y el método eliminar:
     public void eliminar(Long id) {
+        deudaGastoService.eliminarDeudasPorGasto(id);
         gastoRepository.deleteById(id);
     }
     

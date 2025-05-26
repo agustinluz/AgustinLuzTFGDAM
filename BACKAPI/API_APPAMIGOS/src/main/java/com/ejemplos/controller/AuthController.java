@@ -1,0 +1,93 @@
+package com.ejemplos.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.ejemplos.DTO.GrupoDTO;
+import com.ejemplos.DTO.GrupoDTOConverter;
+import com.ejemplos.DTO.UsuarioCreateDTO;
+import com.ejemplos.DTO.UsuarioDTO;
+import com.ejemplos.DTO.UsuarioLoginDTO;
+import com.ejemplos.modelo.Usuario;
+import com.ejemplos.security.JwtUtil;
+import com.ejemplos.service.GrupoService;
+import com.ejemplos.service.UsuarioService;
+
+import java.util.*;
+
+@RestController
+@RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:8100")
+public class AuthController {
+
+    @Autowired
+    private UsuarioService usuarioService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+    
+    @Autowired
+    private GrupoService grupoService;
+    
+    @Autowired
+    private GrupoDTOConverter grupoDTOConverter;
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody UsuarioLoginDTO loginDTO) {
+        Optional<Usuario> usuarioOpt = usuarioService.login(loginDTO.getEmail(), loginDTO.getPassword());
+
+        if (usuarioOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
+        }
+
+        Usuario usuario = usuarioOpt.get();
+        String token = jwtUtil.generateToken(usuario.getEmail());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+
+        UsuarioDTO usuarioDTO = new UsuarioDTO();
+        usuarioDTO.setId(usuario.getId());
+        usuarioDTO.setNombre(usuario.getNombre());
+        usuarioDTO.setEmail(usuario.getEmail());
+
+        // Obtener grupos del usuario desde la entidad UsuarioGrupo
+        List<Long> gruposIds = usuario.getUsuarioGrupos().stream()
+            .map(ug -> ug.getGrupo().getId())
+            .toList();
+
+        usuarioDTO.setGrupoIds(gruposIds);
+        response.put("usuario", usuarioDTO);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/registro")
+    public ResponseEntity<UsuarioDTO> registrarUsuario(@RequestBody UsuarioCreateDTO dto) {
+        Usuario usuario = new Usuario();
+        usuario.setNombre(dto.getNombre());
+        usuario.setEmail(dto.getEmail());
+        usuario.setPassword(dto.getPassword());
+
+        Usuario creado = usuarioService.crear(usuario);
+
+        UsuarioDTO response = new UsuarioDTO();
+        response.setId(creado.getId());
+        response.setNombre(creado.getNombre());
+        response.setEmail(creado.getEmail());
+
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/invitacion/{codigo}")
+    public ResponseEntity<GrupoDTO> obtenerPorCodigoInvitacion(@PathVariable String codigo) {
+        return grupoService.obtenerPorCodigoInvitacion(codigo)
+                .map(grupoDTOConverter::convertToDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    
+}

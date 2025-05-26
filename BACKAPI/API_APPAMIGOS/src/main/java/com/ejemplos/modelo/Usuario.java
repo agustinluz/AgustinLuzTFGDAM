@@ -51,6 +51,14 @@ public class Usuario implements Serializable {
 
     @OneToMany(mappedBy = "usuario")
     private List<Voto> votos;
+    
+    @OneToMany(mappedBy = "deudor", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<DeudaGasto> deudas; // Deudas que tiene este usuario
+
+    @OneToMany(mappedBy = "acreedor", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<DeudaGasto> creditos; // Dinero que le deben a este usuario
 
 
 	

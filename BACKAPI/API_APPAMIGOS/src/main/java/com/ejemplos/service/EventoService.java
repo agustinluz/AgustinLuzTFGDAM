@@ -28,4 +28,16 @@ public class EventoService {
         return eventoRepository.findById(id);
     }
 
+    public Evento actualizar(Evento evento) {
+        return eventoRepository.save(evento);
+    }
+
+    public void eliminar(Long id) {
+        eventoRepository.deleteById(id);
+    }
+
+    public boolean existePorId(Long id) {
+        return eventoRepository.existsById(id);
+    }
+
 }

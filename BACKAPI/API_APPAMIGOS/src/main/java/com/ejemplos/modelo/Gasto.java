@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -51,4 +52,8 @@ public class Gasto implements Serializable {
         inverseJoinColumns = @JoinColumn(name = "usuario_id")
     )
     private List<Usuario> usuarios;
+    
+    
+    @OneToMany(mappedBy = "gasto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DeudaGasto> deudas; // Deudas generadas por este gasto
 }
