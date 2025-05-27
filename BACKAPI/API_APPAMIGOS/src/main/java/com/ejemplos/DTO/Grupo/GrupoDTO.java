@@ -1,4 +1,4 @@
-package com.ejemplos.DTO;
+package com.ejemplos.DTO.Grupo;
 import lombok.Getter;
 import lombok.Setter;
 

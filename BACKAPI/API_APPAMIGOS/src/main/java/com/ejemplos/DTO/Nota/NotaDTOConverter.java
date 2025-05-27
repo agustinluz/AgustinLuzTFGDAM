@@ -1,4 +1,4 @@
-package com.ejemplos.DTO;
+package com.ejemplos.DTO.Nota;
 
 import com.ejemplos.modelo.Nota;
 import org.springframework.stereotype.Component;

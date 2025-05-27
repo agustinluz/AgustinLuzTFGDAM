@@ -1,4 +1,4 @@
-package com.ejemplos.DTO;
+package com.ejemplos.DTO.Imagen;
 
 import com.ejemplos.modelo.Imagen;
 import org.springframework.stereotype.Component;

@@ -5,9 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.ejemplos.DTO.NotaCreateDTO;
-import com.ejemplos.DTO.NotaDTO;
-import com.ejemplos.DTO.NotaDTOConverter;
+import com.ejemplos.DTO.Nota.NotaCreateDTO;
+import com.ejemplos.DTO.Nota.NotaDTO;
+import com.ejemplos.DTO.Nota.NotaDTOConverter;
 import com.ejemplos.modelo.Grupo;
 import com.ejemplos.modelo.Nota;
 import com.ejemplos.modelo.NotaRepository;

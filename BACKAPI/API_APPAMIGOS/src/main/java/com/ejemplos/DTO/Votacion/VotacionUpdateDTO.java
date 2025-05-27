@@ -1,4 +1,4 @@
-package com.ejemplos.DTO;
+package com.ejemplos.DTO.Votacion;
 
 import java.util.List;
 import lombok.Getter;
@@ -11,5 +11,4 @@ public class VotacionUpdateDTO {
 	 private String titulo;
 	 private String descripcion;
 	 private List<String> opciones;
-
 }

@@ -1,10 +1,10 @@
 package com.ejemplos.service;
 
-import com.ejemplos.DTO.ImagenDTO;
-import com.ejemplos.DTO.ImagenCreateDTO;
-import com.ejemplos.DTO.ImagenDTOConverter;
 import com.ejemplos.modelo.Imagen;
 import com.ejemplos.modelo.ImagenRepository;
+import com.ejemplos.DTO.Imagen.ImagenCreateDTO;
+import com.ejemplos.DTO.Imagen.ImagenDTO;
+import com.ejemplos.DTO.Imagen.ImagenDTOConverter;
 import com.ejemplos.modelo.Evento;
 import com.ejemplos.modelo.Usuario;
 import com.ejemplos.modelo.Grupo;

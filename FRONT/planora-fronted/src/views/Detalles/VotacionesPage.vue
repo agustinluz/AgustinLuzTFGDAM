@@ -36,8 +36,8 @@
         <ion-list v-if="votaciones.length">
           <ion-card v-for="v in votaciones" :key="v.id">
             <ion-card-header>
-              <ion-card-title>{{ v.titulo }}</ion-card-title>
-              <ion-card-subtitle>{{ v.descripcion }}</ion-card-subtitle>
+              <ion-card-title>{{ v.pregunta }}</ion-card-title>
+              <ion-card-subtitle v-if="v.descripcion">{{ v.descripcion }}</ion-card-subtitle>
             </ion-card-header>
             <ion-card-content>
               <div v-if="v.opciones && v.opciones.length">
@@ -52,11 +52,11 @@
                 <div class="ion-margin-top">
                   <ion-button 
                     expand="block" 
-                    :disabled="!votoSeleccionado[v.id] || v.estado === 'CERRADA'"
+                    :disabled="!votoSeleccionado[v.id] || yaVotado(v.id) || !esVotacionActiva(v)"
                     @click="enviarVoto(v.id)"
-                    :color="v.estado === 'CERRADA' ? 'medium' : 'primary'"
+                    :color="getColorBotonVoto(v)"
                   >
-                    {{ v.estado === 'CERRADA' ? 'Votación Cerrada' : 'Votar' }}
+                    {{ getTextoBotonVoto(v) }}
                   </ion-button>
                   
                   <ion-button 
@@ -69,13 +69,20 @@
                   </ion-button>
                 </div>
                 
+                <!-- Mostrar voto actual del usuario -->
+                <div v-if="miVoto[v.id]" class="ion-margin-top">
+                  <ion-chip color="success">
+                    <ion-label>Tu voto: {{ miVoto[v.id] }}</ion-label>
+                  </ion-chip>
+                </div>
+                
                 <!-- Botones del creador -->
                 <div v-if="esCreador(v)" class="ion-margin-top">
                   <ion-button 
                     fill="outline" 
                     color="warning"
                     @click="editarVotacion(v)"
-                    :disabled="v.estado === 'CERRADA'"
+                    :disabled="!esVotacionActiva(v)"
                   >
                     <ion-icon :icon="pencilOutline" slot="start"></ion-icon>
                     Editar
@@ -85,7 +92,7 @@
                     fill="outline" 
                     color="success"
                     @click="cerrarVotacion(v.id)"
-                    :disabled="v.estado === 'CERRADA'"
+                    :disabled="!esVotacionActiva(v)"
                     class="ion-margin-start"
                   >
                     <ion-icon :icon="checkmarkOutline" slot="start"></ion-icon>
@@ -110,14 +117,19 @@
               
               <!-- Información adicional -->
               <div class="ion-margin-top">
-                <ion-chip :color="v.estado === 'ACTIVA' ? 'success' : 'medium'">
-                  <ion-label>{{ v.estado }}</ion-label>
+                <ion-chip :color="getColorEstado(v)">
+                  <ion-label>{{ getEstadoTexto(v) }}</ion-label>
                 </ion-chip>
-                <ion-text color="medium">
-                  <p><small>Creada: {{ formatearFecha(v.fechaCreacion) }}</small></p>
-                  <p v-if="v.fechaCierre"><small>Cerrada: {{ formatearFecha(v.fechaCierre) }}</small></p>
-                  <p><small>Creador: {{ v.creadorNombre || 'Desconocido' }}</small></p>
-                </ion-text>
+                <div class="info-adicional">
+                  <ion-text color="medium">
+                    <p><small>Creada: {{ formatearFecha(v.fechaCreacion) }}</small></p>
+                    <p v-if="v.fechaLimite && !esVotacionActiva(v)">
+                      <small>Cerrada: {{ formatearFecha(v.fechaLimite) }}</small>
+                    </p>
+                    <p><small>Creador: {{ v.creadaPorNombre || 'Desconocido' }}</small></p>
+                    <p><small>Total votos: {{ v.totalVotos || 0 }}</small></p>
+                  </ion-text>
+                </div>
               </div>
             </ion-card-content>
           </ion-card>
@@ -131,26 +143,7 @@
           </ion-card-content>
         </ion-card>
       </div>
-
-      <!-- Debug info (remover en producción) -->
-      <ion-card v-if="showDebug" color="light">
-        <ion-card-header>
-          <ion-card-title>Debug Info</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <p><strong>Grupo ID:</strong> {{ grupoId }}</p>
-          <p><strong>URL llamada:</strong> {{ apiUrl }}</p>
-          <p><strong>Votaciones encontradas:</strong> {{ votaciones.length }}</p>
-          <pre>{{ JSON.stringify(votaciones, null, 2) }}</pre>
-        </ion-card-content>
-      </ion-card>
     </ion-content>
-
-    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-      <ion-fab-button @click="toggleDebug">
-        <ion-icon :icon="bugOutline"></ion-icon>
-      </ion-fab-button>
-    </ion-fab>
   </ion-page>
 </template>
 
@@ -159,17 +152,17 @@ import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, 
   IonLabel, IonText, IonCard, IonCardContent, IonCardHeader, IonCardTitle, 
   IonCardSubtitle, IonSpinner, IonButton, IonButtons, IonIcon, IonRadioGroup, 
-  IonRadio, IonFab, IonFabButton, IonChip
+  IonRadio, IonChip
 } from '@ionic/vue'
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { refreshOutline, listOutline, bugOutline, pencilOutline, checkmarkOutline, trashOutline } from 'ionicons/icons'
+import { refreshOutline, listOutline, pencilOutline, checkmarkOutline, trashOutline } from 'ionicons/icons'
 
 const votaciones = ref([])
 const loading = ref(false)
 const error = ref(null)
-const showDebug = ref(false)
 const votoSeleccionado = ref({})
+const miVoto = ref({}) // Para almacenar los votos del usuario actual
 const usuarioActual = ref(null)
 
 const route = useRoute()
@@ -182,7 +175,6 @@ const token = localStorage.getItem('authToken')
 const obtenerUsuarioActual = () => {
   try {
     if (token) {
-      // Decodificar JWT para obtener info del usuario
       const payload = JSON.parse(atob(token.split('.')[1]))
       usuarioActual.value = {
         id: payload.userId,
@@ -196,7 +188,55 @@ const obtenerUsuarioActual = () => {
 }
 
 const esCreador = (votacion) => {
-  return usuarioActual.value && votacion.creadorId === usuarioActual.value.id
+  return usuarioActual.value && votacion.creadaPorId === usuarioActual.value.id
+}
+
+const esVotacionActiva = (votacion) => {
+  // Suponiendo que tu backend maneja el estado correctamente
+  return votacion.estado === 'ACTIVA' || (!votacion.fechaLimite || new Date(votacion.fechaLimite) > new Date())
+}
+
+const yaVotado = (votacionId) => {
+  return miVoto.value[votacionId] !== undefined
+}
+
+const getColorBotonVoto = (votacion) => {
+  if (!esVotacionActiva(votacion)) return 'medium'
+  if (yaVotado(votacion.id)) return 'success'
+  return 'primary'
+}
+
+const getTextoBotonVoto = (votacion) => {
+  if (!esVotacionActiva(votacion)) return 'Votación Cerrada'
+  if (yaVotado(votacion.id)) return 'Ya votaste'
+  return 'Votar'
+}
+
+const getColorEstado = (votacion) => {
+  return esVotacionActiva(votacion) ? 'success' : 'medium'
+}
+
+const getEstadoTexto = (votacion) => {
+  return esVotacionActiva(votacion) ? 'ACTIVA' : 'CERRADA'
+}
+
+// Cargar el voto del usuario para una votación específica
+const cargarMiVoto = async (votacionId) => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/votaciones/${votacionId}/mi-voto`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    
+    if (res.ok) {
+      const voto = await res.json()
+      miVoto.value[votacionId] = voto.opcion
+    }
+    // Si es 404, simplemente no ha votado (no es error)
+  } catch (err) {
+    console.error(`Error al cargar voto para votación ${votacionId}:`, err)
+  }
 }
 
 const verResultados = async (votacionId) => {
@@ -226,7 +266,6 @@ const verResultados = async (votacionId) => {
 }
 
 const editarVotacion = (votacion) => {
-  // Aquí podrías abrir un modal de edición
   console.log('Editando votación:', votacion)
   alert('Función de edición pendiente de implementar')
 }
@@ -260,7 +299,6 @@ const eliminarVotacion = async (votacionId) => {
     const confirmar = confirm('¿Estás seguro de que quieres eliminar esta votación? Esta acción no se puede deshacer.')
     if (!confirmar) return
     
-    const token = localStorage.getItem('authToken')
     const res = await fetch(`${import.meta.env.VITE_API_URL}/votaciones/${votacionId}`, {
       method: 'DELETE',
       headers: {
@@ -292,13 +330,11 @@ const cargarVotaciones = async () => {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        // Agregar token si es necesario
-         'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`
       }
     })
     
     console.log('Response status:', res.status)
-    console.log('Response ok:', res.ok)
     
     if (!res.ok) {
       throw new Error(`Error ${res.status}: ${res.statusText}`)
@@ -308,6 +344,11 @@ const cargarVotaciones = async () => {
     console.log('Datos recibidos:', data)
     
     votaciones.value = data || []
+    
+    // Cargar votos del usuario para cada votación
+    for (const votacion of votaciones.value) {
+      await cargarMiVoto(votacion.id)
+    }
     
   } catch (err) {
     console.error('Error al cargar votaciones:', err)
@@ -339,6 +380,8 @@ const enviarVoto = async (votacionId) => {
     
     if (res.ok) {
       alert(`¡Voto enviado correctamente: ${voto}!`)
+      // Actualizar el voto del usuario
+      miVoto.value[votacionId] = voto
       // Refrescar las votaciones para mostrar estados actualizados
       await cargarVotaciones()
     } else if (res.status === 409) {
@@ -346,7 +389,8 @@ const enviarVoto = async (votacionId) => {
     } else if (res.status === 403) {
       alert('No tienes permisos para votar en esta votación')
     } else {
-      throw new Error(`Error ${res.status}`)
+      const errorText = await res.text()
+      throw new Error(`Error ${res.status}: ${errorText}`)
     }
     
   } catch (err) {
@@ -366,10 +410,6 @@ const formatearFecha = (fecha) => {
   })
 }
 
-const toggleDebug = () => {
-  showDebug.value = !showDebug.value
-}
-
 onMounted(() => {
   console.log('Componente montado, grupo ID:', grupoId)
   obtenerUsuarioActual()
@@ -382,9 +422,11 @@ ion-card {
   margin: 8px 0;
 }
 
-.debug-info {
-  font-family: monospace;
-  font-size: 0.8em;
-  white-space: pre-wrap;
+.info-adicional {
+  margin-top: 8px;
+}
+
+.info-adicional p {
+  margin: 2px 0;
 }
 </style>

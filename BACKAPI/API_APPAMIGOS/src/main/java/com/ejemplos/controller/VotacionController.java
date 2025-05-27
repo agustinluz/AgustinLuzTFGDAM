@@ -5,12 +5,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.ejemplos.DTO.VotacionCreateDTO;
-import com.ejemplos.DTO.VotacionDTO;
-import com.ejemplos.DTO.VotacionDTOConverter;
-import com.ejemplos.DTO.VotacionUpdateDTO;
-import com.ejemplos.DTO.VotoCreateDTO;
-import com.ejemplos.DTO.VotoDTO;
+import com.ejemplos.DTO.Votacion.VotacionCreateDTO;
+import com.ejemplos.DTO.Votacion.VotacionDTO;
+import com.ejemplos.DTO.Votacion.VotacionDTOConverter;
+import com.ejemplos.DTO.Votacion.VotacionUpdateDTO;
+import com.ejemplos.DTO.Votacion.VotoCreateDTO;
+import com.ejemplos.DTO.Votacion.VotoDTO;
 import com.ejemplos.modelo.Grupo;
 import com.ejemplos.modelo.Usuario;
 import com.ejemplos.modelo.Votacion;
@@ -60,8 +60,6 @@ public class VotacionController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    // ============ ENDPOINTS DE VOTACIONES ============
-
     // Obtener votación por ID
     @GetMapping("/votaciones/{id}")
     public ResponseEntity<VotacionDTO> obtenerVotacion(@PathVariable Long id) {
@@ -77,66 +75,163 @@ public class VotacionController {
         }
     }
 
-    // Listar votaciones de un grupo (ya existe en GrupoController, pero lo duplico aquí)
     @GetMapping("/grupos/{grupoId}/votaciones")
-    public ResponseEntity<List<VotacionDTO>> listarVotacionesGrupo(@PathVariable Long grupoId) {
+    public ResponseEntity<?> listarVotacionesGrupo(
+            @PathVariable Long grupoId,
+            @RequestHeader(value = "Authorization", required = false) String token) {
         try {
+            System.out.println("=== LISTAR VOTACIONES ===");
+            System.out.println("Buscando votaciones para grupo ID: " + grupoId);
+            System.out.println("Token: " + token);
+
+            // Opcional: Validar autenticación para listar
+            if (token != null && token.startsWith("Bearer ")) {
+                try {
+                    String jwt = token.replace("Bearer ", "");
+                    String email = jwtUtil.extractEmail(jwt);
+                    Usuario usuario = usuarioService.obtenerPorEmail(email).orElse(null);
+                    
+                    if (usuario != null) {
+                        boolean perteneceAlGrupo = usuarioGrupoService.usuarioPerteneceAlGrupo(usuario.getId(), grupoId);
+                        if (!perteneceAlGrupo) {
+                            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .body(Map.of("error", "No tienes acceso a las votaciones de este grupo"));
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error al validar token para listar: " + e.getMessage());
+                    // Continuar sin autenticación si falla
+                }
+            }
+
             List<Votacion> votaciones = votacionRepository.findByGrupoId(grupoId);
+            System.out.println("Votaciones encontradas: " + votaciones.size());
+
             List<VotacionDTO> votacionesDTO = votaciones.stream()
-                    .map(votacionDTOConverter::convertToDTO)
-                    .collect(Collectors.toList());
+                .map(votacionDTOConverter::convertToDTO)
+                .collect(Collectors.toList());
+
             return ResponseEntity.ok(votacionesDTO);
+            
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            System.err.println("Error al obtener votaciones: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Error interno del servidor"));
         }
     }
 
-    // Crear votación (ya existe en GrupoController, pero lo mejoro aquí)
     @PostMapping("/grupos/{grupoId}/votaciones")
-    public ResponseEntity<VotacionDTO> crearVotacion(
+    public ResponseEntity<?> crearVotacion(
             @PathVariable Long grupoId,
             @RequestBody VotacionCreateDTO votacionDTO,
-            @RequestHeader("Authorization") String token) {
+            @RequestHeader(value = "Authorization", required = false) String token) {
         try {
+            System.out.println("=== CREAR VOTACIÓN ===");
+            System.out.println("Token recibido: " + token);
+            System.out.println("Grupo ID: " + grupoId);
+            System.out.println("Datos votación: " + votacionDTO);
+            
+            // Validar token
+            if (token == null || !token.startsWith("Bearer ")) {
+                System.out.println("Token inválido o faltante");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Token de autorización requerido"));
+            }
+
             // Obtener usuario del token
             String jwt = token.replace("Bearer ", "");
-            String email = jwtUtil.extractEmail(jwt);
-            Usuario usuario = usuarioService.obtenerPorEmail(email).orElse(null);
+            System.out.println("JWT extraído: " + jwt);
             
-            if (usuario == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            String email;
+            try {
+                email = jwtUtil.extractEmail(jwt);
+                System.out.println("Email extraído del token: " + email);
+            } catch (Exception e) {
+                System.out.println("Error al extraer email del token: " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Token inválido"));
             }
+            
+            Usuario usuario = usuarioService.obtenerPorEmail(email).orElse(null);
+            if (usuario == null) {
+                System.out.println("Usuario no encontrado con email: " + email);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Usuario no encontrado"));
+            }
+            
+            System.out.println("Usuario encontrado: " + usuario.getNombre());
 
             // Verificar que el grupo existe
             Grupo grupo = grupoService.obtenerPorId(grupoId).orElse(null);
             if (grupo == null) {
-                return ResponseEntity.notFound().build();
+                System.out.println("Grupo no encontrado con ID: " + grupoId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Grupo no encontrado"));
             }
+            
+            System.out.println("Grupo encontrado: " + grupo.getNombre());
 
             // Verificar que el usuario pertenece al grupo
             boolean perteneceAlGrupo = usuarioGrupoService.usuarioPerteneceAlGrupo(usuario.getId(), grupoId);
             if (!perteneceAlGrupo) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                System.out.println("Usuario no pertenece al grupo");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "No tienes permisos para crear votaciones en este grupo"));
             }
+            
+            System.out.println("Usuario pertenece al grupo");
 
-            // Validar opciones (mínimo 2)
+            // Validar datos de la votación
+            if (votacionDTO.getPregunta() == null || votacionDTO.getPregunta().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "La pregunta es obligatoria"));
+            }
+            
             if (votacionDTO.getOpciones() == null || votacionDTO.getOpciones().size() < 2) {
-                return ResponseEntity.badRequest().build();
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Se requieren al menos 2 opciones"));
+            }
+            
+            // Validar que las opciones no estén vacías
+            List<String> opcionesValidas = votacionDTO.getOpciones().stream()
+                .filter(opcion -> opcion != null && !opcion.trim().isEmpty())
+                .map(String::trim)
+                .collect(Collectors.toList());
+                
+            if (opcionesValidas.size() < 2) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Se requieren al menos 2 opciones válidas"));
             }
 
             // Crear votación
-            Votacion votacion = votacionDTOConverter.convertToEntity(votacionDTO);
+            Votacion votacion = new Votacion();
+            votacion.setTitulo(votacionDTO.getPregunta().trim());
+            votacion.setDescripcion(votacionDTO.getDescripcion()); // Si existe en el DTO
+            votacion.setOpciones(opcionesValidas);
             votacion.setGrupo(grupo);
             votacion.setCreador(usuario);
             votacion.setFechaCreacion(new Date());
-            votacion.setEstado(EstadoVotacion.ACTIVA);
+            votacion.setEstado(Votacion.EstadoVotacion.ACTIVA);
+            
+            // Establecer fecha límite si se proporcionó
+            if (votacionDTO.getFechaLimite() != null) {
+                votacion.setFechaCierre(votacionDTO.getFechaLimite());
+            }
 
+            System.out.println("Guardando votación...");
             Votacion guardada = votacionService.crear(votacion);
+            System.out.println("Votación guardada con ID: " + guardada.getId());
+            
             VotacionDTO response = votacionDTOConverter.convertToDTO(guardada);
-
+            
             return ResponseEntity.ok(response);
+            
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            System.err.println("Error al crear votación: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Error interno del servidor: " + e.getMessage()));
         }
     }
 

@@ -1,15 +1,15 @@
 package com.ejemplos.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Autowired; 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.ejemplos.DTO.GrupoDTO;
-import com.ejemplos.DTO.GrupoDTOConverter;
-import com.ejemplos.DTO.UsuarioCreateDTO;
-import com.ejemplos.DTO.UsuarioDTO;
-import com.ejemplos.DTO.UsuarioLoginDTO;
+import com.ejemplos.DTO.Grupo.GrupoDTO;
+import com.ejemplos.DTO.Grupo.GrupoDTOConverter;
+import com.ejemplos.DTO.Usuario.UsuarioCreateDTO;
+import com.ejemplos.DTO.Usuario.UsuarioDTO;
+import com.ejemplos.DTO.Usuario.UsuarioLoginDTO;
 import com.ejemplos.modelo.Usuario;
 import com.ejemplos.security.JwtUtil;
 import com.ejemplos.service.GrupoService;

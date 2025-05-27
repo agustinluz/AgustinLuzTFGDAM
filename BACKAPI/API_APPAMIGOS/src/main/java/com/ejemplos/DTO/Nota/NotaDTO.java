@@ -1,5 +1,5 @@
 // NotaDTO.java
-package com.ejemplos.DTO;
+package com.ejemplos.DTO.Nota;
 
 import lombok.Data;
 import java.util.Date;

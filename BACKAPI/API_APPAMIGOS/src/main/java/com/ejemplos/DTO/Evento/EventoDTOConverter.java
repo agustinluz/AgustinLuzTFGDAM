@@ -1,4 +1,4 @@
-package com.ejemplos.DTO;
+package com.ejemplos.DTO.Evento;
 
 import com.ejemplos.modelo.Evento;
 import org.springframework.stereotype.Component;

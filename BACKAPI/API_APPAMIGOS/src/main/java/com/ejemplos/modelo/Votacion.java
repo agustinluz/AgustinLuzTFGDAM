@@ -57,7 +57,7 @@ public class Votacion {
     @JoinColumn(name = "creador_id", nullable = false)
     private Usuario creador;
 
-    @Column(name = "fecha_creacion", nullable = false)
+    @Column(name = "fecha_creacion", nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechaCreacion;
 

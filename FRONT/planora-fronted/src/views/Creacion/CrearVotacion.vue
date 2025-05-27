@@ -20,175 +20,115 @@
     </ion-header>
 
     <ion-content>
-      <form @submit.prevent="crearVotacion" class="votacion-form">
+      <form @submit.prevent="crearVotacion" class="voting-form">
         <!-- Información básica -->
         <div class="form-section">
-          <h3 class="section-title">
-            <ion-icon name="help-circle-outline"></ion-icon>
-            Pregunta de la votación
-          </h3>
-          
-          <ion-item class="textarea-item">
-            <ion-textarea
-              label="Pregunta"
+          <div class="section-header">
+            <ion-icon name="information-circle-outline"></ion-icon>
+            <h3>Información básica</h3>
+          </div>
+
+          <ion-item>
+            <ion-input
+              label="Título de la votación"
               label-placement="stacked"
               fill="outline"
-              v-model="pregunta"
-              placeholder="Ej: ¿Dónde prefieres que celebremos la cena?"
-              rows="3"
-              auto-grow
-              :maxlength="300"
+              v-model="titulo"
+              placeholder="¿Sobre qué se va a votar?"
+              :maxlength="100"
               counter
               required
+            ></ion-input>
+          </ion-item>
+
+          <ion-item class="textarea-item">
+            <ion-textarea
+              label="Descripción (opcional)"
+              label-placement="stacked"
+              fill="outline"
+              v-model="descripcion"
+              placeholder="Proporciona más detalles sobre la votación..."
+              rows="3"
+              auto-grow
+              :maxlength="500"
+              counter
             ></ion-textarea>
           </ion-item>
         </div>
 
         <!-- Opciones de votación -->
         <div class="form-section">
-          <h3 class="section-title">
+          <div class="section-header">
             <ion-icon name="list-outline"></ion-icon>
-            Opciones de votación
-            <span class="opciones-count">({{ opciones.length }})</span>
-          </h3>
-          
-          <div class="opciones-container">
-            <div 
-              v-for="(opcion, index) in opciones" 
-              :key="`opcion-${index}`"
-              class="opcion-item"
-            >
-              <ion-item>
-                <ion-input
-                  :label="`Opción ${index + 1}`"
-                  label-placement="stacked"
-                  fill="outline"
-                  v-model="opciones[index]"
-                  :placeholder="`Opción ${index + 1}`"
-                  :maxlength="100"
-                  required
-                ></ion-input>
-                <ion-button 
-                  v-if="opciones.length > 2"
-                  fill="clear" 
-                  color="danger" 
-                  slot="end"
-                  @click="eliminarOpcion(index)"
-                >
-                  <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-                </ion-button>
-              </ion-item>
-            </div>
+            <h3>Opciones de votación</h3>
           </div>
 
-          <div class="opciones-actions">
-            <ion-button 
-              fill="outline" 
+          <div class="opciones-container">
+            <ion-item 
+              v-for="(opcion, index) in opciones" 
+              :key="index"
+              class="opcion-item"
+            >
+              <ion-input
+                :label="`Opción ${index + 1}`"
+                label-placement="stacked"
+                fill="outline"
+                v-model="opciones[index]"
+                :placeholder="`Ingresa la opción ${index + 1}`"
+                :maxlength="100"
+                required
+              ></ion-input>
+              <ion-button
+                v-if="opciones.length > 2"
+                fill="clear"
+                color="danger"
+                slot="end"
+                @click="eliminarOpcion(index)"
+                class="delete-option-btn"
+              >
+                <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-item>
+
+            <ion-button
+              v-if="opciones.length < 10"
+              fill="outline"
+              expand="block"
               @click="agregarOpcion"
-              :disabled="opciones.length >= 10"
+              class="add-option-btn"
             >
               <ion-icon name="add-outline" slot="start"></ion-icon>
               Agregar opción
             </ion-button>
-            <p class="opciones-help" v-if="opciones.length < 2">
-              <ion-icon name="information-circle-outline"></ion-icon>
-              Necesitas al menos 2 opciones para crear la votación
-            </p>
           </div>
         </div>
 
-        <!-- Fecha límite (opcional) -->
+        <!-- Configuración -->
         <div class="form-section">
-          <h3 class="section-title">
-            <ion-icon name="time-outline"></ion-icon>
-            Fecha límite (opcional)
-          </h3>
-          
-          <ion-item>
-            <ion-checkbox 
-              v-model="tieneFechaLimite"
-              slot="start"
-            ></ion-checkbox>
-            <ion-label>
-              <h3>Establecer fecha límite</h3>
-              <p>La votación se cerrará automáticamente</p>
-            </ion-label>
-          </ion-item>
-
-          <ion-item 
-            v-if="tieneFechaLimite" 
-            button 
-            @click="abrirCalendario"
-            class="fecha-limite-item"
-          >
-            <ion-label>
-              <h3>Fecha límite</h3>
-              <p v-if="fechaLimite">{{ formatearFecha(fechaLimite) }}</p>
-              <p v-else class="placeholder-text">Selecciona fecha y hora</p>
-            </ion-label>
-            <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
-          </ion-item>
-
-          <!-- Modal de calendario -->
-          <ion-modal :is-open="mostrarCalendario" @did-dismiss="cerrarCalendario">
-            <ion-header>
-              <ion-toolbar>
-                <ion-title>Fecha límite</ion-title>
-                <ion-buttons slot="end">
-                  <ion-button @click="cerrarCalendario">Cerrar</ion-button>
-                </ion-buttons>
-              </ion-toolbar>
-            </ion-header>
-            <ion-content class="calendar-modal">
-              <ion-datetime
-                v-model="fechaLimite"
-                presentation="date-time"
-                :min="fechaMinima"
-                locale="es-ES"
-                @ion-change="onFechaChange"
-              ></ion-datetime>
-              <div class="calendar-actions">
-                <ion-button expand="block" @click="confirmarFecha" :disabled="!fechaLimite">
-                  Confirmar fecha límite
-                </ion-button>
-              </div>
-            </ion-content>
-          </ion-modal>
-        </div>
-
-        <!-- Vista previa -->
-        <div class="form-section" v-if="pregunta.trim() && opcionesValidas.length >= 2">
-          <h3 class="section-title">
-            <ion-icon name="eye-outline"></ion-icon>
-            Vista previa
-          </h3>
-          
-          <div class="preview-card">
-            <div class="preview-question">
-              <h4>{{ pregunta }}</h4>
-            </div>
-            <div class="preview-options">
-              <div 
-                v-for="(opcion, index) in opcionesValidas" 
-                :key="`preview-${index}`"
-                class="preview-option"
-              >
-                <ion-radio></ion-radio>
-                <span>{{ opcion }}</span>
-              </div>
-            </div>
-            <div class="preview-info">
-              <p>
-                <ion-icon name="people-outline"></ion-icon>
-                0 votos • 
-                <ion-icon name="time-outline"></ion-icon>
-                {{ tieneFechaLimite && fechaLimite ? 'Expira ' + formatearFecha(fechaLimite) : 'Sin fecha límite' }}
-              </p>
-            </div>
+          <div class="section-header">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <h3>Configuración</h3>
           </div>
+
+          <ion-item button @click="mostrarFechaLimite = true">
+            <ion-icon name="calendar-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Fecha límite (opcional)</h3>
+              <p v-if="fechaLimite">{{ formatearFecha(fechaLimite) }}</p>
+              <p v-else>Sin fecha límite</p>
+            </ion-label>
+            <ion-button 
+              v-if="fechaLimite"
+              fill="clear" 
+              color="medium" 
+              @click.stop="limpiarFechaLimite"
+            >
+              <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-item>
         </div>
 
-        <!-- Botón de guardar -->
+        <!-- Botón de crear -->
         <div class="action-section">
           <ion-button 
             expand="block" 
@@ -196,11 +136,24 @@
             :disabled="!puedeGuardar || isLoading"
             size="large"
           >
-            <ion-icon name="ballot-outline" slot="start"></ion-icon>
-            {{ isLoading ? 'Creando votación...' : 'Crear votación' }}
+            <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+            {{ isLoading ? 'Creando...' : 'Crear votación' }}
           </ion-button>
         </div>
       </form>
+
+      <!-- DateTime picker para fecha límite -->
+      <ion-datetime
+        :is-open="mostrarFechaLimite"
+        v-model="fechaLimite"
+        @did-dismiss="mostrarFechaLimite = false"
+        presentation="date-time"
+        :min="fechaMinima"
+        locale="es-ES"
+        :show-default-buttons="true"
+        done-text="Confirmar"
+        cancel-text="Cancelar"
+      ></ion-datetime>
 
       <!-- Toast para mensajes -->
       <ion-toast
@@ -225,8 +178,7 @@
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, 
   IonTextarea, IonButton, IonIcon, IonButtons, IonBackButton, 
-  IonItem, IonLabel, IonToast, IonLoading, IonModal, IonDatetime,
-  IonCheckbox, IonRadio
+  IonItem, IonLabel, IonDatetime, IonToast, IonLoading
 } from '@ionic/vue'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -235,14 +187,12 @@ const route = useRoute()
 const router = useRouter()
 
 // Estado del formulario
-const pregunta = ref('')
+const titulo = ref('')
+const descripcion = ref('')
 const opciones = ref(['', ''])
-const tieneFechaLimite = ref(false)
-const fechaLimite = ref('')
+const fechaLimite = ref(null)
+const mostrarFechaLimite = ref(false)
 const isLoading = ref(false)
-
-// Estados del UI
-const mostrarCalendario = ref(false)
 
 // Toast
 const showToast = ref(false)
@@ -254,25 +204,25 @@ const grupoId = ref(null)
 const usuario = ref(null)
 
 // Fecha mínima (ahora + 1 hora)
-const fechaMinima = new Date(Date.now() + 60 * 60 * 1000).toISOString()
-
-// Computed
-const opcionesValidas = computed(() => {
-  return opciones.value.filter(opcion => opcion.trim().length > 0)
+const fechaMinima = computed(() => {
+  const now = new Date()
+  now.setHours(now.getHours() + 1)
+  return now.toISOString()
 })
 
+// Validación
 const puedeGuardar = computed(() => {
-  const preguntaValida = pregunta.value.trim().length > 0
-  const opcionesValidasCount = opcionesValidas.value.length >= 2
-  const fechaValida = !tieneFechaLimite.value || fechaLimite.value
-  
-  return preguntaValida && opcionesValidasCount && fechaValida
+  const tituloValido = titulo.value.trim().length > 0
+  const opcionesValidas = opciones.value.filter(op => op.trim().length > 0).length >= 2
+  return tituloValido && opcionesValidas
 })
 
 onMounted(async () => {
   try {
+    // Obtener grupoId de la ruta
     grupoId.value = route.params.grupoId || route.params.id
     
+    // Obtener usuario del localStorage
     const usuarioString = localStorage.getItem('usuario')
     if (!usuarioString) {
       throw new Error('Usuario no autenticado')
@@ -297,19 +247,6 @@ const mostrarToast = (message, color = 'success') => {
   showToast.value = true
 }
 
-const formatearFecha = (fechaISO) => {
-  const fecha = new Date(fechaISO)
-  return fecha.toLocaleString('es-ES', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-// Funciones de opciones
 const agregarOpcion = () => {
   if (opciones.value.length < 10) {
     opciones.value.push('')
@@ -322,30 +259,44 @@ const eliminarOpcion = (index) => {
   }
 }
 
-// Funciones del calendario
-const abrirCalendario = () => {
-  mostrarCalendario.value = true
+const limpiarFechaLimite = () => {
+  fechaLimite.value = null
 }
 
-const cerrarCalendario = () => {
-  mostrarCalendario.value = false
-}
-
-const onFechaChange = (event) => {
-  fechaLimite.value = event.detail.value
-}
-
-const confirmarFecha = () => {
-  if (fechaLimite.value) {
-    cerrarCalendario()
-    mostrarToast('Fecha límite establecida', 'success')
-  }
+const formatearFecha = (fecha) => {
+  if (!fecha) return ''
+  
+  const date = new Date(fecha)
+  return date.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 
 const crearVotacion = async () => {
   if (!puedeGuardar.value) {
-    mostrarToast('Por favor, completa todos los campos obligatorios', 'warning')
+    mostrarToast('Por favor, completa el título y al menos 2 opciones', 'warning')
     return
+  }
+
+  // Validar opciones
+  const opcionesFiltradas = opciones.value.filter(op => op.trim().length > 0)
+  if (opcionesFiltradas.length < 2) {
+    mostrarToast('Debes tener al menos 2 opciones válidas', 'warning')
+    return
+  }
+
+  // Validar fecha límite si existe
+  if (fechaLimite.value) {
+    const fechaSeleccionada = new Date(fechaLimite.value)
+    const ahora = new Date()
+    if (fechaSeleccionada <= ahora) {
+      mostrarToast('La fecha límite debe ser futura', 'warning')
+      return
+    }
   }
 
   isLoading.value = true
@@ -356,16 +307,14 @@ const crearVotacion = async () => {
       throw new Error('Token de autenticación no encontrado')
     }
 
-    // Preparar datos según el DTO del backend
-    const votacionData = {
-      pregunta: pregunta.value.trim(),
-      opciones: opcionesValidas.value,
-      creadaPorId: usuario.value.id,
-      fechaLimite: tieneFechaLimite.value && fechaLimite.value ? 
-        new Date(fechaLimite.value).toISOString() : null
+    const payload = {
+      pregunta: titulo.value.trim(),
+      descripcion: descripcion.value.trim() || null,
+      opciones: opcionesFiltradas.map(op => op.trim()),
+      fechaLimite: fechaLimite.value || null
     }
 
-    console.log('Enviando votación:', votacionData)
+    console.log('Payload a enviar:', payload)
 
     const response = await fetch(
       `${import.meta.env.VITE_API_URL}/grupos/${grupoId.value}/votaciones`,
@@ -375,7 +324,7 @@ const crearVotacion = async () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(votacionData)
+        body: JSON.stringify(payload)
       }
     )
 
@@ -388,12 +337,6 @@ const crearVotacion = async () => {
     console.log('Votación creada:', votacionCreada)
 
     mostrarToast('Votación creada correctamente', 'success')
-    
-    // Limpiar formulario
-    pregunta.value = ''
-    opciones.value = ['', '']
-    tieneFechaLimite.value = false
-    fechaLimite.value = ''
     
     // Navegar de vuelta después de un delay
     setTimeout(() => {
@@ -413,168 +356,91 @@ const crearVotacion = async () => {
 </script>
 
 <style scoped>
-.votacion-form {
-  padding: 1rem;
-  max-width: 800px;
-  margin: 0 auto;
+.voting-form {
+  padding: 16px;
 }
 
 .form-section {
-  margin-bottom: 2rem;
+  margin-bottom: 24px;
 }
 
-.section-title {
+.section-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin: 0 0 1rem 0;
-  font-size: 1.1rem;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 0 16px;
+}
+
+.section-header ion-icon {
+  font-size: 20px;
+  color: var(--ion-color-primary);
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 16px;
   font-weight: 600;
   color: var(--ion-color-primary);
 }
 
-.opciones-count {
-  font-size: 0.9rem;
-  color: var(--ion-color-medium);
-  font-weight: normal;
-}
-
 .textarea-item {
-  margin-bottom: 1rem;
+  --inner-padding-end: 16px;
 }
 
 .opciones-container {
-  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .opcion-item {
-  margin-bottom: 0.5rem;
+  --inner-padding-end: 8px;
 }
 
-.opciones-actions {
-  text-align: center;
-  margin-top: 1rem;
+.delete-option-btn {
+  --padding-start: 8px;
+  --padding-end: 8px;
 }
 
-.opciones-help {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--ion-color-warning);
-}
-
-.fecha-limite-item {
-  margin-top: 1rem;
-}
-
-.placeholder-text {
-  color: var(--ion-color-medium);
-  font-style: italic;
-}
-
-.preview-card {
-  background: var(--ion-color-light);
-  border-radius: 12px;
-  padding: 1rem;
-  border: 1px solid var(--ion-color-light-shade);
-}
-
-.preview-question {
-  margin-bottom: 1rem;
-}
-
-.preview-question h4 {
-  margin: 0;
-  font-size: 1.1rem;
-  color: var(--ion-color-dark);
-}
-
-.preview-options {
-  margin-bottom: 1rem;
-}
-
-.preview-option {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  font-size: 1rem;
-}
-
-.preview-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--ion-color-medium);
-}
-
-.preview-info ion-icon {
-  font-size: 1rem;
+.add-option-btn {
+  margin-top: 8px;
+  --border-style: dashed;
 }
 
 .action-section {
-  padding: 1rem 0 2rem 0;
+  margin-top: 32px;
+  padding: 0 16px;
 }
 
 ion-item {
-  --padding-start: 0;
-  --padding-end: 0;
-  margin-bottom: 1rem;
+  --background: transparent;
+  --inner-padding-start: 16px;
+  --inner-padding-end: 16px;
+  margin-bottom: 8px;
 }
 
-ion-input, ion-textarea {
-  --padding-top: 12px;
-  --padding-bottom: 12px;
+ion-button[expand="block"] {
+  margin: 8px 0;
 }
 
-/* Estilos del calendario */
-.calendar-modal {
-  padding: 1rem;
-}
-
-.calendar-actions {
-  padding: 1rem;
-  margin-top: 1rem;
+/* Estilos para el datetime picker */
+ion-datetime {
+  --background: var(--ion-color-light);
 }
 
 /* Responsive */
-@media (min-width: 768px) {
-  .votacion-form {
-    padding: 2rem;
+@media (max-width: 768px) {
+  .voting-form {
+    padding: 12px;
   }
-}
-
-/* Estados de elementos */
-ion-button[disabled] {
-  opacity: 0.5;
-}
-
-.opcion-item ion-item {
-  margin-bottom: 0;
-}
-
-/* Animaciones */
-.opcion-item {
-  transition: all 0.3s ease;
-}
-
-.preview-card {
-  transition: all 0.3s ease;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+  
+  .section-header {
+    padding: 0 12px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  .action-section {
+    padding: 0 12px;
   }
 }
 </style>

@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.ejemplos.DTO.GastoCreateDTO;
-import com.ejemplos.DTO.UsuarioDTO;
+import com.ejemplos.DTO.Usuario.UsuarioDTO;
 import com.ejemplos.modelo.DeudaGasto;
 import com.ejemplos.modelo.Evento;
 import com.ejemplos.modelo.Gasto;

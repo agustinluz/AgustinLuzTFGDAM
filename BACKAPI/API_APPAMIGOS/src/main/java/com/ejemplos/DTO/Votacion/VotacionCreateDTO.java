@@ -1,4 +1,4 @@
-package com.ejemplos.DTO;
+package com.ejemplos.DTO.Votacion;
 
 import lombok.Data;
 
@@ -7,9 +7,8 @@ import java.util.List;
 
 @Data
 public class VotacionCreateDTO {
-    private String pregunta;
+	private String pregunta; // Mapea a titulo en la entidad
+    private String descripcion; // Opcional
     private List<String> opciones;
-    private Long creadaPorId; // ID del usuario que crea la votación
-    private Date fechaLimite;
-
+    private Date fechaLimite; // Mapea a fechaCierre en la entidad
 }

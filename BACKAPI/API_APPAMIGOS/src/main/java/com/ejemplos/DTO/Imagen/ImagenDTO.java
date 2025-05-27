@@ -1,4 +1,4 @@
-package com.ejemplos.DTO;
+package com.ejemplos.DTO.Imagen;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

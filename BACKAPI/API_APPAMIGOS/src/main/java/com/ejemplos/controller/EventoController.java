@@ -5,9 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.ejemplos.DTO.EventoCreateDTO;
-import com.ejemplos.DTO.EventoDTO;
-import com.ejemplos.DTO.EventoDTOConverter;
+import com.ejemplos.DTO.Evento.EventoCreateDTO;
+import com.ejemplos.DTO.Evento.EventoDTO;
+import com.ejemplos.DTO.Evento.EventoDTOConverter;
 import com.ejemplos.modelo.Evento;
 import com.ejemplos.modelo.Grupo;
 import com.ejemplos.modelo.Usuario;

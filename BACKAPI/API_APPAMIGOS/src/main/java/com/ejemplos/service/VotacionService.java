@@ -29,10 +29,6 @@ public class VotacionService {
         return votacionRepository.findById(id);
     }
 
-    public List<Votacion> obtenerPorGrupoId(Long grupoId) {
-        return votacionRepository.findByGrupoId(grupoId);
-    }
-
     public List<Votacion> obtenerPorCreadorId(Long creadorId) {
         return votacionRepository.findByCreadorId(creadorId);
     }

@@ -1,7 +1,7 @@
 package com.ejemplos.controller;
 
-import com.ejemplos.DTO.ImagenDTO;
-import com.ejemplos.DTO.ImagenCreateDTO;
+import com.ejemplos.DTO.Imagen.ImagenCreateDTO;
+import com.ejemplos.DTO.Imagen.ImagenDTO;
 import com.ejemplos.service.ImagenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
