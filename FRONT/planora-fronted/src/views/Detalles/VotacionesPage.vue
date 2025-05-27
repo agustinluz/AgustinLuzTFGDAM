@@ -176,11 +176,11 @@ const route = useRoute()
 const grupoId = route.params.id
 
 const apiUrl = computed(() => `${import.meta.env.VITE_API_URL}/grupos/${grupoId}/votaciones`)
+const token = localStorage.getItem('authToken')
 
 // Obtener usuario actual del token
 const obtenerUsuarioActual = () => {
   try {
-    const token = localStorage.getItem('authToken')
     if (token) {
       // Decodificar JWT para obtener info del usuario
       const payload = JSON.parse(atob(token.split('.')[1]))
@@ -236,7 +236,6 @@ const cerrarVotacion = async (votacionId) => {
     const confirmar = confirm('¿Estás seguro de que quieres cerrar esta votación?')
     if (!confirmar) return
     
-    const token = localStorage.getItem('authToken')
     const res = await fetch(`${import.meta.env.VITE_API_URL}/votaciones/${votacionId}/cerrar`, {
       method: 'PUT',
       headers: {
@@ -288,7 +287,7 @@ const cargarVotaciones = async () => {
   try {
     console.log('Cargando votaciones para grupo:', grupoId)
     console.log('URL completa:', apiUrl.value)
-    const token = localStorage.getItem('authToken')
+    
     const res = await fetch(apiUrl.value, {
       method: 'GET',
       headers: {
@@ -329,7 +328,6 @@ const enviarVoto = async (votacionId) => {
     
     console.log('Enviando voto:', { votacionId, voto })
     
-    const token = localStorage.getItem('authToken') // Asume que tienes el token guardado
     const res = await fetch(`${import.meta.env.VITE_API_URL}/votaciones/${votacionId}/votar`, {
       method: 'POST',
       headers: { 
