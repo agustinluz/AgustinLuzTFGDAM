@@ -28,7 +28,7 @@ const imagenes = ref([])
 const grupoId = useRoute().params.id
 
 onMounted(async () => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/${grupoId}/imagenes`)
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/imagenes/grupo/${grupoId}`)
   if (res.ok) imagenes.value = await res.json()
 })
 </script>

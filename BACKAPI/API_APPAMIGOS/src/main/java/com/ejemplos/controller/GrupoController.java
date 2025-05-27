@@ -65,22 +65,7 @@ public class GrupoController {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private UsuarioGrupoService usuarioGrupoService;
-    
-    @Autowired
-    private VotacionService votacionService;
-    
-    @Autowired
-    private ImagenService imagenService;
-    
-    @Autowired
-    private VotacionRepository votacionRepository;
-    
-
-    @Autowired
-    private VotacionDTOConverter votacionDTOConverter;
-    
-    
+    private UsuarioGrupoService usuarioGrupoService;   
     // Obtener grupo por ID
     @GetMapping("/{id}")
     public ResponseEntity<GrupoDTO> obtenerGrupo(@PathVariable Long id) {
@@ -201,54 +186,7 @@ public class GrupoController {
         return ResponseEntity.ok(response);
     }
 
-    
-    @GetMapping("/{grupoId}/votaciones")
-    public ResponseEntity<List<VotacionDTO>> listarVotacionesGrupo(@PathVariable Long grupoId) {
-        try {
-            List<Votacion> votaciones = votacionRepository.findByGrupoId(grupoId);
-            List<VotacionDTO> votacionesDTO = votaciones.stream()
-                    .map(votacionDTOConverter::convertToDTO)
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(votacionesDTO);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
 
-
-
-
-    @PostMapping("/{grupoId}/votaciones")
-    public ResponseEntity<VotacionDTO> crearVotacion(
-        @PathVariable Long grupoId, 
-        @RequestBody VotacionCreateDTO votacionDTO,
-        @RequestHeader("Authorization") String token
-    ) {
-        try {
-            // Verificar que el grupo existe
-            Grupo grupo = grupoService.obtenerPorId(grupoId).orElse(null);
-            if (grupo == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            // Validar opciones
-            if (votacionDTO.getOpciones() == null || votacionDTO.getOpciones().size() < 2) {
-                return ResponseEntity.badRequest().build();
-            }
-
-            // Crear votación
-            Votacion votacion = votacionDTOConverter.convertToEntity(votacionDTO);
-            votacion.setGrupo(grupo);
-            votacion.setFechaCreacion(new Date());
-
-            Votacion guardada = votacionService.crear(votacion);
-            VotacionDTO response = votacionDTOConverter.convertToDTO(guardada);
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
     
     
     

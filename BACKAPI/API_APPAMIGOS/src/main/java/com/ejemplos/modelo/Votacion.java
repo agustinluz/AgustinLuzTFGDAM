@@ -4,8 +4,13 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
@@ -21,32 +26,52 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
+import java.util.Date;
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "votaciones")
-public class Votacion implements Serializable {
+public class Votacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String pregunta;
+    @Column(nullable = false)
+    private String titulo;
 
-    @Lob
-    private String opciones;
+    @Column(columnDefinition = "TEXT")
+    private String descripcion;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "fecha_creacion")
-    private Date fechaCreacion;
-    
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "fecha_limite")
-    private Date fechaLimite;
+    @ElementCollection
+    @CollectionTable(name = "votacion_opciones", joinColumns = @JoinColumn(name = "votacion_id"))
+    @Column(name = "opcion")
+    private List<String> opciones;
 
-
-    @ManyToOne
-    @JoinColumn(name = "grupo_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "grupo_id", nullable = false)
     private Grupo grupo;
 
-    @OneToMany(mappedBy = "votacion")
-    private List<Voto> votos;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "creador_id", nullable = false)
+    private Usuario creador;
+
+    @Column(name = "fecha_creacion", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaCreacion;
+
+    @Column(name = "fecha_cierre")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaCierre;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private EstadoVotacion estado = EstadoVotacion.ACTIVA;
+
+    // Enum para estados
+    public enum EstadoVotacion {
+        ACTIVA, CERRADA
+    }
+
 }

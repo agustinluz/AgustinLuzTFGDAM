@@ -308,7 +308,7 @@ const unirseGrupo = async () => {
   cargando.value = true
   
   try {
-    const resGrupo = await fetch(`${import.meta.env.VITE_API_URL}/grupos/invitacion/${codigo.value}`)
+    const resGrupo = await fetch(`${import.meta.env.VITE_API_URL}/auth/invitacion/${codigo.value}`)
     if (!resGrupo.ok) throw new Error('Código no válido')
     
     const grupo = await resGrupo.json()

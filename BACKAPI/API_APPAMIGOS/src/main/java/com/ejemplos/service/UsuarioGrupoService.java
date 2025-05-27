@@ -29,5 +29,9 @@ public class UsuarioGrupoService {
     public List<UsuarioGrupo> obtenerPorUsuarioId(Long usuarioId) {
         return usuarioGrupoRepository.findByUsuarioId(usuarioId);
     }
+    
+    public boolean usuarioPerteneceAlGrupo(Long usuarioId, Long grupoId) {
+        return usuarioGrupoRepository.existsByUsuarioIdAndGrupoId(usuarioId, grupoId);
+    }
 
 }

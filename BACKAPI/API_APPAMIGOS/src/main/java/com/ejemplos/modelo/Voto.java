@@ -1,6 +1,7 @@
 package com.ejemplos.modelo;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -37,5 +38,14 @@ public class Voto implements Serializable {
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
+    
+    
+    @Column(nullable = false)
+    private String opcion;
+
+    @Column(name = "fecha_voto", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaVoto;
+
 }
 
