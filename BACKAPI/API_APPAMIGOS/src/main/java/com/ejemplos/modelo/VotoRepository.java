@@ -18,6 +18,8 @@ public interface VotoRepository extends JpaRepository<Voto, Long> {
     
     List<Voto> findByUsuarioId(Long usuarioId);
     
+    Optional<Voto> findByUsuarioIdAndVotacionId(Long usuarioId, Long votacionId);
+    
     @Modifying
     @Transactional
     @Query("DELETE FROM Voto v WHERE v.votacion.id = :votacionId")

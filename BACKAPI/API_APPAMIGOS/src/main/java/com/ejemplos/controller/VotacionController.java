@@ -100,7 +100,7 @@ public class VotacionController {
                     }
                 } catch (Exception e) {
                     System.out.println("Error al validar token para listar: " + e.getMessage());
-                    // Continuar sin autenticación si falla
+                    
                 }
             }
 
@@ -127,10 +127,6 @@ public class VotacionController {
             @RequestBody VotacionCreateDTO votacionDTO,
             @RequestHeader(value = "Authorization", required = false) String token) {
         try {
-            System.out.println("=== CREAR VOTACIÓN ===");
-            System.out.println("Token recibido: " + token);
-            System.out.println("Grupo ID: " + grupoId);
-            System.out.println("Datos votación: " + votacionDTO);
             
             // Validar token
             if (token == null || !token.startsWith("Bearer ")) {
@@ -293,8 +289,9 @@ public class VotacionController {
     }
 
     // Cerrar votación
+ // Cerrar votación
     @PutMapping("/votaciones/{id}/cerrar")
-    public ResponseEntity<VotacionDTO> cerrarVotacion(
+    public ResponseEntity<?> cerrarVotacion(
             @PathVariable Long id,
             @RequestHeader("Authorization") String token) {
         try {
@@ -304,35 +301,32 @@ public class VotacionController {
             Usuario usuario = usuarioService.obtenerPorEmail(email).orElse(null);
             
             if (usuario == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Usuario no autorizado"));
             }
 
-            // Obtener votación
             Votacion votacion = votacionService.obtenerPorId(id).orElse(null);
             if (votacion == null) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Votación no encontrada"));
             }
 
-            // Verificar que es el creador
-            if (!votacion.getCreador().getId().equals(usuario.getId())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            // Verificar que el usuario es el creador
+            if (!votacion.getCreador().equals(usuario.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Solo el creador puede cerrar la votación"));
             }
 
-            // Verificar que la votación está activa
-            if (!"ACTIVA".equals(votacion.getEstado())) {
-                return ResponseEntity.badRequest().build();
-            }
-
-            // Cerrar votación
             votacion.setEstado(EstadoVotacion.CERRADA);
             votacion.setFechaCierre(new Date());
+            votacionService.actualizar(votacion);
 
-            Votacion cerrada = votacionService.actualizar(votacion);
-            VotacionDTO response = votacionDTOConverter.convertToDTO(cerrada);
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Map.of("message", "Votación cerrada correctamente"));
+            
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Error al cerrar votación: " + e.getMessage()));
         }
     }
 
@@ -376,9 +370,9 @@ public class VotacionController {
 
     // ============ ENDPOINTS DE VOTOS ============
 
-    // Votar en una votación
+ // Votar en una votación
     @PostMapping("/votaciones/{id}/votar")
-    public ResponseEntity<VotoDTO> votar(
+    public ResponseEntity<?> votar(
             @PathVariable Long id,
             @RequestBody VotoCreateDTO votoDTO,
             @RequestHeader("Authorization") String token) {
@@ -387,49 +381,61 @@ public class VotacionController {
             String jwt = token.replace("Bearer ", "");
             String email = jwtUtil.extractEmail(jwt);
             Usuario usuario = usuarioService.obtenerPorEmail(email).orElse(null);
-            
+
             if (usuario == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Usuario no autorizado"));
             }
 
             // Obtener votación
             Votacion votacion = votacionService.obtenerPorId(id).orElse(null);
             if (votacion == null) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Votación no encontrada"));
             }
 
-            // Verificar que la votación está activa
-            if (!"ACTIVA".equals(votacion.getEstado())) {
-                return ResponseEntity.badRequest().build();
+            // CORRECCIÓN: Verificar que la votación está activa comparando con el enum
+            if (!Votacion.EstadoVotacion.ACTIVA.equals(votacion.getEstado())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "La votación no está activa. Estado actual: " + votacion.getEstado()));
+            }
+
+            // MEJORA: Verificar si la votación ha expirado por fecha
+            if (votacion.getFechaCierre() != null && new Date().after(votacion.getFechaCierre())) {
+                // Actualizar estado a CERRADA si ha expirado
+                votacion.setEstado(Votacion.EstadoVotacion.CERRADA);
+                votacionService.actualizar(votacion);
+                
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "La votación ha expirado"));
             }
 
             // Verificar que el usuario pertenece al grupo
             boolean perteneceAlGrupo = usuarioGrupoService.usuarioPerteneceAlGrupo(
                 usuario.getId(), votacion.getGrupo().getId());
             if (!perteneceAlGrupo) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "No tienes permiso para votar en esta votación"));
             }
 
             // Verificar que no ha votado ya
-            Optional<Voto> votoExistente = votoRepository.findByVotacionIdAndUsuarioId(id, usuario.getId());
+            Optional<Voto> votoExistente = votoService.obtenerVotoUsuario(id, usuario.getId());
             if (votoExistente.isPresent()) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).build(); // Ya votó
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Ya has votado en esta votación"));
             }
 
             // Validar que la opción existe
-            if (!votacion.getOpciones().contains(votoDTO.getOpcion())) {
-                return ResponseEntity.badRequest().build();
+            if (votacion.getOpciones() == null || !votacion.getOpciones().contains(votoDTO.getOpcion())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Opción no válida"));
             }
 
             // Crear voto
-            Voto voto = new Voto();
-            voto.setVotacion(votacion);
-            voto.setUsuario(usuario);
-            voto.setOpcion(votoDTO.getOpcion());
-            voto.setFechaVoto(new Date());
-
+            Voto voto = new Voto(votacion, usuario, votoDTO.getOpcion());
             Voto guardado = votoService.crear(voto);
 
+            // Crear respuesta
             VotoDTO response = new VotoDTO();
             response.setId(guardado.getId());
             response.setVotacionId(guardado.getVotacion().getId());
@@ -438,34 +444,41 @@ public class VotacionController {
             response.setFechaVoto(guardado.getFechaVoto());
 
             return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Error interno del servidor: " + e.getMessage()));
         }
     }
 
     // Obtener resultados de una votación
     @GetMapping("/votaciones/{id}/resultados")
-    public ResponseEntity<Map<String, Object>> obtenerResultados(@PathVariable Long id) {
+    public ResponseEntity<?> obtenerResultados(@PathVariable Long id) {
         try {
             Votacion votacion = votacionService.obtenerPorId(id).orElse(null);
             if (votacion == null) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Votación no encontrada"));
             }
 
-            List<Voto> votos = votoRepository.findByVotacionId(id);
+            List<Voto> votos = votoService.obtenerPorVotacionId(id);
             
             // Contar votos por opción
             Map<String, Long> conteoVotos = votos.stream()
                 .collect(Collectors.groupingBy(Voto::getOpcion, Collectors.counting()));
 
-            // Agregar opciones sin votos
-            for (String opcion : votacion.getOpciones()) {
-                conteoVotos.putIfAbsent(opcion, 0L);
+            // Agregar opciones sin votos con valor 0
+            if (votacion.getOpciones() != null) {
+                for (String opcion : votacion.getOpciones()) {
+                    conteoVotos.putIfAbsent(opcion, 0L);
+                }
             }
 
             Map<String, Object> resultados = new HashMap<>();
             resultados.put("votacionId", id);
             resultados.put("titulo", votacion.getTitulo());
+            resultados.put("pregunta", votacion.getTitulo());
             resultados.put("estado", votacion.getEstado());
             resultados.put("totalVotos", votos.size());
             resultados.put("resultados", conteoVotos);
@@ -473,28 +486,39 @@ public class VotacionController {
             resultados.put("fechaCierre", votacion.getFechaCierre());
 
             return ResponseEntity.ok(resultados);
+            
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Error al obtener resultados: " + e.getMessage()));
         }
     }
 
     // Obtener mi voto en una votación
-    @GetMapping("/votaciones/{id}/mi-voto")
-    public ResponseEntity<VotoDTO> obtenerMiVoto(
-            @PathVariable Long id,
+    @GetMapping("/votaciones/{votacionId}/mi-voto")
+    public ResponseEntity<?> obtenerMiVoto(
+            @PathVariable Long votacionId, // Cambié 'id' por 'votacionId'
             @RequestHeader("Authorization") String token) {
         try {
             // Obtener usuario del token
             String jwt = token.replace("Bearer ", "");
             String email = jwtUtil.extractEmail(jwt);
             Usuario usuario = usuarioService.obtenerPorEmail(email).orElse(null);
-            
+
             if (usuario == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Usuario no autorizado"));
             }
 
-            Optional<Voto> voto = votoRepository.findByVotacionIdAndUsuarioId(id, usuario.getId());
-            
+            // Verificar que la votación existe
+            Votacion votacion = votacionService.obtenerPorId(votacionId).orElse(null);
+            if (votacion == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Votación no encontrada"));
+            }
+
+            Optional<Voto> voto = votoService.obtenerVotoUsuario(votacionId, usuario.getId());
+
             if (voto.isPresent()) {
                 VotoDTO response = new VotoDTO();
                 response.setId(voto.get().getId());
@@ -502,13 +526,17 @@ public class VotacionController {
                 response.setUsuarioId(voto.get().getUsuario().getId());
                 response.setOpcion(voto.get().getOpcion());
                 response.setFechaVoto(voto.get().getFechaVoto());
-                
+
                 return ResponseEntity.ok(response);
             }
-            
-            return ResponseEntity.notFound().build();
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "No has votado en esta votación"));
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al obtener voto: " + e.getMessage()));
         }
     }
 }

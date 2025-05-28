@@ -20,6 +20,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/dashboard/:id',
+    name: 'dashboard',
     component: () => import('../views/Dashboard.vue'),
     props: true // Esto permite que el componente reciba el id como prop
   },

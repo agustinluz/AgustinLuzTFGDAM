@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -33,6 +35,7 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "votaciones")
+@EnableScheduling
 public class Votacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
