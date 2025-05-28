@@ -5,10 +5,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.ejemplos.DTO.GastoCreateDTO;
 import com.ejemplos.DTO.Evento.EventoCreateDTO;
 import com.ejemplos.DTO.Evento.EventoDTO;
 import com.ejemplos.DTO.Evento.EventoDTOConverter;
+import com.ejemplos.DTO.Gasto.GastoCreateDTO;
 import com.ejemplos.DTO.Grupo.GrupoCreateDTO;
 import com.ejemplos.DTO.Grupo.GrupoDTO;
 import com.ejemplos.DTO.Grupo.GrupoDTOConverter;

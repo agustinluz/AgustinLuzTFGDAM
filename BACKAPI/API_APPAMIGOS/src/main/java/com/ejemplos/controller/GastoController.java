@@ -4,8 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.ejemplos.DTO.GastoCreateDTO;
+import com.ejemplos.DTO.Gasto.DeudaGastoDTO;
+import com.ejemplos.DTO.Gasto.DeudaGastoDTOConverter;
+import com.ejemplos.DTO.Gasto.GastoCreateDTO;
+import com.ejemplos.DTO.Gasto.GastoDTO;
+import com.ejemplos.DTO.Gasto.GastoDTOConverter;
 import com.ejemplos.DTO.Usuario.UsuarioDTO;
+import com.ejemplos.DTO.Usuario.UsuarioDTOConverter;
 import com.ejemplos.modelo.DeudaGasto;
 import com.ejemplos.modelo.Evento;
 import com.ejemplos.modelo.Gasto;
@@ -40,9 +45,18 @@ public class GastoController {
 
     @Autowired
     private DeudaGastoService deudaGastoService;
+    
+    @Autowired
+    private GastoDTOConverter gastoDTOConverter;
+    
+    @Autowired
+    private UsuarioDTOConverter usuarioDTOConverter;
+    
+    @Autowired
+    private DeudaGastoDTOConverter deudaGastoDTOConverter;
 
     @PostMapping("/{grupoId}/crear")
-    public ResponseEntity<Gasto> crearGasto(
+    public ResponseEntity<GastoDTO> crearGasto(
             @PathVariable Long grupoId,
             @RequestBody GastoCreateDTO gastoDTO) {
         
@@ -76,29 +90,31 @@ public class GastoController {
         // Crear deudas automáticamente
         deudaGastoService.crearDeudasParaGasto(guardado);
 
-        return ResponseEntity.ok(guardado);
+        return ResponseEntity.ok(gastoDTOConverter.convertToDTO(guardado));
     }
-    
-    
 
     @GetMapping("/{grupoId}/gastos")
-    public ResponseEntity<List<Gasto>> listarGastosGrupo(@PathVariable Long grupoId) {
+    public ResponseEntity<List<GastoDTO>> listarGastosGrupo(@PathVariable Long grupoId) {
         Grupo grupo = grupoService.obtenerPorId(grupoId).orElse(null);
         if (grupo == null) return ResponseEntity.notFound().build();
         
         List<Gasto> gastos = gastoService.obtenerPorGrupo(grupoId);
-        return ResponseEntity.ok(gastos);
+        List<GastoDTO> gastosDTO = gastos.stream()
+                .map(gastoDTOConverter::convertToDTO)
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(gastosDTO);
     }
 
     @GetMapping("/{gastoId}")
-    public ResponseEntity<Gasto> obtenerGasto(@PathVariable Long gastoId) {
+    public ResponseEntity<GastoDTO> obtenerGasto(@PathVariable Long gastoId) {
         return gastoService.obtenerPorId(gastoId)
-                .map(ResponseEntity::ok)
+                .map(gasto -> ResponseEntity.ok(gastoDTOConverter.convertToDTO(gasto)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{gastoId}")
-    public ResponseEntity<Gasto> actualizarGasto(
+    public ResponseEntity<GastoDTO> actualizarGasto(
             @PathVariable Long gastoId,
             @RequestBody GastoCreateDTO gastoDTO) {
         
@@ -130,7 +146,7 @@ public class GastoController {
         }
 
         Gasto actualizado = gastoService.actualizar(gasto);
-        return ResponseEntity.ok(actualizado);
+        return ResponseEntity.ok(gastoDTOConverter.convertToDTO(actualizado));
     }
 
     @DeleteMapping("/{gastoId}")
@@ -150,14 +166,7 @@ public class GastoController {
             return ResponseEntity.notFound().build();
         }
 
-        List<UsuarioDTO> participantesDTO = gastoOpt.get().getUsuarios().stream().map(u -> {
-            UsuarioDTO dto = new UsuarioDTO();
-            dto.setId(u.getId());
-            dto.setNombre(u.getNombre());
-            dto.setEmail(u.getEmail());
-            return dto;
-        }).collect(Collectors.toList());
-
+        List<UsuarioDTO> participantesDTO = usuarioDTOConverter.convertToDTOList(gastoOpt.get().getUsuarios());
         return ResponseEntity.ok(participantesDTO);
     }
 
@@ -186,12 +195,16 @@ public class GastoController {
     }
 
     @GetMapping("/grupos/{grupoId}/eventos/{eventoId}")
-    public ResponseEntity<List<Gasto>> obtenerGastosPorEvento(
+    public ResponseEntity<List<GastoDTO>> obtenerGastosPorEvento(
             @PathVariable Long grupoId, 
             @PathVariable Long eventoId) {
         
         List<Gasto> gastos = gastoService.obtenerPorGrupoYEvento(grupoId, eventoId);
-        return ResponseEntity.ok(gastos);
+        List<GastoDTO> gastosDTO = gastos.stream()
+                .map(gastoDTOConverter::convertToDTO)
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(gastosDTO);
     }
 
     @GetMapping("/grupos/{grupoId}/deudas")
@@ -234,8 +247,9 @@ public class GastoController {
     }
 
     @GetMapping("/{gastoId}/deudas")
-    public ResponseEntity<List<DeudaGasto>> obtenerDeudasGasto(@PathVariable Long gastoId) {
+    public ResponseEntity<List<DeudaGastoDTO>> obtenerDeudasGasto(@PathVariable Long gastoId) {
         List<DeudaGasto> deudas = deudaGastoService.obtenerDeudasPorGasto(gastoId);
-        return ResponseEntity.ok(deudas);
+        List<DeudaGastoDTO> deudasDTO = deudaGastoDTOConverter.toDTOList(deudas);
+        return ResponseEntity.ok(deudasDTO);
     }
 }

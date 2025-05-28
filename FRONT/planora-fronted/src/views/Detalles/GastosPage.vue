@@ -416,16 +416,7 @@ const gastosFiltrados = computed(() => {
 })
 
 const opcionesActionSheet = computed(() => [
-  {
-    text: 'Ver participantes',
-    icon: peopleOutline,
-    handler: () => verParticipantes()
-  },
-  {
-    text: 'Exportar gastos',
-    icon: receiptOutline,
-    handler: () => exportarGastos()
-  },
+  
   {
     text: 'Configuración',
     icon: 'settings-outline',
@@ -562,7 +553,7 @@ const cerrarModal = () => {
 }
 
 const añadirGasto = () => {
-  router.push(`/dashboard/${grupoId}/gastos/nuevo`)
+  router.push(`/dashboard/${grupoId}/crear/gasto`)
 }
 
 const editarGasto = () => {
@@ -586,14 +577,6 @@ const mostrarOpciones = () => {
 
 const verResumenCompleto = () => {
   router.push(`/dashboard/${grupoId}/resumen`)
-}
-
-const verParticipantes = () => {
-  router.push(`/dashboard/${grupoId}/participantes`)
-}
-
-const exportarGastos = () => {
-  console.log('Exportar gastos')
 }
 
 const irConfiguracion = () => {

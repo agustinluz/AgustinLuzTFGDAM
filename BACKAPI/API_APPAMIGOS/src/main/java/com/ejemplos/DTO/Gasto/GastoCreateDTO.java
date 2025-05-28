@@ -1,4 +1,4 @@
-package com.ejemplos.DTO;
+package com.ejemplos.DTO.Gasto;
 
 import java.math.BigDecimal;
 import java.util.List;

@@ -74,6 +74,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/Detalles/GastosPage.vue'),
     props: true
   },
+    {
+    path: '/dashboard/:id/gastos/:idGasto/editar',
+    component: () => import('../views/Detalles/EditarGasto.vue'),
+    props: true
+  },
   {
     path: '/dashboard/:id/notas',
     component: () => import('../views/Detalles/NotasPage.vue'),
