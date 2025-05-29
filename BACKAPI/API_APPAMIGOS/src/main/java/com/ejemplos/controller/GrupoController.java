@@ -49,7 +49,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/grupos")
-@CrossOrigin(origins = "http://localhost:8100")
 public class GrupoController {
 
     @Autowired

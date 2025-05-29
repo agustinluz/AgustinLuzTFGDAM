@@ -16,7 +16,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/imagenes")
-@CrossOrigin(origins = "http://localhost:8100") // Ajusta según tus necesidades de CORS
 public class ImagenController {
     
     @Autowired

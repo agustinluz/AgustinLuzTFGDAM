@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/nota")
-@CrossOrigin(origins = "http://localhost:8100")
+
 public class NotaController {
 
     @Autowired
