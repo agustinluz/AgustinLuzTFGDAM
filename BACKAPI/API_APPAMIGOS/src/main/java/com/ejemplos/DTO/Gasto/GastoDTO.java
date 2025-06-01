@@ -3,6 +3,7 @@ package com.ejemplos.DTO.Gasto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import com.ejemplos.DTO.Evento.EventoDTO;
 import com.ejemplos.DTO.Grupo.GrupoDTO;
@@ -22,4 +23,7 @@ public class GastoDTO {
     private EventoDTO evento;
     private List<UsuarioDTO> usuarios;
     private List<DeudaGastoDTO> deudas;
+    private boolean partesIguales;
+    private Map<Long, BigDecimal> cantidadesPersonalizadas;
+
 }

@@ -3,8 +3,12 @@ package com.ejemplos.modelo;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,6 +21,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,6 +37,7 @@ public class Gasto implements Serializable {
 
     private BigDecimal monto;
     private String titulo;
+    private boolean partesIguales;
 
     @ManyToOne
     @JoinColumn(name = "pagado_por")
@@ -54,6 +60,13 @@ public class Gasto implements Serializable {
     private List<Usuario> usuarios;
     
     
+
+    @ElementCollection
+    @CollectionTable(name = "cantidades_personalizadas", joinColumns = @JoinColumn(name = "gasto_id"))
+    @MapKeyColumn(name = "usuario_id")
+    @Column(name = "monto")
+    private Map<Long, BigDecimal> cantidadesPersonalizadas;
+
     @OneToMany(mappedBy = "gasto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeudaGasto> deudas; // Deudas generadas por este gasto
 }

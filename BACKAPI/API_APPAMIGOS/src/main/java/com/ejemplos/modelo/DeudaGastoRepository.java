@@ -1,42 +1,74 @@
-package com.ejemplos.modelo;
+// DeudaGastoRepository - Métodos sugeridos para optimizar las consultas
 
-import java.util.List;
-import java.util.Optional;
+package com.ejemplos.modelo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 @Repository
 public interface DeudaGastoRepository extends JpaRepository<DeudaGasto, Long> {
     
-    // Obtener deudas de un gasto específico
+    // Métodos optimizados para el servicio mejorado
+    
+    /**
+     * Encuentra deudas pendientes por deudor (más eficiente)
+     */
+    List<DeudaGasto> findByDeudorIdAndSaldadoFalse(Long deudorId);
+    
+    /**
+     * Encuentra créditos pendientes por acreedor (más eficiente)
+     */
+    List<DeudaGasto> findByAcreedorIdAndSaldadoFalse(Long acreedorId);
+    
+    /**
+     * Encuentra todas las deudas de un gasto específico
+     */
     List<DeudaGasto> findByGastoId(Long gastoId);
     
-    // Obtener deudas de un usuario específico (lo que debe)
-    List<DeudaGasto> findByDeudorId(Long deudorId);
-    
-    // Obtener créditos de un usuario específico (lo que le deben)
-    List<DeudaGasto> findByAcreedorId(Long acreedorId);
-    
-    // Obtener deudas pendientes entre dos usuarios
+    /**
+     * Encuentra deudas pendientes entre dos usuarios específicos
+     */
     @Query("SELECT d FROM DeudaGasto d WHERE d.deudor.id = :deudorId AND d.acreedor.id = :acreedorId AND d.saldado = false")
-    List<DeudaGasto> findDeudasPendientes(@Param("deudorId") Long deudorId, @Param("acreedorId") Long acreedorId);
+    List<DeudaGasto> findDeudasPendientesEntreUsuarios(@Param("deudorId") Long deudorId, @Param("acreedorId") Long acreedorId);
     
-    // Obtener una deuda específica entre dos usuarios para un gasto
-    @Query("SELECT d FROM DeudaGasto d WHERE d.gasto.id = :gastoId AND d.deudor.id = :deudorId AND d.acreedor.id = :acreedorId")
-    Optional<DeudaGasto> findByGastoAndDeudorAndAcreedor(
-        @Param("gastoId") Long gastoId, 
-        @Param("deudorId") Long deudorId, 
-        @Param("acreedorId") Long acreedorId
-    );
+    /**
+     * Calcula el total de deudas pendientes de un usuario
+     */
+    @Query("SELECT COALESCE(SUM(d.monto), 0) FROM DeudaGasto d WHERE d.deudor.id = :deudorId AND d.saldado = false")
+    BigDecimal calcularTotalDeudasPendientes(@Param("deudorId") Long deudorId);
     
-    // Obtener todas las deudas de un grupo
+    /**
+     * Calcula el total de créditos pendientes de un usuario
+     */
+    @Query("SELECT COALESCE(SUM(d.monto), 0) FROM DeudaGasto d WHERE d.acreedor.id = :acreedorId AND d.saldado = false")
+    BigDecimal calcularTotalCreditosPendientes(@Param("acreedorId") Long acreedorId);
+    
+    /**
+     * Encuentra deudas por grupo (útil para reportes)
+     */
     @Query("SELECT d FROM DeudaGasto d WHERE d.gasto.grupo.id = :grupoId")
     List<DeudaGasto> findByGrupoId(@Param("grupoId") Long grupoId);
     
-    // Obtener deudas pendientes de un grupo
+    /**
+     * Encuentra deudas pendientes por grupo
+     */
     @Query("SELECT d FROM DeudaGasto d WHERE d.gasto.grupo.id = :grupoId AND d.saldado = false")
     List<DeudaGasto> findDeudasPendientesByGrupoId(@Param("grupoId") Long grupoId);
+    
+    /**
+     * Cuenta el número de deudas pendientes de un usuario
+     */
+    @Query("SELECT COUNT(d) FROM DeudaGasto d WHERE d.deudor.id = :deudorId AND d.saldado = false")
+    Long contarDeudasPendientes(@Param("deudorId") Long deudorId);
+    
+    /**
+     * Verifica si existe alguna deuda pendiente para un gasto específico
+     */
+    @Query("SELECT COUNT(d) > 0 FROM DeudaGasto d WHERE d.gasto.id = :gastoId AND d.saldado = false")
+    boolean existenDeudasPendientesParaGasto(@Param("gastoId") Long gastoId);
 }

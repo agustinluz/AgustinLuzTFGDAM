@@ -33,5 +33,9 @@ public class UsuarioGrupoService {
     public boolean usuarioPerteneceAlGrupo(Long usuarioId, Long grupoId) {
         return usuarioGrupoRepository.existsByUsuarioIdAndGrupoId(usuarioId, grupoId);
     }
+    public void eliminarUsuarioDeGrupo(Long usuarioId, Long grupoId) {
+        usuarioGrupoRepository.findByUsuarioIdAndGrupoId(usuarioId, grupoId)
+                .ifPresent(usuarioGrupoRepository::delete);
+    }
 
 }

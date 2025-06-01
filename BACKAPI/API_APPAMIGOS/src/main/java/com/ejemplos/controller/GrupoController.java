@@ -88,12 +88,92 @@ public class GrupoController {
 
 
     // Crear nuevo grupo
-    @PostMapping
-    public ResponseEntity<GrupoDTO> crearGrupo(@RequestBody GrupoCreateDTO grupoCreateDTO) {
-        Grupo grupo = grupoDTOConverter.convertToEntity(grupoCreateDTO);
-        Grupo grupoGuardado = grupoService.crear(grupo);
-        return ResponseEntity.ok(grupoDTOConverter.convertToDTO(grupoGuardado));
+
+ // Crear nuevo grupo con usuario como admin
+ @PostMapping
+ public ResponseEntity<GrupoDTO> crearGrupo(@RequestBody GrupoCreateDTO grupoCreateDTO, @RequestHeader("usuarioId") Long usuarioId) {
+     // Validar que el nombre no esté vacío
+     if (grupoCreateDTO.getNombre() == null || grupoCreateDTO.getNombre().trim().isEmpty()) {
+         return ResponseEntity.badRequest().build();
+     }
+     
+     // Obtener el usuario que será admin
+     Usuario admin = usuarioService.obtenerPorId(usuarioId).orElse(null);
+     if (admin == null) {
+         return ResponseEntity.badRequest().build();
+     }
+     
+     // Crear el grupo
+     Grupo grupo = grupoDTOConverter.convertToEntity(grupoCreateDTO);
+     grupo.setAdmin(admin);
+     Grupo grupoGuardado = grupoService.crear(grupo);
+     
+     // Asociar el usuario como admin del grupo
+     UsuarioGrupo usuarioGrupo = new UsuarioGrupo();
+     usuarioGrupo.setUsuario(admin);
+     usuarioGrupo.setGrupo(grupoGuardado);
+     usuarioGrupo.setRol("admin");
+     usuarioGrupoService.guardar(usuarioGrupo);
+     
+     return ResponseEntity.ok(grupoDTOConverter.convertToDTO(grupoGuardado));
+ }
+
+ 
+//Actualizar grupo (solo admin)
+@PutMapping("/{id}")
+public ResponseEntity<GrupoDTO> actualizarGrupo(
+      @PathVariable Long id, 
+      @RequestBody GrupoCreateDTO grupoUpdateDTO,
+      @RequestHeader("usuarioId") Long usuarioId) {
+  
+  Grupo grupo = grupoService.obtenerPorId(id).orElse(null);
+  if (grupo == null) {
+      return ResponseEntity.notFound().build();
+  }
+  
+  // Verificar que el usuario es admin del grupo
+  if (grupo.getAdmin() == null || !grupo.getAdmin().getId().equals(usuarioId)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+  }
+  
+  // Actualizar datos
+  if (grupoUpdateDTO.getNombre() != null && !grupoUpdateDTO.getNombre().trim().isEmpty()) {
+      grupo.setNombre(grupoUpdateDTO.getNombre());
+  }
+  if (grupoUpdateDTO.getImagenPerfil() != null) {
+      grupo.setImagenPerfil(grupoUpdateDTO.getImagenPerfil());
+  }
+  
+  Grupo grupoActualizado = grupoService.crear(grupo);
+  return ResponseEntity.ok(grupoDTOConverter.convertToDTO(grupoActualizado));
+}
+
+@DeleteMapping("/{grupoId}/usuarios/{usuarioId}")
+public ResponseEntity<Void> eliminarParticipante(
+        @PathVariable Long grupoId,
+        @PathVariable Long usuarioId,
+        @RequestHeader("adminId") Long adminId) {
+    
+    Grupo grupo = grupoService.obtenerPorId(grupoId).orElse(null);
+    if (grupo == null) {
+        return ResponseEntity.notFound().build();
     }
+    
+    // Verificar que el usuario es admin del grupo
+    if (grupo.getAdmin() == null || !grupo.getAdmin().getId().equals(adminId)) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+    
+    // No permitir que el admin se elimine a sí mismo
+    if (usuarioId.equals(adminId)) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
+    
+    // Eliminar la asociación usuario-grupo
+    usuarioGrupoService.eliminarUsuarioDeGrupo(usuarioId, grupoId);
+    
+    return ResponseEntity.ok().build();
+}
 
 
     @GetMapping("/{id}/usuarios")

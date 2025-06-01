@@ -58,20 +58,47 @@ public class GastoController {
     public ResponseEntity<GastoDTO> crearGasto(
             @PathVariable Long grupoId,
             @RequestBody GastoCreateDTO gastoDTO) {
-        
+
         Grupo grupo = grupoService.obtenerPorId(grupoId).orElse(null);
         if (grupo == null) return ResponseEntity.notFound().build();
 
         Usuario pagadoPor = usuarioService.obtenerPorId(gastoDTO.getPagadoPorId()).orElse(null);
         if (pagadoPor == null) return ResponseEntity.badRequest().build();
 
+        // Obtener participantes
+        List<Usuario> participantes = usuarioService.obtenerPorIds(gastoDTO.getParticipantesIds());
+        if (participantes == null || participantes.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Validar cantidades personalizadas si no es partes iguales
+        if (!gastoDTO.isPartesIguales()) {
+            Map<Long, BigDecimal> cantidades = gastoDTO.getCantidadesPersonalizadas();
+            if (cantidades == null || cantidades.isEmpty()) {
+                return ResponseEntity.badRequest().body(null);
+            }
+
+            BigDecimal suma = cantidades.values().stream()
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            if (suma.compareTo(gastoDTO.getMonto()) != 0) {
+                return ResponseEntity.badRequest().body(null);
+            }
+        }
+
         Gasto gasto = new Gasto();
         gasto.setTitulo(gastoDTO.getTitulo());
         gasto.setMonto(gastoDTO.getMonto());
         gasto.setGrupo(grupo);
         gasto.setPagadoPor(pagadoPor);
+        gasto.setUsuarios(participantes);
+        gasto.setPartesIguales(gastoDTO.isPartesIguales());
 
-        // Asociar a evento si se ha indicado
+        if (!gastoDTO.isPartesIguales()) {
+            gasto.setCantidadesPersonalizadas(gastoDTO.getCantidadesPersonalizadas());
+        }
+
+        // Asociar evento si corresponde
         if (gastoDTO.getEventoId() != null) {
             Evento evento = eventoService.obtenerPorId(gastoDTO.getEventoId()).orElse(null);
             if (evento != null) {
@@ -79,14 +106,7 @@ public class GastoController {
             }
         }
 
-        // Guardar participantes
-        List<Usuario> participantes = usuarioService.obtenerPorIds(gastoDTO.getParticipantesIds());
-        gasto.setUsuarios(participantes);
-
-        // Guardar gasto
         Gasto guardado = gastoService.crear(gasto);
-        
-        // Crear deudas automáticamente
         deudaGastoService.crearDeudasParaGasto(guardado);
 
         return ResponseEntity.ok(gastoDTOConverter.convertToDTO(guardado));
@@ -103,7 +123,7 @@ public class GastoController {
                 .collect(Collectors.toList());
         
         return ResponseEntity.ok(gastosDTO);
-    }
+    } 	
 
     @GetMapping("/{gastoId}")
     public ResponseEntity<GastoDTO> obtenerGasto(@PathVariable Long gastoId) {
@@ -158,7 +178,7 @@ public class GastoController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("grupos/{gastoId}/participantes")
+    @GetMapping("/grupos/{gastoId}/participantes")
     public ResponseEntity<List<UsuarioDTO>> obtenerParticipantesGasto(@PathVariable Long gastoId) {
         Optional<Gasto> gastoOpt = gastoService.obtenerPorId(gastoId);
         if (gastoOpt.isEmpty()) {
@@ -170,7 +190,7 @@ public class GastoController {
     }
 
     @PostMapping("grupos/{gastoId}/participantes/{participanteId}/saldado")
-    public ResponseEntity<String> marcarComoSaldado(
+    public ResponseEntity<Map<String, Object>> marcarComoSaldado(
             @PathVariable Long gastoId,
             @PathVariable Long participanteId,
             @RequestBody(required = false) Map<String, String> body) {
@@ -187,9 +207,16 @@ public class GastoController {
         boolean saldado = deudaGastoService.marcarComoSaldado(gastoId, participanteId, metodoPago, notas);
         
         if (saldado) {
-            return ResponseEntity.ok("Marcado como saldado correctamente");
+            // Devolver JSON en lugar de texto plano
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Marcado como saldado correctamente");
+            return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.badRequest().body("No se encontró la deuda o ya estaba saldada");
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "No se encontró la deuda o ya estaba saldada");
+            return ResponseEntity.badRequest().body(response);
         }
     }
 

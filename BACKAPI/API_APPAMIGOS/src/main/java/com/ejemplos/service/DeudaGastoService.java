@@ -1,105 +1,319 @@
 package com.ejemplos.service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.ejemplos.modelo.DeudaGasto;
 import com.ejemplos.modelo.DeudaGastoRepository;
 import com.ejemplos.modelo.Gasto;
 import com.ejemplos.modelo.Usuario;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+/**
+ * Servicio para la gestión de deudas de gastos
+ * Maneja la creación, actualización y consulta de deudas entre usuarios
+ */
+@Slf4j
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class DeudaGastoService {
     
-    @Autowired
-    private DeudaGastoRepository deudaGastoRepository;
+    private static final int PRECISION_DECIMAL = 2;
+    private static final RoundingMode MODO_REDONDEO = RoundingMode.HALF_UP;
     
-    // Crear deudas automáticamente cuando se crea un gasto
+    private final DeudaGastoRepository deudaGastoRepository;
+    
+    /**
+     * Crea automáticamente las deudas para un gasto dado
+     * @param gasto El gasto para el cual crear las deudas
+     * @throws IllegalArgumentException si el gasto es nulo o inválido
+     */
     public void crearDeudasParaGasto(Gasto gasto) {
-        BigDecimal montoPorPersona = gasto.getMonto()
-            .divide(BigDecimal.valueOf(gasto.getUsuarios().size()), 2, RoundingMode.HALF_UP);
+        validarGasto(gasto);
         
+        log.info("Creando deudas para gasto ID: {} - Título: {}", 
+                gasto.getId(), gasto.getTitulo());
+        
+        try {
+            if (gasto.isPartesIguales()) {
+                crearDeudasPartesIguales(gasto);
+            } else {
+                crearDeudasPersonalizadas(gasto);
+            }
+            
+            log.info("Deudas creadas exitosamente para gasto ID: {}", gasto.getId());
+            
+        } catch (Exception e) {
+            log.error("Error al crear deudas para gasto ID: {}", gasto.getId(), e);
+            throw new RuntimeException("Error al crear deudas para el gasto", e);
+        }
+    }
+    
+    /**
+     * Marca una deuda específica como saldada
+     * @param gastoId ID del gasto
+     * @param deudorId ID del deudor
+     * @param metodoPago Método utilizado para el pago
+     * @param notas Notas adicionales sobre el pago
+     * @return true si se marcó como saldada, false si no se encontró la deuda
+     */
+    public boolean marcarComoSaldado(Long gastoId, Long deudorId, String metodoPago, String notas) {
+        if (gastoId == null || deudorId == null) {
+            log.warn("Parámetros inválidos para marcar deuda como saldada: gastoId={}, deudorId={}", 
+                    gastoId, deudorId);
+            return false;
+        }
+        
+        log.info("Marcando deuda como saldada - Gasto ID: {}, Deudor ID: {}", gastoId, deudorId);
+        
+        Optional<DeudaGasto> deudaOpt = buscarDeudaPendiente(gastoId, deudorId);
+        
+        if (deudaOpt.isEmpty()) {
+            log.warn("No se encontró deuda pendiente para gasto ID: {} y deudor ID: {}", 
+                    gastoId, deudorId);
+            return false;
+        }
+        
+        DeudaGasto deuda = deudaOpt.get();
+        salarDeuda(deuda, metodoPago, notas);
+        
+        log.info("Deuda marcada como saldada exitosamente - ID: {}, Monto: {}", 
+                deuda.getId(), deuda.getMonto());
+        
+        return true;
+    }
+    
+    /**
+     * Obtiene las deudas pendientes de un usuario específico
+     * @param deudorId ID del usuario deudor
+     * @return Lista de deudas pendientes
+     */
+    @Transactional(readOnly = true)
+    public List<DeudaGasto> obtenerDeudasPendientes(Long deudorId) {
+        if (deudorId == null) {
+            log.warn("ID de deudor nulo al obtener deudas pendientes");
+            return Collections.emptyList();
+        }
+        
+        try {
+            List<DeudaGasto> deudas = deudaGastoRepository.findByDeudorIdAndSaldadoFalse(deudorId);
+            log.debug("Encontradas {} deudas pendientes para usuario ID: {}", deudas.size(), deudorId);
+            return deudas;
+            
+        } catch (Exception e) {
+            log.error("Error al obtener deudas pendientes para usuario ID: {}", deudorId, e);
+            return Collections.emptyList();
+        }
+    }
+    
+    /**
+     * Obtiene los créditos pendientes de un usuario específico
+     * @param acreedorId ID del usuario acreedor
+     * @return Lista de créditos pendientes
+     */
+    @Transactional(readOnly = true)
+    public List<DeudaGasto> obtenerCreditosPendientes(Long acreedorId) {
+        if (acreedorId == null) {
+            log.warn("ID de acreedor nulo al obtener créditos pendientes");
+            return Collections.emptyList();
+        }
+        
+        try {
+            List<DeudaGasto> creditos = deudaGastoRepository.findByAcreedorIdAndSaldadoFalse(acreedorId);
+            log.debug("Encontrados {} créditos pendientes para usuario ID: {}", creditos.size(), acreedorId);
+            return creditos;
+            
+        } catch (Exception e) {
+            log.error("Error al obtener créditos pendientes para usuario ID: {}", acreedorId, e);
+            return Collections.emptyList();
+        }
+    }
+    
+    /**
+     * Obtiene todas las deudas asociadas a un gasto específico
+     * @param gastoId ID del gasto
+     * @return Lista de deudas del gasto
+     */
+    @Transactional(readOnly = true)
+    public List<DeudaGasto> obtenerDeudasPorGasto(Long gastoId) {
+        if (gastoId == null) {
+            log.warn("ID de gasto nulo al obtener deudas por gasto");
+            return Collections.emptyList();
+        }
+        
+        try {
+            List<DeudaGasto> deudas = deudaGastoRepository.findByGastoId(gastoId);
+            log.debug("Encontradas {} deudas para gasto ID: {}", deudas.size(), gastoId);
+            return deudas;
+            
+        } catch (Exception e) {
+            log.error("Error al obtener deudas para gasto ID: {}", gastoId, e);
+            return Collections.emptyList();
+        }
+    }
+    
+    /**
+     * Actualiza las deudas cuando se modifica un gasto
+     * @param gasto Gasto modificado
+     */
+    public void actualizarDeudasParaGasto(Gasto gasto) {
+        validarGasto(gasto);
+        
+        log.info("Actualizando deudas para gasto ID: {}", gasto.getId());
+        
+        try {
+            eliminarDeudasExistentes(gasto.getId());
+            crearDeudasParaGasto(gasto);
+            
+            log.info("Deudas actualizadas exitosamente para gasto ID: {}", gasto.getId());
+            
+        } catch (Exception e) {
+            log.error("Error al actualizar deudas para gasto ID: {}", gasto.getId(), e);
+            throw new RuntimeException("Error al actualizar deudas del gasto", e);
+        }
+    }
+    
+    /**
+     * Elimina todas las deudas asociadas a un gasto
+     * @param gastoId ID del gasto
+     */
+    public void eliminarDeudasPorGasto(Long gastoId) {
+        if (gastoId == null) {
+            log.warn("ID de gasto nulo al eliminar deudas");
+            return;
+        }
+        
+        log.info("Eliminando deudas para gasto ID: {}", gastoId);
+        
+        try {
+            eliminarDeudasExistentes(gastoId);
+            log.info("Deudas eliminadas exitosamente para gasto ID: {}", gastoId);
+            
+        } catch (Exception e) {
+            log.error("Error al eliminar deudas para gasto ID: {}", gastoId, e);
+            throw new RuntimeException("Error al eliminar deudas del gasto", e);
+        }
+    }
+    
+    // Métodos privados
+    
+    private void validarGasto(Gasto gasto) {
+        if (gasto == null) {
+            throw new IllegalArgumentException("El gasto no puede ser nulo");
+        }
+        
+        if (gasto.getPagadoPor() == null) {
+            throw new IllegalArgumentException("El gasto debe tener un pagador definido");
+        }
+        
+        if (CollectionUtils.isEmpty(gasto.getUsuarios())) {
+            throw new IllegalArgumentException("El gasto debe tener al menos un participante");
+        }
+        
+        if (gasto.getMonto() == null || gasto.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("El monto del gasto debe ser mayor a cero");
+        }
+    }
+    
+    private void crearDeudasPartesIguales(Gasto gasto) {
         Usuario pagador = gasto.getPagadoPor();
+        BigDecimal montoPorPersona = calcularMontoPorPersona(gasto.getMonto(), gasto.getUsuarios().size());
+        
+        log.debug("Creando deudas en partes iguales - Monto por persona: {}", montoPorPersona);
         
         for (Usuario participante : gasto.getUsuarios()) {
-            // No crear deuda para quien pagó (a menos que quieras manejar casos especiales)
-            if (!participante.getId().equals(pagador.getId())) {
-                DeudaGasto deuda = new DeudaGasto();
-                deuda.setGasto(gasto);
-                deuda.setDeudor(participante);
-                deuda.setAcreedor(pagador);
-                deuda.setMonto(montoPorPersona);
-                deuda.setSaldado(false);
-                deuda.setFechaCreacion(new Date());
-                
+            if (!Objects.equals(participante.getId(), pagador.getId())) {
+                DeudaGasto deuda = construirDeuda(gasto, participante, pagador, montoPorPersona);
                 deudaGastoRepository.save(deuda);
+                
+                log.debug("Deuda creada - Deudor: {}, Monto: {}", 
+                        participante.getNombre(), montoPorPersona);
             }
         }
     }
     
-    // Marcar una deuda como saldada
-    public boolean marcarComoSaldado(Long gastoId, Long deudorId, String metodoPago, String notas) {
-        // Buscar la deuda específica
-        List<DeudaGasto> deudas = deudaGastoRepository.findByGastoId(gastoId);
+    private void crearDeudasPersonalizadas(Gasto gasto) {
+        Usuario pagador = gasto.getPagadoPor();
+        Map<Long, BigDecimal> cantidades = gasto.getCantidadesPersonalizadas();
         
-        Optional<DeudaGasto> deudaOpt = deudas.stream()
-            .filter(d -> d.getDeudor().getId().equals(deudorId) && !d.isSaldado())
-            .findFirst();
-            
-        if (deudaOpt.isPresent()) {
-            DeudaGasto deuda = deudaOpt.get();
-            deuda.setSaldado(true);
-            deuda.setFechaSaldado(new Date());
-            deuda.setMetodoPago(metodoPago);
-            deuda.setNotas(notas);
-            
-            deudaGastoRepository.save(deuda);
-            return true;
+        if (CollectionUtils.isEmpty(cantidades)) {
+            log.warn("Gasto con cantidades personalizadas pero sin datos - ID: {}", gasto.getId());
+            return;
         }
         
-        return false;
-    }
-    
-    // Obtener deudas pendientes de un usuario
-    public List<DeudaGasto> obtenerDeudasPendientes(Long deudorId) {
-        return deudaGastoRepository.findByDeudorId(deudorId)
-            .stream()
-            .filter(d -> !d.isSaldado())
-            .toList();
-    }
-    
-    // Obtener créditos pendientes de un usuario
-    public List<DeudaGasto> obtenerCreditosPendientes(Long acreedorId) {
-        return deudaGastoRepository.findByAcreedorId(acreedorId)
-            .stream()
-            .filter(d -> !d.isSaldado())
-            .toList();
-    }
-    
-    // Obtener deudas de un gasto específico
-    public List<DeudaGasto> obtenerDeudasPorGasto(Long gastoId) {
-        return deudaGastoRepository.findByGastoId(gastoId);
-    }
-    
-    // Actualizar deudas cuando se modifica un gasto
-    public void actualizarDeudasParaGasto(Gasto gasto) {
-        // Eliminar deudas existentes del gasto
-        List<DeudaGasto> deudasExistentes = deudaGastoRepository.findByGastoId(gasto.getId());
-        deudaGastoRepository.deleteAll(deudasExistentes);
+        log.debug("Creando deudas personalizadas para {} participantes", cantidades.size());
         
-        // Crear nuevas deudas
-        crearDeudasParaGasto(gasto);
+        for (Usuario participante : gasto.getUsuarios()) {
+            Long participanteId = participante.getId();
+            BigDecimal monto = cantidades.get(participanteId);
+            
+            if (esDeudaValida(participanteId, pagador.getId(), monto)) {
+                BigDecimal montoRedondeado = monto.setScale(PRECISION_DECIMAL, MODO_REDONDEO);
+                DeudaGasto deuda = construirDeuda(gasto, participante, pagador, montoRedondeado);
+                deudaGastoRepository.save(deuda);
+                
+                log.debug("Deuda personalizada creada - Deudor: {}, Monto: {}", 
+                        participante.getNombre(), montoRedondeado);
+            }
+        }
     }
     
-    // Eliminar deudas cuando se elimina un gasto
-    public void eliminarDeudasPorGasto(Long gastoId) {
+    private boolean esDeudaValida(Long participanteId, Long pagadorId, BigDecimal monto) {
+        return !Objects.equals(participanteId, pagadorId) && 
+               monto != null && 
+               monto.compareTo(BigDecimal.ZERO) > 0;
+    }
+    
+    private DeudaGasto construirDeuda(Gasto gasto, Usuario deudor, Usuario acreedor, BigDecimal monto) {
+        DeudaGasto deuda = new DeudaGasto();
+        deuda.setGasto(gasto);
+        deuda.setDeudor(deudor);
+        deuda.setAcreedor(acreedor);
+        deuda.setMonto(monto);
+        deuda.setSaldado(false);
+        deuda.setFechaCreacion(java.sql.Timestamp.valueOf(LocalDateTime.now()));
+        return deuda;
+    }
+    
+    private BigDecimal calcularMontoPorPersona(BigDecimal montoTotal, int numeroParticipantes) {
+        return montoTotal.divide(BigDecimal.valueOf(numeroParticipantes), PRECISION_DECIMAL, MODO_REDONDEO);
+    }
+    
+    private Optional<DeudaGasto> buscarDeudaPendiente(Long gastoId, Long deudorId) {
         List<DeudaGasto> deudas = deudaGastoRepository.findByGastoId(gastoId);
-        deudaGastoRepository.deleteAll(deudas);
+        
+        return deudas.stream()
+                .filter(d -> Objects.equals(d.getDeudor().getId(), deudorId) && !d.isSaldado())
+                .findFirst();
+    }
+    
+    private void salarDeuda(DeudaGasto deuda, String metodoPago, String notas) {
+        deuda.setSaldado(true);
+        deuda.setFechaSaldado(java.sql.Timestamp.valueOf(LocalDateTime.now()));
+        deuda.setMetodoPago(metodoPago);
+        deuda.setNotas(notas);
+        
+        deudaGastoRepository.save(deuda);
+    }
+    
+    private void eliminarDeudasExistentes(Long gastoId) {
+        List<DeudaGasto> deudasExistentes = deudaGastoRepository.findByGastoId(gastoId);
+        
+        if (!CollectionUtils.isEmpty(deudasExistentes)) {
+            deudaGastoRepository.deleteAll(deudasExistentes);
+            log.debug("Eliminadas {} deudas existentes para gasto ID: {}", 
+                    deudasExistentes.size(), gastoId);
+        }
     }
 }

@@ -73,13 +73,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/dashboard/:id/gastos',
     component: () => import('../views/Detalles/GastosPage.vue'),
     props: true
-  },
-    {
-    path: '/dashboard/:id/gastos/:idGasto/editar',
-    component: () => import('../views/Detalles/EditarGasto.vue'),
-    props: true
-  },
-  {
+  },{
+    path: '/dashboard/:grupoId/gastos/:gastoId/editar',
+    name: 'EditarGasto', 
+    component: () => import('@/views/Detalles/EditarGasto.vue')
+  },{
     path: '/dashboard/:id/notas',
     component: () => import('../views/Detalles/NotasPage.vue'),
     props: true
