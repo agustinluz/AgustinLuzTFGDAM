@@ -17,28 +17,18 @@
             <ion-card-subtitle>Actualiza tus datos de usuario</ion-card-subtitle>
           </ion-card-header>
 
-          <ion-card-content>
+          <ion-card-content v-if="usuarioCargado">
             <form @submit.prevent="actualizarPerfil">
               <!-- Nombre -->
               <ion-item>
                 <ion-label position="stacked">Nombre</ion-label>
-                <ion-input
-                  v-model="formData.nombre"
-                  placeholder="Ingresa tu nombre"
-                  type="text"
-                  required
-                ></ion-input>
+                <ion-input v-model="formData.nombre" placeholder="Ingresa tu nombre" type="text" required></ion-input>
               </ion-item>
 
               <!-- Email -->
               <ion-item>
                 <ion-label position="stacked">Correo Electrónico</ion-label>
-                <ion-input
-                  v-model="formData.email"
-                  placeholder="correo@ejemplo.com"
-                  type="email"
-                  required
-                ></ion-input>
+                <ion-input v-model="formData.email" placeholder="correo@ejemplo.com" type="email" required></ion-input>
               </ion-item>
 
               <!-- Separador -->
@@ -49,87 +39,64 @@
                 <!-- Contraseña Actual -->
                 <ion-item>
                   <ion-label position="stacked">Contraseña Actual</ion-label>
-                  <ion-input
-                    v-model="formData.currentPassword"
-                    placeholder="Contraseña actual"
-                    :type="showCurrentPassword ? 'text' : 'password'"
-                  ></ion-input>
-                  <ion-button
-                    fill="clear"
-                    slot="end"
-                    @click="showCurrentPassword = !showCurrentPassword"
-                  >
-                    <ion-icon
-                      :icon="showCurrentPassword ? eyeOffOutline : eyeOutline"
-                    ></ion-icon>
+                  <ion-input v-model="formData.currentPassword" placeholder="Contraseña actual"
+                    :type="showCurrentPassword ? 'text' : 'password'"></ion-input>
+                  <ion-button fill="clear" slot="end" @click="showCurrentPassword = !showCurrentPassword">
+                    <ion-icon :icon="showCurrentPassword ? eyeOffOutline : eyeOutline"></ion-icon>
                   </ion-button>
                 </ion-item>
 
                 <!-- Nueva Contraseña -->
                 <ion-item>
                   <ion-label position="stacked">Nueva Contraseña</ion-label>
-                  <ion-input
-                    v-model="formData.password"
-                    placeholder="Nueva contraseña"
-                    :type="showNewPassword ? 'text' : 'password'"
-                  ></ion-input>
-                  <ion-button
-                    fill="clear"
-                    slot="end"
-                    @click="showNewPassword = !showNewPassword"
-                  >
-                    <ion-icon
-                      :icon="showNewPassword ? eyeOffOutline : eyeOutline"
-                    ></ion-icon>
+                  <ion-input v-model="formData.password" placeholder="Nueva contraseña"
+                    :type="showNewPassword ? 'text' : 'password'"></ion-input>
+                  <ion-button fill="clear" slot="end" @click="showNewPassword = !showNewPassword">
+                    <ion-icon :icon="showNewPassword ? eyeOffOutline : eyeOutline"></ion-icon>
                   </ion-button>
                 </ion-item>
 
                 <!-- Confirmar Nueva Contraseña -->
                 <ion-item>
                   <ion-label position="stacked">Confirmar Nueva Contraseña</ion-label>
-                  <ion-input
-                    v-model="confirmPassword"
-                    placeholder="Confirma la nueva contraseña"
-                    :type="showConfirmPassword ? 'text' : 'password'"
-                  ></ion-input>
-                  <ion-button
-                    fill="clear"
-                    slot="end"
-                    @click="showConfirmPassword = !showConfirmPassword"
-                  >
-                    <ion-icon
-                      :icon="showConfirmPassword ? eyeOffOutline : eyeOutline"
-                    ></ion-icon>
+                  <ion-input v-model="confirmPassword" placeholder="Confirma la nueva contraseña"
+                    :type="showConfirmPassword ? 'text' : 'password'"></ion-input>
+                  <ion-button fill="clear" slot="end" @click="showConfirmPassword = !showConfirmPassword">
+                    <ion-icon :icon="showConfirmPassword ? eyeOffOutline : eyeOutline"></ion-icon>
                   </ion-button>
                 </ion-item>
               </div>
 
               <!-- Botones -->
               <div class="button-container">
-                <ion-button
-                  expand="block"
-                  type="submit"
-                  :disabled="loading"
-                  color="primary"
-                >
+                <ion-button expand="block" type="submit" :disabled="loading" color="primary">
                   <ion-spinner v-if="loading" name="crescent"></ion-spinner>
                   <span v-else>Guardar Cambios</span>
                 </ion-button>
 
-                <ion-button
-                  expand="block"
-                  fill="outline"
-                  @click="cancelar"
-                  :disabled="loading"
-                >
+                <ion-button expand="block" fill="outline" @click="cancelar" :disabled="loading">
                   Cancelar
                 </ion-button>
               </div>
             </form>
           </ion-card-content>
+
+          <ion-card-content v-else>
+            <ion-item>
+              <ion-label>
+                <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>
+                <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
+              </ion-label>
+            </ion-item>
+          </ion-card-content>
         </ion-card>
       </div>
     </ion-content>
+
   </ion-page>
 </template>
 
@@ -155,6 +122,7 @@ import {
   IonBackButton,
   IonIcon,
   IonSpinner,
+  IonSkeletonText,
   toastController,
   alertController
 } from '@ionic/vue'
@@ -177,6 +145,7 @@ const loading = ref(false)
 const showCurrentPassword = ref(false)
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
+const usuarioCargado = ref(false)
 
 // Cargar datos del usuario al montar el componente
 onMounted(async () => {
@@ -187,29 +156,44 @@ const cargarDatosUsuario = async () => {
   try {
     const usuario = JSON.parse(localStorage.getItem('usuario'))
     const usuarioId = usuario?.id
-    
+    const token = localStorage.getItem('token') // Definir token aquí
+
     if (!usuarioId) {
       mostrarError('No se pudo obtener la información del usuario')
       router.push('/login')
       return
     }
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/${usuarioId}`)
-    
+    console.log('Cargando datos del usuario:', usuarioId) // Debug
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/${usuarioId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    console.log('Response status:', response.status) // Debug
+
     if (response.ok) {
       const usuarioData = await response.json()
+      console.log('Usuario data:', usuarioData) // Debug
+      
       formData.nombre = usuarioData.nombre
       formData.email = usuarioData.email
+      usuarioCargado.value = true // ¡IMPORTANTE! Marcar como cargado
     } else if (response.status === 401) {
       mostrarError('Sesión expirada')
-      localStorage.removeItem('usuario')
       router.push('/login')
     } else {
+      const errorText = await response.text()
+      console.error('Error response:', errorText) // Debug
       mostrarError('Error al cargar los datos del usuario')
+      usuarioCargado.value = true // Mostrar formulario aunque haya error
     }
   } catch (error) {
     console.error('Error al cargar datos del usuario:', error)
     mostrarError('Error de conexión al cargar los datos')
+    usuarioCargado.value = true // Mostrar formulario aunque haya error
   }
 }
 
@@ -261,7 +245,8 @@ const actualizarPerfil = async () => {
   try {
     const usuario = JSON.parse(localStorage.getItem('usuario'))
     const usuarioId = usuario?.id
-    
+    const token = localStorage.getItem('token') // Definir token aquí también
+
     if (!usuarioId) {
       mostrarError('No se pudo obtener la información del usuario')
       return
@@ -277,17 +262,22 @@ const actualizarPerfil = async () => {
       })
     }
 
+    console.log('Enviando datos:', datosActualizacion) // Debug
+
     const response = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/${usuarioId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(datosActualizacion)
     })
 
+    console.log('Update response status:', response.status) // Debug
+
     if (response.ok) {
       const usuarioActualizado = await response.json()
-      
+
       // Actualizar datos en localStorage
       const usuarioLocal = JSON.parse(localStorage.getItem('usuario'))
       usuarioLocal.nombre = usuarioActualizado.nombre
@@ -298,11 +288,10 @@ const actualizarPerfil = async () => {
       router.back()
     } else if (response.status === 401) {
       mostrarError('Sesión expirada')
-      localStorage.removeItem('usuario')
       router.push('/login')
     } else {
-      const errorData = await response.json()
-      mostrarError(errorData.message || 'Error al actualizar el perfil')
+      const errorData = await response.json().catch(() => ({ mensaje: 'Error desconocido' }))
+      mostrarError(errorData.mensaje || 'Error al actualizar el perfil')
     }
 
   } catch (error) {

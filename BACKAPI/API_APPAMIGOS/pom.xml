@@ -72,6 +72,11 @@
 		    <artifactId>mysql-connector-j</artifactId>
     		<version>8.0.33</version> <!-- O la versión que prefieras, pero esta es estable -->
 		</dependency>
+		<dependency>
+   			 <groupId>org.springframework.security</groupId>
+   			 <artifactId>spring-security-crypto</artifactId>
+		</dependency>
+
 
 
 

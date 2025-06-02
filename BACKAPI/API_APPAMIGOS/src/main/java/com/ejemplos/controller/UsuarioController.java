@@ -9,6 +9,7 @@ import com.ejemplos.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,9 @@ public class UsuarioController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioDTO> obtenerUsuario(@PathVariable Long id, @RequestHeader("Authorization") String token) {
@@ -93,11 +97,11 @@ public class UsuarioController {
                 usuario.setNombre(updateDTO.getNombre().trim());
             }
 
-            // Actualizar contraseña si se proporciona
+         // Actualizar contraseña si se proporciona
             if (updateDTO.getPassword() != null && !updateDTO.getPassword().trim().isEmpty()) {
                 // Verificar contraseña actual antes de cambiarla
                 if (updateDTO.getCurrentPassword() == null || 
-                    !updateDTO.getCurrentPassword().equals(usuario.getPassword())) {
+                    !passwordEncoder.matches(updateDTO.getCurrentPassword(), usuario.getPassword())) {
                     return ResponseEntity.badRequest()
                         .body(new ErrorResponse("La contraseña actual no es correcta"));
                 }
@@ -107,9 +111,11 @@ public class UsuarioController {
                     return ResponseEntity.badRequest()
                         .body(new ErrorResponse("La nueva contraseña debe tener al menos 6 caracteres"));
                 }
-                
-                usuario.setPassword(updateDTO.getPassword());
+
+                // Guardar la nueva contraseña cifrada
+                usuario.setPassword(passwordEncoder.encode(updateDTO.getPassword()));
             }
+
 
             Usuario usuarioActualizado = usuarioService.crear(usuario);
             UsuarioDTO dto = usuarioDTOConverter.convertToDTO(usuarioActualizado);

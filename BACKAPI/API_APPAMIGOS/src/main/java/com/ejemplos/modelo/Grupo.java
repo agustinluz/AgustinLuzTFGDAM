@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.Data;
@@ -27,8 +28,10 @@ public class Grupo implements Serializable {
     
     private String nombre;
     
-    @Column(name = "imagen_perfil")
-    private String imagenPerfil; // URL o path de la imagen
+    @Lob
+    @Column(name = "imagen_perfil", columnDefinition = "LONGTEXT")
+    private String imagenPerfil;
+
     
     @ManyToOne
     @JoinColumn(name = "admin_id")

@@ -316,7 +316,7 @@ const cargarGrupos = async () => {
 
   cargando.value = true
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/grupos/usuario/${usuario.value.id}`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/usuario/${usuario.value.id}`)
     if (res.ok) {
       grupos.value = await res.json()
     } else {
@@ -324,27 +324,6 @@ const cargarGrupos = async () => {
     }
   } catch (err) {
     console.error('Error al cargar grupos:', err)
-    // Datos de ejemplo para desarrollo
-    grupos.value = [
-      {
-        id: 1,
-        nombre: 'Familia García',
-        codigoInvitacion: 'FAM123',
-        imagenPerfil: null,
-        adminId: 1,
-        participantes: [{ id: 1 }, { id: 2 }, { id: 3 }],
-        eventos: [{ id: 1 }, { id: 2 }]
-      },
-      {
-        id: 2,
-        nombre: 'Amigos Universidad',
-        codigoInvitacion: 'UNI456',
-        imagenPerfil: null,
-        adminId: 2,
-        participantes: [{ id: 1 }, { id: 2 }],
-        eventos: [{ id: 1 }]
-      }
-    ]
   }
   cargando.value = false
 }
@@ -377,7 +356,7 @@ const crearGrupo = async () => {
   cargando.value = true
   
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/grupos`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -399,7 +378,7 @@ const crearGrupo = async () => {
     const toast = await toastController.create({
       message: `Grupo "${grupo.nombre}" creado exitosamente. Código: ${grupo.codigoInvitacion}`,
       duration: 3000,
-      position: 'top',
+      position: 'bottom',
       color: 'success'
     })
     toast.present()
@@ -422,12 +401,12 @@ const unirseGrupo = async () => {
   cargando.value = true
   
   try {
-    const resGrupo = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/auth/invitacion/${codigo.value}`)
+    const resGrupo = await fetch(`${import.meta.env.VITE_API_URL}/auth/invitacion/${codigo.value}`)
     if (!resGrupo.ok) throw new Error('Código no válido')
     
     const grupo = await resGrupo.json()
 
-    await fetch(`${import.meta.env.VITE_API_URL || '/api'}/grupos/${grupo.id}/usuarios`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/grupos/${grupo.id}/usuarios`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

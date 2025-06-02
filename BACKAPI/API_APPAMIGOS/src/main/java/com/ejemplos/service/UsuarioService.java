@@ -2,6 +2,7 @@ package com.ejemplos.service;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ejemplos.modelo.Usuario;
@@ -21,6 +22,8 @@ public class UsuarioService {
     @Autowired
     private UsuarioGrupoRepository usuarioGrupoRepository;
     
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public List<Usuario> obtenerTodos() {
         return usuarioRepository.findAll();
@@ -31,8 +34,13 @@ public class UsuarioService {
     }
 
     public Usuario crear(Usuario usuario) {
+        // Cifra la contraseña antes de guardar
+        String encodedPassword = passwordEncoder.encode(usuario.getPassword());
+        usuario.setPassword(encodedPassword);
+
         return usuarioRepository.save(usuario);
     }
+
 
     public void eliminar(Long id) {
         usuarioRepository.deleteById(id);
@@ -40,15 +48,19 @@ public class UsuarioService {
 
     public Optional<Usuario> login(String email, String password) {
         Optional<Usuario> user = usuarioRepository.findByEmail(email);
+
         if (user.isPresent()) {
-            System.out.println("Usuario encontrado: " + user.get().getEmail());
-            System.out.println("Contraseña en BD: " + user.get().getPassword());
-            System.out.println("Contraseña del login: " + password);
-        } else {
-            System.out.println("No se encontró usuario con el email: " + email);
+            Usuario usuario = user.get();
+
+            // Verifica si la contraseña proporcionada coincide con la cifrada
+            if (passwordEncoder.matches(password, usuario.getPassword())) {
+                return Optional.of(usuario);
+            }
         }
-        return user.filter(u -> u.getPassword().equals(password));
+
+        return Optional.empty(); // Si no coincide o no existe, devuelve vacío
     }
+
 
     public List<Usuario> obtenerPorIds(List<Long> ids) {
         return usuarioRepository.findAllById(ids);
