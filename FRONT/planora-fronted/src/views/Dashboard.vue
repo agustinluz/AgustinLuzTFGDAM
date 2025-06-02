@@ -4,8 +4,8 @@
       <ion-toolbar color="primary">
         <ion-title>{{ grupo?.nombre || 'Dashboard' }}</ion-title>
         <ion-buttons slot="end">
-          <ion-button fill="clear">
-            <ion-icon :icon="person" slot="icon-only"></ion-icon>
+          <ion-button fill="clear" @click="() => router.push('/grupo')">
+            <ion-icon :icon="logOutOutline" slot="icon-only"></ion-icon>
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
@@ -134,8 +134,7 @@ import {
   useIonRouter
 } from '@ionic/vue'
 import { 
-  add, 
-  person, 
+  add,  
   chevronBack, 
   chevronForward, 
   calendar, 
@@ -143,7 +142,8 @@ import {
   cash,
   checkboxOutline,
   images,
-  documentText
+  documentText,
+  logOutOutline
 } from 'ionicons/icons'
 import { ref, onMounted, computed } from 'vue'
 
@@ -191,6 +191,7 @@ const calendarDays = computed(() => {
 const fetchEventos = async () => {
   try {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/eventos/${grupoId}/eventos`)
+    
     eventos.value = await res.json()
   } catch (err) {
     console.error('Error cargando eventos:', err)

@@ -13,6 +13,4 @@ public class UsuarioDTO {
     private String email;
     private Long grupoId;
     private List<Long> grupoIds; // En lugar de solo un grupoId
-
-
 }

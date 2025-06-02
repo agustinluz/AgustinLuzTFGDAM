@@ -5,8 +5,8 @@
       <ion-toolbar color="primary">
         <ion-title>Mis Grupos</ion-title>
         <ion-buttons slot="end">
-          <ion-button fill="clear">
-            <ion-icon :icon="camera" color="light"></ion-icon>
+          <ion-button fill="clear" @click="() => router.push('/perfil')">
+            <ion-icon :icon="person" slot="icon-only"></ion-icon>
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
@@ -282,7 +282,8 @@ import {
   add,
   logIn,
   close,
-  cloudUpload
+  cloudUpload,
+  person
 } from 'ionicons/icons'
 
 // Estados reactivos

@@ -86,6 +86,12 @@ const routes: Array<RouteRecordRaw> = [
     path: '/dashboard/:id/galeria',
     component: () => import('../views/Detalles/GaleriaPage.vue'),
     props: true
+  },
+  {
+    path: '/perfil',
+    name: 'perfil',
+    component: () => import('../views/Configuracion/Perfil.vue'),
+    props: true // Esto permite que el componente reciba el id como prop
   }
 
 
