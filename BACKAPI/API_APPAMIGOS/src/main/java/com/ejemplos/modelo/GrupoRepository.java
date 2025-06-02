@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface GrupoRepository extends JpaRepository<Grupo, Long> {
 	Optional<Grupo> findByCodigoInvitacion(String codigoInvitacion);
+	Grupo obtenerPorCodigoInvitacion(String codigoInvitacion);
+	void eliminar(Long id);
 }

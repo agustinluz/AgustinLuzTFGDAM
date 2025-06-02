@@ -266,6 +266,254 @@ public ResponseEntity<Void> eliminarParticipante(
     }
 
 
+    @PutMapping("/{grupoId}/usuarios/{usuarioId}/rol")
+    public ResponseEntity<Void> cambiarRolUsuario(
+            @PathVariable Long grupoId,
+            @PathVariable Long usuarioId,
+            @RequestParam String nuevoRol,
+            @RequestHeader("adminId") Long adminId) {
+        
+        // Validar que el rol sea válido
+        if (!nuevoRol.equals("admin") && !nuevoRol.equals("miembro")) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        Grupo grupo = grupoService.obtenerPorId(grupoId).orElse(null);
+        if (grupo == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // Verificar que el usuario solicitante es admin del grupo
+        if (grupo.getAdmin() == null || !grupo.getAdmin().getId().equals(adminId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        // No permitir que el admin se quite a sí mismo el rol de admin
+        if (usuarioId.equals(adminId) && nuevoRol.equals("miembro")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        
+        // Buscar la asociación usuario-grupo
+        UsuarioGrupo usuarioGrupo = usuarioGrupoService.obtenerPorUsuarioIdYGrupoId(usuarioId, grupoId);
+        if (usuarioGrupo == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // Si se está asignando como admin, verificar que el usuario existe
+        if (nuevoRol.equals("admin")) {
+            Usuario nuevoAdmin = usuarioService.obtenerPorId(usuarioId).orElse(null);
+            if (nuevoAdmin == null) {
+                return ResponseEntity.notFound().build();
+            }
+        }
+        
+        // Actualizar el rol
+        usuarioGrupo.setRol(nuevoRol);
+        usuarioGrupoService.guardar(usuarioGrupo);
+        
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarGrupo(
+            @PathVariable Long id,
+            @RequestHeader("usuarioId") Long usuarioId) {
+        
+        Grupo grupo = grupoService.obtenerPorId(id).orElse(null);
+        if (grupo == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // Verificar que el usuario es admin del grupo
+        if (grupo.getAdmin() == null || !grupo.getAdmin().getId().equals(usuarioId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        // Eliminar el grupo (las asociaciones se eliminan por cascada)
+        grupoService.eliminar(id);
+        
+        return ResponseEntity.ok().build();
+    }
+    
+    
+    
+    
+    @PutMapping("/{grupoId}/transferir-admin")
+    public ResponseEntity<Void> transferirAdministracion(
+            @PathVariable Long grupoId,
+            @RequestParam Long nuevoAdminId,
+            @RequestHeader("adminId") Long adminActualId) {
+        
+        Grupo grupo = grupoService.obtenerPorId(grupoId).orElse(null);
+        if (grupo == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // Verificar que el usuario solicitante es admin actual
+        if (grupo.getAdmin() == null || !grupo.getAdmin().getId().equals(adminActualId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        // Verificar que el nuevo admin existe y es miembro del grupo
+        Usuario nuevoAdmin = usuarioService.obtenerPorId(nuevoAdminId).orElse(null);
+        if (nuevoAdmin == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        UsuarioGrupo usuarioGrupoNuevo = usuarioGrupoService.obtenerPorUsuarioIdYGrupoId(nuevoAdminId, grupoId);
+        if (usuarioGrupoNuevo == null) {
+            return ResponseEntity.badRequest().build(); // El usuario no es miembro del grupo
+        }
+        
+        // Cambiar el admin del grupo
+        grupo.setAdmin(nuevoAdmin);
+        grupoService.crear(grupo);
+        
+        // Actualizar roles en la tabla intermedia
+        usuarioGrupoNuevo.setRol("admin");
+        usuarioGrupoService.guardar(usuarioGrupoNuevo);
+        
+        // Cambiar el rol del admin anterior a miembro
+        UsuarioGrupo adminAnterior = usuarioGrupoService.obtenerPorUsuarioIdYGrupoId(adminActualId, grupoId);
+        if (adminAnterior != null) {
+            adminAnterior.setRol("miembro");
+            usuarioGrupoService.guardar(adminAnterior);
+        }
+        
+        return ResponseEntity.ok().build();
+    }
+    
+    
+    
+    @DeleteMapping("/{grupoId}/salir")
+    public ResponseEntity<Void> salirDelGrupo(
+            @PathVariable Long grupoId,
+            @RequestHeader("usuarioId") Long usuarioId) {
+        
+        Grupo grupo = grupoService.obtenerPorId(grupoId).orElse(null);
+        if (grupo == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // Verificar que el usuario es miembro del grupo
+        UsuarioGrupo usuarioGrupo = usuarioGrupoService.obtenerPorUsuarioIdYGrupoId(usuarioId, grupoId);
+        if (usuarioGrupo == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // No permitir que el admin salga del grupo sin transferir la administración
+        if (grupo.getAdmin() != null && grupo.getAdmin().getId().equals(usuarioId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        
+        // Eliminar la asociación usuario-grupo
+        usuarioGrupoService.eliminarUsuarioDeGrupo(usuarioId, grupoId);
+        
+        return ResponseEntity.ok().build();
+    }
+    
+    
+    
+    @GetMapping("/{grupoId}/usuarios/{usuarioId}")
+    public ResponseEntity<UsuarioDTO> obtenerParticipante(
+            @PathVariable Long grupoId,
+            @PathVariable Long usuarioId,
+            @RequestHeader("solicitanteId") Long solicitanteId) {
+        
+        // Verificar que el solicitante es miembro del grupo
+        UsuarioGrupo solicitante = usuarioGrupoService.obtenerPorUsuarioIdYGrupoId(solicitanteId, grupoId);
+        if (solicitante == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        // Obtener la información del participante
+        UsuarioGrupo participante = usuarioGrupoService.obtenerPorUsuarioIdYGrupoId(usuarioId, grupoId);
+        if (participante == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Usuario usuario = participante.getUsuario();
+        UsuarioDTO dto = new UsuarioDTO();
+        dto.setId(usuario.getId());
+        dto.setNombre(usuario.getNombre());
+        dto.setEmail(usuario.getEmail());
+        // Agregar el rol al DTO si es necesario
+        
+        return ResponseEntity.ok(dto);
+    }
+
+    
+    
+    
+    @PostMapping("/{id}/generar-codigo")
+    public ResponseEntity<Map<String, String>> generarNuevoCodigo(
+            @PathVariable Long id,
+            @RequestHeader("usuarioId") Long usuarioId) {
+        
+        Grupo grupo = grupoService.obtenerPorId(id).orElse(null);
+        if (grupo == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // Verificar que el usuario es admin del grupo
+        if (grupo.getAdmin() == null || !grupo.getAdmin().getId().equals(usuarioId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        // Generar nuevo código
+        String nuevoCodigo = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        grupo.setCodigoInvitacion(nuevoCodigo);
+        grupoService.crear(grupo);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("codigoInvitacion", nuevoCodigo);
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    
+    @GetMapping("/{id}/estadisticas")
+    public ResponseEntity<Map<String, Object>> obtenerEstadisticasGrupo(
+            @PathVariable Long id,
+            @RequestHeader("usuarioId") Long usuarioId) {
+        
+        // Verificar que el usuario es miembro del grupo
+        UsuarioGrupo miembro = usuarioGrupoService.obtenerPorUsuarioIdYGrupoId(usuarioId, id);
+        if (miembro == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        Grupo grupo = grupoService.obtenerPorId(id).orElse(null);
+        if (grupo == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Map<String, Object> estadisticas = new HashMap<>();
+        
+        // Contar participantes
+        int totalParticipantes = usuarioGrupoService.contarParticipantesPorGrupo(id);
+        estadisticas.put("totalParticipantes", totalParticipantes);
+        
+        // Contar admins
+        int totalAdmins = usuarioGrupoService.contarAdminsPorGrupo(id);
+        estadisticas.put("totalAdmins", totalAdmins);
+        
+        // Fecha de creación (si tienes este campo)
+        // estadisticas.put("fechaCreacion", grupo.getFechaCreacion());
+        
+        // Otros contadores si tienes las relaciones
+        if (grupo.getEventos() != null) {
+            estadisticas.put("totalEventos", grupo.getEventos().size());
+        }
+        if (grupo.getGastos() != null) {
+            estadisticas.put("totalGastos", grupo.getGastos().size());
+        }
+        if (grupo.getNotas() != null) {
+            estadisticas.put("totalNotas", grupo.getNotas().size());
+        }
+        
+        return ResponseEntity.ok(estadisticas);
+    }
     
     
     

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,5 +38,21 @@ public class UsuarioGrupoService {
         usuarioGrupoRepository.findByUsuarioIdAndGrupoId(usuarioId, grupoId)
                 .ifPresent(usuarioGrupoRepository::delete);
     }
-
+    
+    
+    public Optional<UsuarioGrupo> obtenerPorUsuarioIdYGrupoId(Long usuarioId, Long grupoId) {
+        return usuarioGrupoRepository.findByUsuarioIdAndGrupoId(usuarioId, grupoId);
+    }
+    
+    
+    public int contarParticipantesPorGrupo(Long grupoId) {
+        return usuarioGrupoRepository.countByGrupoId(grupoId);
+    }
+    
+    
+    public int contarAdminsPorGrupo(Long grupoId) {
+        return usuarioGrupoRepository.countByGrupoIdAndRol(grupoId, "admin");
+    }
+    
+    
 }
