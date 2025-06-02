@@ -155,45 +155,49 @@ onMounted(async () => {
 const cargarDatosUsuario = async () => {
   try {
     const usuario = JSON.parse(localStorage.getItem('usuario'))
+    const token = localStorage.getItem('token')
+    
     const usuarioId = usuario?.id
-    const token = localStorage.getItem('token') // Definir token aquí
-
+    
     if (!usuarioId) {
       mostrarError('No se pudo obtener la información del usuario')
       router.push('/login')
       return
     }
 
-    console.log('Cargando datos del usuario:', usuarioId) // Debug
+    if (!token) {
+      mostrarError('Sesión expirada')
+      router.push('/login')
+      return
+    }
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/${usuarioId}`, {
+    const url = `${import.meta.env.VITE_API_URL}/usuarios/${usuarioId}`
+
+    const response = await fetch(url, {
+      method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       }
     })
-
-    console.log('Response status:', response.status) // Debug
-
+    
     if (response.ok) {
       const usuarioData = await response.json()
-      console.log('Usuario data:', usuarioData) // Debug
       
       formData.nombre = usuarioData.nombre
       formData.email = usuarioData.email
-      usuarioCargado.value = true // ¡IMPORTANTE! Marcar como cargado
+      usuarioCargado.value = true
     } else if (response.status === 401) {
       mostrarError('Sesión expirada')
       router.push('/login')
     } else {
-      const errorText = await response.text()
-      console.error('Error response:', errorText) // Debug
-      mostrarError('Error al cargar los datos del usuario')
-      usuarioCargado.value = true // Mostrar formulario aunque haya error
+      mostrarError(`Error al cargar los datos del usuario`)
+      usuarioCargado.value = true
     }
   } catch (error) {
-    console.error('Error al cargar datos del usuario:', error)
     mostrarError('Error de conexión al cargar los datos')
-    usuarioCargado.value = true // Mostrar formulario aunque haya error
+    usuarioCargado.value = true
   }
 }
 
@@ -244,11 +248,17 @@ const actualizarPerfil = async () => {
 
   try {
     const usuario = JSON.parse(localStorage.getItem('usuario'))
+    const token = localStorage.getItem('token')
     const usuarioId = usuario?.id
-    const token = localStorage.getItem('token') // Definir token aquí también
 
     if (!usuarioId) {
       mostrarError('No se pudo obtener la información del usuario')
+      return
+    }
+
+    if (!token) {
+      mostrarError('Sesión expirada')
+      router.push('/login')
       return
     }
 
@@ -262,18 +272,17 @@ const actualizarPerfil = async () => {
       })
     }
 
-    console.log('Enviando datos:', datosActualizacion) // Debug
+    const url = `${import.meta.env.VITE_API_URL}/usuarios/${usuarioId}`
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/${usuarioId}`, {
+    const response = await fetch(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
       },
       body: JSON.stringify(datosActualizacion)
     })
-
-    console.log('Update response status:', response.status) // Debug
 
     if (response.ok) {
       const usuarioActualizado = await response.json()
@@ -290,12 +299,17 @@ const actualizarPerfil = async () => {
       mostrarError('Sesión expirada')
       router.push('/login')
     } else {
-      const errorData = await response.json().catch(() => ({ mensaje: 'Error desconocido' }))
-      mostrarError(errorData.mensaje || 'Error al actualizar el perfil')
+      const errorText = await response.text()
+      
+      try {
+        const errorData = JSON.parse(errorText)
+        mostrarError(errorData.mensaje || 'Error al actualizar el perfil')
+      } catch {
+        mostrarError('Error al actualizar el perfil')
+      }
     }
 
   } catch (error) {
-    console.error('Error al actualizar perfil:', error)
     mostrarError('Error de conexión al actualizar el perfil')
   } finally {
     loading.value = false

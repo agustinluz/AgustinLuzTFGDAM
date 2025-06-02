@@ -17,7 +17,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin(origins = "*")
 public class UsuarioController {
 
     @Autowired
@@ -97,7 +96,7 @@ public class UsuarioController {
                 usuario.setNombre(updateDTO.getNombre().trim());
             }
 
-         // Actualizar contraseña si se proporciona
+            // Actualizar contraseña si se proporciona
             if (updateDTO.getPassword() != null && !updateDTO.getPassword().trim().isEmpty()) {
                 // Verificar contraseña actual antes de cambiarla
                 if (updateDTO.getCurrentPassword() == null || 
@@ -116,8 +115,8 @@ public class UsuarioController {
                 usuario.setPassword(passwordEncoder.encode(updateDTO.getPassword()));
             }
 
-
-            Usuario usuarioActualizado = usuarioService.crear(usuario);
+            // Usar el método actualizar() en lugar de crear()
+            Usuario usuarioActualizado = usuarioService.actualizar(usuario);
             UsuarioDTO dto = usuarioDTOConverter.convertToDTO(usuarioActualizado);
             
             // Obtener grupos del usuario desde la entidad UsuarioGrupo
@@ -133,7 +132,6 @@ public class UsuarioController {
                 .body(new ErrorResponse("Error al actualizar el usuario: " + e.getMessage()));
         }
     }
-
     // Clase interna para respuestas de error
     public static class ErrorResponse {
         private String mensaje;
