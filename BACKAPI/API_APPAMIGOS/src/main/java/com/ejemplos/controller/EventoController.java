@@ -74,9 +74,12 @@ public class EventoController {
     
     
     @GetMapping("/{grupoId}/eventos")
-    public ResponseEntity<List<Evento>> listarEventosGrupo(@PathVariable Long grupoId) {
+    public ResponseEntity<List<EventoDTO>> listarEventosGrupo(@PathVariable Long grupoId) {
         List<Evento> eventos = eventoService.obtenerPorGrupo(grupoId);
-        return ResponseEntity.ok(eventos);
+        List<EventoDTO> dtos = eventos.stream()
+            .map(eventoDTOConverter::convertToDTO)
+            .toList();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{eventoId}")

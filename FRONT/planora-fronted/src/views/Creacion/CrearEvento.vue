@@ -487,11 +487,6 @@ const crearEvento = async () => {
 
     mostrarToast('Evento creado correctamente', 'success')
 
-    // *** MODIFICACIÓN IMPORTANTE ***
-    // Después de crear el evento, se debe refrescar la lista de eventos para que se actualice la vista (incluyendo el marcador en el mapa, si lo manejas ahí).
-    // Asegúrate de tener definida la función fetchEventos() que actualice el estado de los eventos en la vista.
-    await fetchEventos()
-
     // Limpiar formulario
     titulo.value = ''
     descripcion.value = ''

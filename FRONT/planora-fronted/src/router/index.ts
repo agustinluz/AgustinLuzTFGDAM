@@ -24,11 +24,6 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/Dashboard.vue'),
     props: true // Esto permite que el componente reciba el id como prop
   },
-  // Ruta de redirección por si alguien va a /dashboard sin ID
-  {
-    path: '/dashboard',
-    redirect: '/grupo'
-  },
   {
     path: '/dashboard/:id/crear',
     component: () => import('../views/Creacion/Crear.vue'),

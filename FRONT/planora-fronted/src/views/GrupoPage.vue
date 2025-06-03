@@ -5,17 +5,16 @@
       <ion-toolbar color="primary">
         <ion-title>Mis Grupos</ion-title>
         <ion-buttons slot="end">
-          <ion-button 
-            v-if="grupoActivo" 
-            fill="clear" 
-            @click="irAConfiguracion"
-            class="config-btn"
-          >
+          <ion-button v-if="grupoActivo" fill="clear" @click="irAConfiguracion" class="config-btn">
             <ion-icon :icon="settings" slot="icon-only"></ion-icon>
           </ion-button>
           <ion-button fill="clear" @click="() => router.push('/perfil')">
             <ion-icon :icon="person" slot="icon-only"></ion-icon>
           </ion-button>
+          <ion-button fill="clear" @click="logout">
+            <ion-icon :icon="logOutOutline" slot="icon-only"></ion-icon>
+          </ion-button>
+
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
@@ -45,33 +44,19 @@
 
           <ion-grid>
             <ion-row>
-              <ion-col 
-                size="12" 
-                size-md="6" 
-                size-lg="4" 
-                v-for="grupo in grupos" 
-                :key="grupo.id"
-              >
-                <ion-card 
-                  button 
-                  class="grupo-card"
-                  :class="{ 'active-group': grupo.id === grupoActivo?.id }"
-                  @click="entrarEnGrupo(grupo.id)"
-                >
+              <ion-col size="12" size-md="6" size-lg="4" v-for="grupo in grupos" :key="grupo.id">
+                <ion-card button class="grupo-card" :class="{ 'active-group': grupo.id === grupoActivo?.id }"
+                  @click="entrarEnGrupo(grupo.id)">
                   <ion-card-content>
                     <div class="card-header">
                       <div class="grupo-avatar">
-                        <img 
-                          v-if="grupo.imagenPerfil" 
-                          :src="grupo.imagenPerfil" 
-                          :alt="grupo.nombre"
-                        />
+                        <img v-if="grupo.imagenPerfil" :src="grupo.imagenPerfil" :alt="grupo.nombre" />
                         <ion-icon v-else :icon="people" color="primary"></ion-icon>
                       </div>
-                      
+
                       <div class="grupo-info">
                         <ion-card-title class="grupo-nombre">{{ grupo.nombre }}</ion-card-title>
-                        
+
                         <div class="codigo-container">
                           <ion-icon :icon="key" size="small"></ion-icon>
                           <span>{{ grupo.codigoInvitacion }}</span>
@@ -117,12 +102,7 @@
           </div>
 
           <div class="empty-actions">
-            <ion-button 
-              expand="block" 
-              @click="abrirModalCrear"
-              :disabled="cargando"
-              class="primary-action"
-            >
+            <ion-button expand="block" @click="abrirModalCrear" :disabled="cargando" class="primary-action">
               <ion-icon :icon="add" slot="start"></ion-icon>
               Crear nuevo grupo
             </ion-button>
@@ -132,20 +112,11 @@
             </div>
 
             <ion-item class="input-item">
-              <ion-input
-                v-model="codigo"
-                placeholder="Código de invitación"
-                :disabled="cargando"
-              ></ion-input>
+              <ion-input v-model="codigo" placeholder="Código de invitación" :disabled="cargando"></ion-input>
             </ion-item>
 
-            <ion-button 
-              expand="block" 
-              fill="outline" 
-              @click="unirseGrupo"
-              :disabled="cargando || !codigo.trim()"
-              class="secondary-action"
-            >
+            <ion-button expand="block" fill="outline" @click="unirseGrupo" :disabled="cargando || !codigo.trim()"
+              class="secondary-action">
               <ion-icon :icon="logIn" slot="start"></ion-icon>
               Unirse al grupo
             </ion-button>
@@ -158,12 +129,7 @@
       </div>
 
       <!-- FAB solo cuando tiene grupos -->
-      <ion-fab 
-        v-if="grupos.length > 0" 
-        vertical="bottom" 
-        horizontal="end" 
-        slot="fixed"
-      >
+      <ion-fab v-if="grupos.length > 0" vertical="bottom" horizontal="end" slot="fixed">
         <ion-fab-button @click="abrirModal" color="secondary">
           <ion-icon :icon="add"></ion-icon>
         </ion-fab-button>
@@ -182,51 +148,32 @@
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
-      
+
       <ion-content class="ion-padding">
         <div class="modal-content">
           <!-- Selector de imagen -->
           <div class="selector-imagen">
             <div class="preview-imagen" @click="$refs.fileInput.click()">
-              <img 
-                v-if="previsualizacionImagen" 
-                :src="previsualizacionImagen" 
-                alt="Preview"
-              />
+              <img v-if="previsualizacionImagen" :src="previsualizacionImagen" alt="Preview" />
               <ion-icon v-else :icon="people" size="large"></ion-icon>
               <div class="overlay-upload">
                 <ion-icon :icon="cloudUpload" color="light"></ion-icon>
               </div>
             </div>
             <p>Toca para agregar foto</p>
-            <input 
-              ref="fileInput"
-              type="file" 
-              accept="image/*" 
-              @change="manejarImagenGrupo"
-              style="display: none"
-            />
+            <input ref="fileInput" type="file" accept="image/*" @change="manejarImagenGrupo" style="display: none" />
           </div>
 
           <!-- Nombre del grupo -->
           <ion-item class="input-item">
-            <ion-input
-              v-model="nombreGrupo"
-              placeholder="Nombre del grupo"
-              :clear-input="true"
-            ></ion-input>
+            <ion-input v-model="nombreGrupo" placeholder="Nombre del grupo" :clear-input="true"></ion-input>
           </ion-item>
 
           <ion-text color="danger" v-if="error" class="error-text">
             <p>{{ error }}</p>
           </ion-text>
 
-          <ion-button 
-            expand="block" 
-            @click="crearGrupo"
-            :disabled="cargando || !nombreGrupo.trim()"
-            class="create-btn"
-          >
+          <ion-button expand="block" @click="crearGrupo" :disabled="cargando || !nombreGrupo.trim()" class="create-btn">
             {{ cargando ? 'Creando...' : 'Crear Grupo' }}
           </ion-button>
         </div>
@@ -245,15 +192,11 @@
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
-      
+
       <ion-content class="ion-padding">
         <div class="modal-content">
-          <ion-button 
-            expand="block" 
-            @click="() => { cerrarModal(); abrirModalCrear(); }"
-            :disabled="cargando"
-            class="primary-action"
-          >
+          <ion-button expand="block" @click="() => { cerrarModal(); abrirModalCrear(); }" :disabled="cargando"
+            class="primary-action">
             <ion-icon :icon="add" slot="start"></ion-icon>
             Crear nuevo grupo
           </ion-button>
@@ -263,21 +206,12 @@
           </div>
 
           <ion-item class="input-item">
-            <ion-input
-              v-model="codigo"
-              placeholder="Código de invitación"
-              :disabled="cargando"
-              :clear-input="true"
-            ></ion-input>
+            <ion-input v-model="codigo" placeholder="Código de invitación" :disabled="cargando"
+              :clear-input="true"></ion-input>
           </ion-item>
 
-          <ion-button 
-            expand="block" 
-            fill="outline" 
-            @click="unirseGrupo"
-            :disabled="cargando || !codigo.trim()"
-            class="secondary-action"
-          >
+          <ion-button expand="block" fill="outline" @click="unirseGrupo" :disabled="cargando || !codigo.trim()"
+            class="secondary-action">
             <ion-icon :icon="logIn" slot="start"></ion-icon>
             Unirse al grupo
           </ion-button>
@@ -290,10 +224,7 @@
     </ion-modal>
 
     <!-- Loading -->
-    <ion-loading
-      :is-open="cargando"
-      message="Cargando..."
-    ></ion-loading>
+    <ion-loading :is-open="cargando" message="Cargando..."></ion-loading>
   </ion-page>
 </template>
 
@@ -334,6 +265,7 @@ import {
   add,
   logIn,
   close,
+  logOutOutline,
   cloudUpload,
   person,
   settings,
@@ -401,7 +333,7 @@ const manejarImagenGrupo = (event) => {
       error.value = 'La imagen no puede ser mayor a 5MB'
       return
     }
-    
+
     const reader = new FileReader()
     reader.onload = (e) => {
       const base64 = e.target.result
@@ -420,26 +352,26 @@ const crearGrupo = async () => {
 
   error.value = ''
   cargando.value = true
-  
+
   try {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos`, {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
         'usuarioId': usuario.value.id.toString()
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         nombre: nombreGrupo.value,
-        imagenPerfil: imagenGrupo.value 
+        imagenPerfil: imagenGrupo.value
       })
     })
-    
+
     if (!res.ok) throw new Error('Error al crear grupo')
-    
+
     const grupo = await res.json()
     localStorage.setItem('grupoActivoId', grupo.id)
     cerrarModalCrear()
-    
+
     const toast = await toastController.create({
       message: `Grupo "${grupo.nombre}" creado exitosamente. Código: ${grupo.codigoInvitacion}`,
       duration: 3000,
@@ -447,12 +379,12 @@ const crearGrupo = async () => {
       color: 'success'
     })
     toast.present()
-    
+
     cargarGrupos()
   } catch (err) {
     error.value = 'Error al crear el grupo. Intenta de nuevo.'
   }
-  
+
   cargando.value = false
 }
 
@@ -464,11 +396,11 @@ const unirseGrupo = async () => {
 
   error.value = ''
   cargando.value = true
-  
+
   try {
     const resGrupo = await fetch(`${import.meta.env.VITE_API_URL}/auth/invitacion/${codigo.value}`)
     if (!resGrupo.ok) throw new Error('Código no válido')
-    
+
     const grupo = await resGrupo.json()
 
     await fetch(`${import.meta.env.VITE_API_URL}/grupos/${grupo.id}/usuarios`, {
@@ -477,13 +409,13 @@ const unirseGrupo = async () => {
       body: JSON.stringify({
         nombre: usuario.value.nombre,
         email: usuario.value.email,
-        password: usuario.value.password 
+        password: usuario.value.password
       })
     })
 
     localStorage.setItem('grupoActivoId', grupo.id)
     cerrarModal()
-    
+
     const toast = await toastController.create({
       message: `Te has unido al grupo "${grupo.nombre}" exitosamente`,
       duration: 3000,
@@ -491,18 +423,18 @@ const unirseGrupo = async () => {
       color: 'success'
     })
     toast.present()
-    
+
     cargarGrupos()
   } catch (err) {
     error.value = 'No se pudo unir al grupo. Verifica el código.'
   }
-  
+
   cargando.value = false
 }
 
 const entrarEnGrupo = async (id) => {
   localStorage.setItem('grupoActivoId', id)
-  
+
   const toast = await toastController.create({
     message: `Accediendo al grupo...`,
     duration: 1500,
@@ -510,7 +442,7 @@ const entrarEnGrupo = async (id) => {
     color: 'primary'
   })
   await toast.present()
-  
+
   await router.push(`/dashboard/${id}`)
 }
 
@@ -545,6 +477,14 @@ const cerrarModal = () => {
 const esAdmin = (grupo) => {
   return grupo.adminId === usuario.value?.id
 }
+
+const logout = () => {
+  localStorage.removeItem('usuario')
+  localStorage.removeItem('grupoActivoId')
+  localStorage.removeItem('token')
+  router.push('/login')
+}
+
 </script>
 
 <style scoped>
