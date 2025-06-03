@@ -91,7 +91,13 @@ const routes: Array<RouteRecordRaw> = [
     path: '/perfil',
     name: 'perfil',
     component: () => import('../views/Configuracion/Perfil.vue'),
-    props: true // Esto permite que el componente reciba el id como prop
+    props: true 
+  },
+  {
+    path: '/configuracion/:grupoId',
+    name: 'configuracionGrupo',
+    component: () => import('../views/Configuracion/Grupo.vue'),
+    props: true 
   }
 
 
