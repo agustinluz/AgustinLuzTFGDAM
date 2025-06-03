@@ -94,7 +94,7 @@ const routes: Array<RouteRecordRaw> = [
     props: true 
   },
   {
-    path: '/configuracion/:grupoId',
+    path: '/grupo/:grupoId/configuracion',
     name: 'configuracionGrupo',
     component: () => import('../views/Configuracion/Grupo.vue'),
     props: true 

@@ -1,10 +1,13 @@
 <template>
   <ion-page>
-    <!-- Cabecera -->
+    <!-- Cabecera mejorada -->
     <ion-header>
       <ion-toolbar color="primary">
         <ion-title>{{ grupo?.nombre || 'Dashboard' }}</ion-title>
         <ion-buttons slot="end">
+          <ion-button fill="clear" @click="goToConfig">
+            <ion-icon :icon="settingsOutline" slot="icon-only" />
+          </ion-button>
           <ion-button fill="clear" @click="() => router.push('/grupo')">
             <ion-icon :icon="logOutOutline" slot="icon-only" />
           </ion-button>
@@ -13,127 +16,174 @@
     </ion-header>
     
     <!-- Contenido Principal -->
-    <ion-content :fullscreen="true" class="ion-padding">
-      
-      <!-- Calendario (estilo anterior, iniciando en lunes) -->
-      <ion-card class="calendar-card">
-        <ion-card-header>
-          <div class="calendar-header">
-            <ion-button fill="clear" @click="previousMonth">
-              <ion-icon :icon="chevronBack" slot="icon-only" />
-            </ion-button>
-            <ion-card-title class="month-title">{{ currentMonthYear }}</ion-card-title>
-            <ion-button fill="clear" @click="nextMonth">
-              <ion-icon :icon="chevronForward" slot="icon-only" />
-            </ion-button>
-          </div>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="calendar-grid">
-            <div class="calendar-header-days">
-              <!-- Encabezado actualizado para iniciar en lunes -->
-              <div class="day-header" v-for="(day, idx) in headerDays" :key="idx">{{ day }}</div>
+    <ion-content :fullscreen="true">
+      <div class="dashboard-container">
+        
+        <!-- Estadísticas rápidas -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <ion-icon :icon="people" color="primary" />
+            <div class="stat-content">
+              <span class="stat-number">{{ participantes.length }}</span>
+              <span class="stat-label">Miembros</span>
             </div>
-            <div class="calendar-days">
-              <div 
-                v-for="day in calendarDays" 
-                :key="day.date.toISOString()"
-                :class="getDayClass(day)"
-                @click="selectDay(day)"
-              >
-                {{ day.day }}
+          </div>
+          <div class="stat-card">
+            <ion-icon :icon="calendar" color="success" />
+            <div class="stat-content">
+              <span class="stat-number">{{ upcomingEventos.length }}</span>
+              <span class="stat-label">Próximos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendario compacto -->
+        <ion-card class="calendar-card">
+          <ion-card-header>
+            <div class="section-header">
+              <div class="section-title">
+                <ion-icon :icon="calendar" color="primary" />
+                <ion-card-title>{{ currentMonthYear }}</ion-card-title>
+              </div>
+              <div class="nav-buttons">
+                <ion-button size="small" fill="clear" @click="previousMonth">
+                  <ion-icon :icon="chevronBack" slot="icon-only" />
+                </ion-button>
+                <ion-button size="small" fill="clear" @click="nextMonth">
+                  <ion-icon :icon="chevronForward" slot="icon-only" />
+                </ion-button>
               </div>
             </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
-      
-      <!-- Eventos (sólo próximos 7 días) -->
-      <ion-card class="events-card">
-        <ion-card-header>
-          <div class="events-header">
-            <ion-icon :icon="calendar" color="primary" />
-            <ion-card-title>Eventos próximos</ion-card-title>
-            <ion-button fill="clear" size="small">
-              <ion-icon :icon="ellipsisVertical" slot="icon-only" />
-            </ion-button>
-          </div>
-        </ion-card-header>
-        <ion-card-content>
-          <div v-if="upcomingEventos.length" class="events-list">
-            <div
-              v-for="evento in upcomingEventos.slice(0, 3)" 
-              :key="evento.id" 
-              class="event-item"
-              @click="mostrarEvento(evento.id)"
-            >
-              <div class="event-content">
-                <h3 class="event-title">{{ evento.titulo }}</h3>
-                <p class="event-subtitle">{{ formatFecha(evento.fecha) }}</p>
-                <p class="event-description" v-if="evento.descripcion">
-                  {{ evento.descripcion }}
-                </p>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="calendar-grid">
+              <div class="calendar-header-days">
+                <div class="day-header" v-for="day in headerDays" :key="day">{{ day }}</div>
+              </div>
+              <div class="calendar-days">
+                <div 
+                  v-for="day in calendarDays" 
+                  :key="day.date.toISOString()"
+                  :class="getDayClass(day)"
+                  @click="selectDay(day)"
+                >
+                  {{ day.day }}
+                </div>
               </div>
             </div>
-          </div>
-          <div v-else class="no-events">
-            <ion-text color="medium">No hay eventos próximos</ion-text>
-          </div>
-        </ion-card-content>
-      </ion-card>
-      
-      <!-- Participantes -->
-      <ion-card class="participants-card" v-if="participantes.length">
-        <ion-card-header>
-          <div class="participants-header">
-            <ion-icon name="people" color="primary" />
-            <ion-card-title>Participantes</ion-card-title>
-          </div>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="participants-list">
-            <div 
-              class="participant-container" 
-              v-for="participante in participantes" 
-              :key="participante.id"
-            >
+          </ion-card-content>
+        </ion-card>
+        
+        <!-- Eventos próximos -->
+        <ion-card class="events-card">
+          <ion-card-header>
+            <div class="section-header">
+              <div class="section-title">
+                <ion-icon :icon="timeOutline" color="warning" />
+                <ion-card-title>Próximos eventos</ion-card-title>
+              </div>
+            </div>
+          </ion-card-header>
+          <ion-card-content>
+            <div v-if="upcomingEventos.length" class="events-list">
               <div
-                class="participant-avatar"
-                :style="{ backgroundColor: getAvatarColor(participante.nombre + ' ' + participante.apellido) }"
+                v-for="evento in upcomingEventos.slice(0, 3)" 
+                :key="evento.id" 
+                class="event-item"
+                @click="mostrarEvento(evento.id)"
               >
-                {{ getInitials(participante.nombre, participante.apellido) }}
+                <div class="event-indicator"></div>
+                <div class="event-content">
+                  <h3 class="event-title">{{ evento.titulo }}</h3>
+                  <p class="event-date">{{ formatFecha(evento.fecha) }}</p>
+                  <p class="event-description" v-if="evento.descripcion">
+                    {{ evento.descripcion.substring(0, 80) }}{{ evento.descripcion.length > 80 ? '...' : '' }}
+                  </p>
+                </div>
+                <ion-icon :icon="chevronForward" color="medium" />
               </div>
-              <div class="participant-name">
-                {{ participante.nombre }} {{ participante.apellido }}
+            </div>
+            <div v-else class="empty-state">
+              <ion-icon :icon="calendarOutline" color="medium" />
+              <ion-text color="medium">No hay eventos próximos</ion-text>
+            </div>
+          </ion-card-content>
+        </ion-card>
+        
+        <!-- Participantes -->
+        <ion-card class="participants-card" v-if="participantes.length">
+          <ion-card-header>
+            <div class="section-header">
+              <div class="section-title">
+                <ion-icon :icon="people" color="tertiary" />
+                <ion-card-title>Equipo</ion-card-title>
+              </div>
+              <span class="member-count">{{ participantes.length }} miembros</span>
+            </div>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="participants-grid">
+              <div 
+                class="participant-item" 
+                v-for="participante in participantes.slice(0, 6)" 
+                :key="participante.id"
+              >
+                <div
+                  class="participant-avatar"
+                  :style="{ backgroundColor: getAvatarColor(participante.nombre + ' ' + participante.apellido) }"
+                >
+                  {{ getInitials(participante.nombre, participante.apellido) }}
+                </div>
+                <span class="participant-name">
+                  {{ participante.nombre }} {{ participante.apellido }}
+                </span>
+              </div>
+              <div v-if="participantes.length > 6" class="more-participants">
+                +{{ participantes.length - 6 }} más
               </div>
             </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
-      
-      <!-- Accesos Rápidos -->
-      <ion-card class="quick-access-card">
-        <ion-card-content>
-          <div class="quick-access-grid">
-            <div class="quick-access-item" @click="goTo('gastos')">
-              <ion-icon :icon="cash" color="primary" />
+          </ion-card-content>
+        </ion-card>
+        
+        <!-- Accesos Rápidos -->
+        <ion-card class="quick-access-card">
+          <ion-card-header>
+            <div class="section-title">
+              <ion-icon :icon="appsOutline" color="secondary" />
+              <ion-card-title>Acciones rápidas</ion-card-title>
             </div>
-            <div class="quick-access-item" @click="goTo('eventos')">
-              <ion-icon :icon="calendar" color="primary" />
+          </ion-card-header>
+          <ion-card-content>
+            <div class="quick-access-grid">
+              <div class="access-item" @click="goTo('gastos')">
+                <div class="access-icon">
+                  <ion-icon :icon="cash" />
+                </div>
+                <span>Gastos</span>
+              </div>
+              <div class="access-item" @click="goTo('eventos')">
+                <div class="access-icon">
+                  <ion-icon :icon="calendar" />
+                </div>
+                <span>Eventos</span>
+              </div>
+              <div class="access-item" @click="goTo('votaciones')">
+                <div class="access-icon">
+                  <ion-icon :icon="checkboxOutline" />
+                </div>
+                <span>Votos</span>
+              </div>
+              <div class="access-item" @click="goTo('galeria')">
+                <div class="access-icon">
+                  <ion-icon :icon="images" />
+                </div>
+                <span>Galería</span>
+              </div>
             </div>
-            <div class="quick-access-item" @click="goTo('votaciones')">
-              <ion-icon :icon="checkboxOutline" color="primary" />
-            </div>
-            <div class="quick-access-item" @click="goTo('galeria')">
-              <ion-icon :icon="images" color="primary" />
-            </div>
-            <div class="quick-access-item" @click="goTo('notas')">
-              <ion-icon :icon="documentText" color="primary" />
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
-      
+          </ion-card-content>
+        </ion-card>
+        
+      </div>
     </ion-content>
     
     <!-- Botón FAB -->
@@ -150,20 +200,25 @@
           <ion-title>{{ eventoSeleccionado?.titulo || 'Detalle del evento' }}</ion-title>
           <ion-buttons slot="end">
             <ion-button @click="mostrarModal = false">
-              <ion-icon name="close" slot="icon-only" />
+              <ion-icon :icon="closeOutline" slot="icon-only" />
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">
-        <div v-if="eventoSeleccionado">
+        <div v-if="eventoSeleccionado" class="event-detail">
           <h2>{{ eventoSeleccionado.titulo }}</h2>
-          <p><strong>Fecha:</strong> {{ formatFecha(eventoSeleccionado.fecha) }}</p>
-          <p v-if="eventoSeleccionado.descripcion">
-            <strong>Descripción:</strong> {{ eventoSeleccionado.descripcion }}
-          </p>
+          <div class="detail-row">
+            <ion-icon :icon="calendar" color="primary" />
+            <span>{{ formatFecha(eventoSeleccionado.fecha) }}</span>
+          </div>
+          <div v-if="eventoSeleccionado.descripcion" class="detail-row">
+            <ion-icon :icon="documentText" color="primary" />
+            <span>{{ eventoSeleccionado.descripcion }}</span>
+          </div>
         </div>
-        <div v-else>
+        <div v-else class="loading-state">
+          <ion-spinner />
           <ion-text color="medium">Cargando...</ion-text>
         </div>
       </ion-content>
@@ -173,39 +228,17 @@
 
 <script setup>
 import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
-  IonText,
-  IonFab,
-  IonFabButton,
-  IonIcon,
-  IonButton,
-  IonButtons,
-  IonModal,
-  useIonRouter
+  IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardHeader,
+  IonCardTitle, IonCardContent, IonText, IonFab, IonFabButton, IonIcon,
+  IonButton, IonButtons, IonModal, IonSpinner, useIonRouter
 } from '@ionic/vue'
 import { 
-  add,
-  chevronBack,
-  chevronForward,
-  calendar,
-  ellipsisVertical,
-  cash,
-  checkboxOutline,
-  images,
-  documentText,
-  logOutOutline 
+  add, chevronBack, chevronForward, calendar, cash, checkboxOutline, images,
+  logOutOutline, settingsOutline, people, timeOutline, calendarOutline,
+  appsOutline, documentText, closeOutline
 } from 'ionicons/icons'
 import { ref, onMounted, computed } from 'vue'
 
-// Router y estados
 const router = useIonRouter()
 const grupo = ref(null)
 const eventos = ref([])
@@ -215,15 +248,11 @@ const mostrarModal = ref(false)
 const currentDate = ref(new Date())
 const selectedDate = ref(new Date())
 
-// Datos del usuario y grupo
 const usuario = JSON.parse(localStorage.getItem('usuario'))
 const grupoId = localStorage.getItem('grupoActivoId')
 
-// --- Calendario ---
-// Encabezado de días: iniciamos en lunes
-const headerDays = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM']
+const headerDays = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 
-// Título del mes (ej. "Agosto 2025")
 const currentMonthYear = computed(() => {
   return currentDate.value.toLocaleDateString('es-ES', {
     month: 'long',
@@ -231,12 +260,10 @@ const currentMonthYear = computed(() => {
   }).replace(/^\w/, c => c.toUpperCase())
 })
 
-// Genera los días para el calendario iniciando en lunes
 const calendarDays = computed(() => {
   const year = currentDate.value.getFullYear()
   const month = currentDate.value.getMonth()
   const firstDay = new Date(year, month, 1)
-  // Si el primer día es domingo (0), lo tratamos como 6; de lo contrario, restamos 1.
   const dayIndex = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1
   const startDate = new Date(firstDay)
   startDate.setDate(startDate.getDate() - dayIndex)
@@ -256,18 +283,15 @@ const calendarDays = computed(() => {
   return days
 })
 
-// --- Filtrado de Eventos (solo próximos 7 días) ---
 const upcomingEventos = computed(() => {
   const now = new Date()
   return eventos.value.filter(evento => {
     const eventDate = new Date(evento.fecha)
-    // Diferencia en días
     const diffDays = (eventDate - now) / (1000 * 60 * 60 * 24)
     return diffDays >= 0 && diffDays < 7
   }).sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
 })
 
-// --- Llamadas a la API ---
 const fetchEventos = async () => {
   try {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/eventos/${grupoId}/eventos`)
@@ -321,7 +345,10 @@ const fetchDetalleEvento = async (eventoId) => {
   }
 }
 
-// --- Navegación y Selección ---
+const goToConfig = () => {
+  router.push(`/dashboard/${grupoId}/configuracion`)
+}
+
 const previousMonth = () => {
   currentDate.value.setMonth(currentDate.value.getMonth() - 1)
   currentDate.value = new Date(currentDate.value)
@@ -337,7 +364,7 @@ const selectDay = (day) => {
 }
 
 const getDayClass = (day) => {
-  let classes = []
+  let classes = ['calendar-day']
   if (!day.isCurrentMonth) classes.push('other-month')
   if (day.isToday) classes.push('today')
   if (day.isSelected) classes.push('selected')
@@ -362,7 +389,6 @@ const mostrarEvento = async (eventoId) => {
   await fetchDetalleEvento(eventoId)
 }
 
-// --- Funciones para Avatares de Participantes ---
 const getInitials = (nombre, apellido) => {
   const first = nombre ? nombre.charAt(0).toUpperCase() : ''
   const last = apellido ? apellido.charAt(0).toUpperCase() : ''
@@ -370,16 +396,12 @@ const getInitials = (nombre, apellido) => {
 }
 
 const getAvatarColor = (texto) => {
+  const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF']
   let hash = 0
   for (let i = 0; i < texto.length; i++) {
     hash = texto.charCodeAt(i) + ((hash << 5) - hash)
   }
-  let color = '#'
-  for (let i = 0; i < 3; i++) {
-    const value = (hash >> (i * 8)) & 0xff
-    color += ('00' + value.toString(16)).substr(-2)
-  }
-  return color
+  return colors[Math.abs(hash) % colors.length]
 }
 
 onMounted(async () => {
@@ -389,128 +411,319 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Estilos para el calendario (estilo anterior) */
-.calendar-card {
-  margin-bottom: 16px;
+.dashboard-container {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
-.calendar-header {
+
+/* Estadísticas */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--ion-color-dark);
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--ion-color-medium);
+}
+
+/* Headers de sección */
+.section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.member-count {
+  font-size: 0.875rem;
+  color: var(--ion-color-medium);
+  background: var(--ion-color-light);
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+/* Calendario compacto */
+.calendar-card {
+  margin-bottom: 20px;
+}
+
 .calendar-grid {
   display: flex;
   flex-direction: column;
 }
+
 .calendar-header-days {
-  display: flex;
-  justify-content: space-between;
-  font-weight: bold;
-  border-bottom: 1px solid #ccc;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
   margin-bottom: 8px;
 }
+
 .day-header {
-  flex: 1;
   text-align: center;
-  padding: 4px;
+  padding: 8px 4px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: var(--ion-color-medium);
 }
+
 .calendar-days {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
 }
-.calendar-days > div {
-  width: calc(100% / 7);
-  text-align: center;
-  padding: 10px 0;
-  cursor: pointer;
-  min-height: 40px;
+
+.calendar-day {
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.other-month {
-  color: #ccc;
-}
-.today {
-  border: 2px solid var(--ion-color-primary);
-  border-radius: 50%;
-}
-.selected {
-  background-color: var(--ion-color-primary);
-  color: #fff;
-  border-radius: 50%;
-}
-
-/* Estilos para Eventos */
-.events-card,
-.quick-access-card {
-  margin-bottom: 16px;
-}
-.events-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.event-item {
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
   cursor: pointer;
-}
-.event-content .event-title {
-  font-size: 1rem;
-  font-weight: bold;
-}
-.event-content .event-subtitle,
-.event-content .event-description {
-  font-size: 0.85rem;
-  color: #555;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-/* Estilos para Participantes */
-.participants-header {
+.calendar-day:hover {
+  background-color: var(--ion-color-light);
+}
+
+.other-month {
+  color: var(--ion-color-light-shade);
+}
+
+.today {
+  background-color: var(--ion-color-primary);
+  color: white;
+}
+
+.selected {
+  background-color: var(--ion-color-secondary);
+  color: white;
+}
+
+/* Eventos */
+.events-card {
+  margin-bottom: 20px;
+}
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.event-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-.participants-list {
-  display: flex;
   gap: 12px;
-  flex-wrap: wrap;
+  padding: 12px;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
 }
-.participant-container {
+
+.event-item:hover {
+  transform: translateY(-2px);
+}
+
+.event-indicator {
+  width: 4px;
+  height: 40px;
+  background: var(--ion-color-warning);
+  border-radius: 2px;
+}
+
+.event-content {
+  flex: 1;
+}
+
+.event-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: var(--ion-color-dark);
+}
+
+.event-date {
+  font-size: 0.875rem;
+  color: var(--ion-color-medium);
+  margin: 0 0 4px 0;
+}
+
+.event-description {
+  font-size: 0.875rem;
+  color: var(--ion-color-medium-shade);
+  margin: 0;
+}
+
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 60px;
+  gap: 8px;
+  padding: 20px;
+}
+
+/* Participantes */
+.participants-card {
+  margin-bottom: 20px;
+}
+
+.participants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.participant-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 .participant-avatar {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  font-weight: bold;
-  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-transform: uppercase;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
 }
 
 .participant-name {
-  margin-top: 4px;
-  font-size: 0.75rem;
-  color: #333;
+  font-size: 0.875rem;
   text-align: center;
+  color: var(--ion-color-dark);
 }
 
-/* Accesos Rápidos */
-.quick-access-grid {
+.more-participants {
   display: flex;
-  justify-content: space-around;
   align-items: center;
+  justify-content: center;
+  color: var(--ion-color-medium);
+  font-size: 0.875rem;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  padding: 16px;
 }
-.quick-access-item {
-  padding: 12px;
+
+/* Accesos rápidos */
+.quick-access-card {
+  margin-bottom: 20px;
+}
+
+.quick-access-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.access-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px;
   cursor: pointer;
+  border-radius: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.access-item:hover {
+  background-color: var(--ion-color-light);
+}
+
+.access-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--ion-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.access-item span {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ion-color-dark);
+}
+
+/* Modal */
+.event-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .quick-access-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .participants-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 </style>
