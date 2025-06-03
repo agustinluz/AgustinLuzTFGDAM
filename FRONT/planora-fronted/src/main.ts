@@ -30,9 +30,19 @@ import '@ionic/vue/css/display.css';
 /* @import '@ionic/vue/css/palettes/dark.always.css'; */
 /* @import '@ionic/vue/css/palettes/dark.class.css'; */
 import '@ionic/vue/css/palettes/dark.system.css';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+
+if (process.env.NODE_ENV !== 'production' || !Capacitor.isNativePlatform()) {
+  GoogleAuth.initialize({
+    clientId: 'TU_CLIENT_ID_WEB.apps.googleusercontent.com',
+    scopes: ['profile', 'email'],
+    grantOfflineAccess: true,
+  });
+}
 
 /* Theme variables */
 import './theme/variables.css';
+import { Capacitor } from '@capacitor/core';
 const pinia = createPinia();
 const app = createApp(App)
   .use(IonicVue)
