@@ -89,4 +89,45 @@ public class AuthController {
     }
 
     
+    @PostMapping("/login-google")
+    public ResponseEntity<?> loginConGoogle(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        String nombre = payload.get("nombre"); // opcional
+
+        Optional<Usuario> usuarioOpt = usuarioService.findByEmail(email);
+
+        Usuario usuario;
+
+        if (usuarioOpt.isPresent()) {
+            usuario = usuarioOpt.get();
+        } else {
+            // Crear nuevo usuario sin contraseña (solo si viene de Google)
+            usuario = new Usuario();
+            usuario.setEmail(email);
+            usuario.setNombre(nombre != null ? nombre : "Usuario Google");
+            usuario.setPassword(""); // sin contraseña
+            usuario = usuarioService.crear(usuario);
+        }
+
+        String token = jwtUtil.generateToken(usuario.getEmail());
+
+        UsuarioDTO usuarioDTO = new UsuarioDTO();
+        usuarioDTO.setId(usuario.getId());
+        usuarioDTO.setNombre(usuario.getNombre());
+        usuarioDTO.setEmail(usuario.getEmail());
+
+        // Obtener IDs de grupos
+        List<Long> gruposIds = usuario.getUsuarioGrupos().stream()
+            .map(ug -> ug.getGrupo().getId())
+            .toList();
+        usuarioDTO.setGrupoIds(gruposIds);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("usuario", usuarioDTO);
+
+        return ResponseEntity.ok(response);
+    }
+
+    
 }

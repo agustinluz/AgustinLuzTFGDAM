@@ -29,6 +29,9 @@ public class UsuarioService {
     public Optional<Usuario> obtenerPorId(Long id) {
         return usuarioRepository.findById(id);
     }
+    public Optional<Usuario> findByEmail(String email) {
+        return usuarioRepository.findByEmail(email);
+    }
     
     // Método para crear un nuevo usuario (cifra la contraseña)
     public Usuario crear(Usuario usuario) {
