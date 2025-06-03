@@ -440,6 +440,7 @@ const buscarUbicacion = async (event) => {
 }
 
 const crearEvento = async () => {
+  // Validación de campos obligatorios.
   if (!puedeGuardar.value) {
     mostrarToast('Por favor, completa todos los campos obligatorios', 'warning')
     return
@@ -448,18 +449,22 @@ const crearEvento = async () => {
   isLoading.value = true
 
   try {
+    // Se obtiene el token y se verifica.
     const token = localStorage.getItem('token')
     if (!token) {
       throw new Error('Token de autenticación no encontrado')
     }
 
+    // Construimos el objeto eventData. 
+    // Nota: El uso de new Date(fecha.value).toISOString() asegura que la fecha se envía en formato ISO 8601.
     const eventData = {
       titulo: titulo.value.trim(),
       descripcion: descripcion.value.trim(),
-      ubicacion: ubicacion.value.trim(),
+      ubicacion: ubicacion.value.trim(), // Verifica que en el formulario se llene correctamente con el formato esperado (ej: "lat, lng" o una dirección).
       fecha: new Date(fecha.value).toISOString()
     }
 
+    // Realiza el POST para crear el evento.
     const response = await fetch(
       `${import.meta.env.VITE_API_URL}/eventos/${grupoId.value}/crear`,
       {
@@ -481,15 +486,20 @@ const crearEvento = async () => {
     console.log('Evento creado:', eventoCreado)
 
     mostrarToast('Evento creado correctamente', 'success')
-    
+
+    // *** MODIFICACIÓN IMPORTANTE ***
+    // Después de crear el evento, se debe refrescar la lista de eventos para que se actualice la vista (incluyendo el marcador en el mapa, si lo manejas ahí).
+    // Asegúrate de tener definida la función fetchEventos() que actualice el estado de los eventos en la vista.
+    await fetchEventos()
+
     // Limpiar formulario
     titulo.value = ''
     descripcion.value = ''
     ubicacion.value = ''
     fecha.value = ''
     coordenadas.value = null
-    
-    // Navegar de vuelta después de un delay
+
+
     setTimeout(() => {
       router.back()
     }, 1500)
@@ -504,6 +514,7 @@ const crearEvento = async () => {
     isLoading.value = false
   }
 }
+
 </script>
 
 <style scoped>
