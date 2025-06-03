@@ -572,7 +572,6 @@ const cargarDatosGrupo = async () => {
       headers: {
         'usuarioId': currentUserId.value.toString(),
         'Content-Type': 'application/json',
-        'authorization': `Bearer ${localStorage.getItem('token')}`
       }
     })
     
