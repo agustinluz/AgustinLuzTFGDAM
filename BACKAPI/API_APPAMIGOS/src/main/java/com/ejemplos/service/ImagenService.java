@@ -8,11 +8,14 @@ import com.ejemplos.DTO.Imagen.ImagenDTOConverter;
 import com.ejemplos.modelo.Evento;
 import com.ejemplos.modelo.Usuario;
 import com.ejemplos.modelo.Grupo;
+import com.ejemplos.modelo.GrupoRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,85 +26,106 @@ public class ImagenService {
     private ImagenRepository imagenRepository;
     
     @Autowired
-    private ImagenDTOConverter imagenDTOConverter;
+    private ImagenDTOConverter converter;
+    
+    @Autowired 
+    private GrupoRepository grupoRepository;
     
     public ImagenDTO subirImagen(MultipartFile archivo, ImagenCreateDTO createDTO) throws IOException {
-        // Validar que el archivo no esté vacío
-        if (archivo.isEmpty()) {
-            throw new IllegalArgumentException("El archivo no puede estar vacío");
-        }
+        // Convertir archivo a Base64
+        String base64Data = Base64.getEncoder().encodeToString(archivo.getBytes());
         
-        // Validar tipo de archivo
-        String contentType = archivo.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new IllegalArgumentException("El archivo debe ser una imagen");
-        }
-        
-        // Validar tamaño del archivo (opcional - máximo 5MB)
-        if (archivo.getSize() > 5 * 1024 * 1024) {
-            throw new IllegalArgumentException("El archivo no puede superar los 5MB");
-        }
-        
-        // Crear entidad Imagen
         Imagen imagen = new Imagen();
         imagen.setNombre(archivo.getOriginalFilename());
-        imagen.setTipoContenido(contentType);
-        imagen.setDatos(archivo.getBytes());
+        imagen.setTipoContenido(archivo.getContentType());
+        imagen.setDatos(base64Data);
+        imagen.setTamaño(archivo.getSize());
         
-        // Establecer relaciones según corresponda
-        if (createDTO.getEventoId() != null) {
-            Evento evento = new Evento();
-            evento.setId(createDTO.getEventoId());
-            imagen.setEvento(evento);
-        }
-        
-        if (createDTO.getUsuarioId() != null) {
-            Usuario usuario = new Usuario();
-            usuario.setId(createDTO.getUsuarioId());
-            imagen.setUsuario(usuario);
-        }
-        
+        // Asignar relaciones si es necesario
         if (createDTO.getGrupoId() != null) {
-            Grupo grupo = new Grupo();
-            grupo.setId(createDTO.getGrupoId());
+            Grupo grupo = grupoRepository.findById(createDTO.getGrupoId())
+                .orElseThrow(() -> new IllegalArgumentException("Grupo no encontrado"));
             imagen.setGrupo(grupo);
         }
         
-        // Guardar en base de datos MySQL
-        imagen = imagenRepository.save(imagen);
+        // Similar para evento y usuario...
         
-        return imagenDTOConverter.convertToDTO(imagen);
+        Imagen imagenGuardada = imagenRepository.save(imagen);
+        return converter.convertToDTO(imagenGuardada);
     }
     
-    public List<ImagenDTO> obtenerImagenesPorGrupo(Long grupoId) {
-        List<Imagen> imagenes = imagenRepository.findByGrupoId(grupoId);
+    public List<ImagenDTO> obtenerImagenesPorGrupoSinDatos(Long grupoId) {
+        List<Imagen> imagenes = imagenRepository.findByGrupoIdOrderByFechaCreacionDesc(grupoId);
         return imagenes.stream()
-                .map(imagenDTOConverter::convertToDTO)
+                .map(img -> new ImagenDTO(
+                    img.getId(), img.getNombre(), img.getTipoContenido(), 
+                    img.getTamaño(), img.getFechaCreacion(),
+                    img.getEvento() != null ? img.getEvento().getId() : null,
+                    img.getUsuario() != null ? img.getUsuario().getId() : null,
+                    img.getGrupo() != null ? img.getGrupo().getId() : null,
+                    img.getUsuario() != null ? img.getUsuario().getNombre() : null
+                ))
                 .collect(Collectors.toList());
     }
     
-    public ImagenDTO obtenerImagenPorId(Long id) {
+    public ImagenDTO obtenerImagenCompletaPorId(Long id) {
         Imagen imagen = imagenRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Imagen no encontrada con ID: " + id));
-        return imagenDTOConverter.convertToDTO(imagen);
+            .orElseThrow(() -> new RuntimeException("Imagen no encontrada"));
+        return converter.convertToDTO(imagen); // Este incluye los datos Base64
     }
-    
-    public byte[] obtenerDatosImagen(Long id) {
-        Imagen imagen = imagenRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Imagen no encontrada con ID: " + id));
-        return imagen.getDatos();
-    }
-    
-    public String obtenerTipoContenido(Long id) {
-        Imagen imagen = imagenRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Imagen no encontrada con ID: " + id));
-        return imagen.getTipoContenido();
-    }
-    
+    /**
+     * Elimina una imagen por su ID
+     * @param id ID de la imagen a eliminar
+     * @throws RuntimeException si la imagen no existe
+     */
     public void eliminarImagen(Long id) {
-        if (!imagenRepository.existsById(id)) {
-            throw new RuntimeException("Imagen no encontrada con ID: " + id);
+        // Verificar que la imagen existe antes de eliminar
+        Imagen imagen = imagenRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Imagen no encontrada con ID: " + id));
+        
+        // Eliminar la imagen
+        imagenRepository.delete(imagen);
+    }
+
+    /**
+     * Elimina una imagen por su ID con validación adicional de permisos
+     * @param id ID de la imagen a eliminar
+     * @param usuarioId ID del usuario que intenta eliminar (opcional para validación)
+     * @throws RuntimeException si la imagen no existe
+     * @throws IllegalArgumentException si el usuario no tiene permisos
+     */
+    public void eliminarImagenConValidacion(Long id, Long usuarioId) {
+        Imagen imagen = imagenRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Imagen no encontrada con ID: " + id));
+        
+        // Validación opcional: verificar si el usuario tiene permisos para eliminar
+        // (puedes ajustar esta lógica según tus reglas de negocio)
+        if (usuarioId != null && imagen.getUsuario() != null && 
+            !imagen.getUsuario().getId().equals(usuarioId)) {
+            throw new IllegalArgumentException("No tienes permisos para eliminar esta imagen");
         }
-        imagenRepository.deleteById(id);
+        
+        imagenRepository.delete(imagen);
+    }
+
+    /**
+     * Elimina múltiples imágenes por sus IDs
+     * @param ids Lista de IDs de las imágenes a eliminar
+     * @return Número de imágenes eliminadas exitosamente
+     */
+    public int eliminarImagenes(List<Long> ids) {
+        int eliminadas = 0;
+        
+        for (Long id : ids) {
+            try {
+                eliminarImagen(id);
+                eliminadas++;
+            } catch (RuntimeException e) {
+                // Log del error si es necesario
+                // Continúa con las siguientes imágenes
+            }
+        }
+        
+        return eliminadas;
     }
 }

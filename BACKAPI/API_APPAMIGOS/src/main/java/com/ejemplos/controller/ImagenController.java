@@ -22,7 +22,7 @@ public class ImagenController {
     private ImagenService imagenService;
     
     /**
-     * Subir una nueva imagen - se guarda directamente en MySQL
+     * Subir una nueva imagen - se guarda como Base64 en MySQL
      */
     @PostMapping("/subir")
     public ResponseEntity<?> subirImagen(
@@ -32,6 +32,15 @@ public class ImagenController {
             @RequestParam(value = "grupoId", required = false) Long grupoId) {
         
         try {
+            // Validaciones básicas
+            if (archivo.isEmpty()) {
+                return ResponseEntity.badRequest().body("El archivo está vacío");
+            }
+            
+            if (archivo.getSize() > 5 * 1024 * 1024) { // 5MB máximo
+                return ResponseEntity.badRequest().body("El archivo es demasiado grande (máximo 5MB)");
+            }
+            
             ImagenCreateDTO createDTO = new ImagenCreateDTO(eventoId, usuarioId, grupoId);
             ImagenDTO imagenDTO = imagenService.subirImagen(archivo, createDTO);
             return ResponseEntity.ok(imagenDTO);
@@ -44,12 +53,12 @@ public class ImagenController {
     }
     
     /**
-     * Obtener todas las imágenes de un grupo (sin los datos binarios)
+     * Obtener todas las imágenes de un grupo (sin los datos Base64 para optimizar)
      */
     @GetMapping("/grupo/{grupoId}")
     public ResponseEntity<List<ImagenDTO>> obtenerImagenesPorGrupo(@PathVariable Long grupoId) {
         try {
-            List<ImagenDTO> imagenes = imagenService.obtenerImagenesPorGrupo(grupoId);
+            List<ImagenDTO> imagenes = imagenService.obtenerImagenesPorGrupoSinDatos(grupoId);
             return ResponseEntity.ok(imagenes);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -57,12 +66,12 @@ public class ImagenController {
     }
     
     /**
-     * Obtener información de una imagen específica por ID (sin los datos binarios)
+     * Obtener imagen completa con datos Base64
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ImagenDTO> obtenerImagenPorId(@PathVariable Long id) {
+    public ResponseEntity<ImagenDTO> obtenerImagenCompleta(@PathVariable Long id) {
         try {
-            ImagenDTO imagen = imagenService.obtenerImagenPorId(id);
+            ImagenDTO imagen = imagenService.obtenerImagenCompletaPorId(id);
             return ResponseEntity.ok(imagen);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
@@ -70,27 +79,12 @@ public class ImagenController {
     }
     
     /**
-     * Servir los datos binarios de la imagen desde MySQL
+     * Ya no necesitas este endpoint porque los datos van en el DTO
      */
-    @GetMapping("/{id}/datos")
-    public ResponseEntity<byte[]> obtenerDatosImagen(@PathVariable Long id) {
-        try {
-            byte[] datos = imagenService.obtenerDatosImagen(id);
-            String tipoContenido = imagenService.obtenerTipoContenido(id);
-            
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.parseMediaType(tipoContenido));
-            headers.setContentLength(datos.length);
-            headers.setCacheControl("max-age=3600"); // Cache por 1 hora
-            
-            return new ResponseEntity<>(datos, headers, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
+    // @GetMapping("/{id}/datos") - ELIMINADO
     
     /**
-     * Eliminar una imagen de MySQL
+     * Eliminar una imagen
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarImagen(@PathVariable Long id) {
@@ -98,8 +92,7 @@ public class ImagenController {
             imagenService.eliminarImagen(id);
             return ResponseEntity.ok().body("Imagen eliminada correctamente");
         } catch (RuntimeException e) {
-        	return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Imagen no encontrada");
-
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Imagen no encontrada");
         }
     }
 }
