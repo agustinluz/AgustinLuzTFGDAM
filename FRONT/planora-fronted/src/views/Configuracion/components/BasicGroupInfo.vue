@@ -120,21 +120,23 @@ const editData = ref({
   imagenPerfil: ''
 })
 
-const hasChanges = computed(() => {
-  return editData.value.nombre !== props.grupo.nombre ||
-         editData.value.imagenPerfil !== props.grupo.imagenPerfil
-})
-
-watch(() => props.grupo, (newGrupo) => {
-  resetEditData()
-}, { immediate: true })
-
+// Define resetEditData function BEFORE using it in the watcher
 const resetEditData = () => {
   editData.value = {
     nombre: props.grupo.nombre || '',
     imagenPerfil: props.grupo.imagenPerfil || ''
   }
 }
+
+const hasChanges = computed(() => {
+  return editData.value.nombre !== props.grupo.nombre ||
+         editData.value.imagenPerfil !== props.grupo.imagenPerfil
+})
+
+// Now the watcher can safely call resetEditData
+watch(() => props.grupo, (newGrupo) => {
+  resetEditData()
+}, { immediate: true })
 
 const startEditing = () => {
   isEditing.value = true
@@ -241,4 +243,4 @@ const generateNewCode = () => {
 .edit-buttons ion-button {
   margin: 0;
 }
-</style>
+</style>  

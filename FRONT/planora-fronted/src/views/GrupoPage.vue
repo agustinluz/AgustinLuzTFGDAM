@@ -320,11 +320,36 @@ const cargarGrupos = async () => {
   cargando.value = false
 }
 
-const irAConfiguracion = () => {
+// Actualizar el método irAConfiguracion en tu primer archivo
+const irAConfiguracion = async () => {
   if (grupoActivo.value) {
-    router.push(`/grupo/${grupoActivo.value.id}/configuracion`)
+    console.log('Navegando a configuración del grupo:', grupoActivo.value.id);
+    
+    // Asegurar que el ID esté guardado en localStorage
+    localStorage.setItem('grupoActivoId', grupoActivo.value.id.toString());
+    
+    // Navegar usando el ID del grupo activo
+    router.push(`/grupo/${grupoActivo.value.id}/configuracion`);
+  } else {
+    console.error('No hay grupo activo disponible');
+    
+    // Intentar obtener el ID del localStorage como fallback
+    const grupoActivoId = localStorage.getItem('grupoActivoId');
+    if (grupoActivoId) {
+      console.log('Usando grupo del localStorage:', grupoActivoId);
+      router.push(`/grupo/${grupoActivoId}/configuracion`);
+    } else {
+      // Si no hay grupo activo, mostrar error
+      const toast = await toastController.create({
+        message: 'No hay grupo activo seleccionado',
+        duration: 2000,
+        position: 'top',
+        color: 'warning'
+      });
+      toast.present();
+    }
   }
-}
+};
 
 const manejarImagenGrupo = (event) => {
   const file = event.target.files[0]

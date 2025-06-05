@@ -346,7 +346,7 @@ const fetchDetalleEvento = async (eventoId) => {
 }
 
 const goToConfig = () => {
-  router.push(`/dashboard/${grupoId}/configuracion`)
+  router.push(`/grupo/${grupoId}/configuracion`)
 }
 
 const previousMonth = () => {
