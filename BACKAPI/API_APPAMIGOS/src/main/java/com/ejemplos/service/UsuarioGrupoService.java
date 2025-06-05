@@ -31,6 +31,10 @@ public class UsuarioGrupoService {
         return usuarioGrupoRepository.findByUsuarioId(usuarioId);
     }
     
+    public List<UsuarioGrupo> obtenerPorGrupoId(Long grupoId) {
+        return usuarioGrupoRepository.findByGrupoId(grupoId);
+    }
+    
     public boolean usuarioPerteneceAlGrupo(Long usuarioId, Long grupoId) {
         return usuarioGrupoRepository.existsByUsuarioIdAndGrupoId(usuarioId, grupoId);
     }

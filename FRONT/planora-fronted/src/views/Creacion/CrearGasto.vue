@@ -618,7 +618,7 @@ const crearGasto = async () => {
     
     // Navegar de vuelta al grupo después de un breve delay
     setTimeout(() => {
-      router.push(`/dashborard/${grupoId}`)
+      router.push(`/dashboard/${grupoId}`)
     }, 1500)
     
   } catch (error) {
@@ -630,7 +630,7 @@ const crearGasto = async () => {
 }
 
 const cancelar = () => {
-  router.push(`/dashborard/${grupoId}`)
+  router.push(`/dashboard/${grupoId}`)
 }
 
 // Lifecycle

@@ -194,7 +194,7 @@ public class GrupoController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         
-        List<UsuarioGrupo> asociaciones = usuarioGrupoService.obtenerPorUsuarioId(grupoId);
+        List<UsuarioGrupo> asociaciones = usuarioGrupoService.obtenerPorGrupoId(grupoId);
         List<UsuarioGrupoDTO> participantesConRoles = usuarioGrupoDTOConverter.convertToDTOList(asociaciones);
         
         return ResponseEntity.ok(participantesConRoles);
