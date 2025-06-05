@@ -15,7 +15,6 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/imagenes")
-@CrossOrigin(origins = "*") // Configura según tus necesidades
 public class ImagenController {
 
     @Autowired
