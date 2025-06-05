@@ -2,7 +2,6 @@ package com.ejemplos.modelo;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,14 +22,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Imagen implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column(name = "nombre", length = 255)
     private String nombre; // Nombre original del archivo
     
+    @Column(name = "tipo_contenido", length = 100)
     private String tipoContenido; // image/jpeg, image/png, etc.
     
+    @Column(name = "tamaño")
     private Long tamaño;
     
     @Lob
@@ -54,6 +59,46 @@ public class Imagen implements Serializable {
     
     @PrePersist
     protected void onCreate() {
-        fechaCreacion = LocalDateTime.now();
+        if (fechaCreacion == null) {
+            fechaCreacion = LocalDateTime.now();
+        }
+    }
+    
+    // Constructor para consultas que no incluyen datos Base64 (optimización)
+    public Imagen(Long id, String nombre, String tipoContenido, Long tamaño, LocalDateTime fechaCreacion) {
+        this.id = id;
+        this.nombre = nombre;
+        this.tipoContenido = tipoContenido;
+        this.tamaño = tamaño;
+        this.fechaCreacion = fechaCreacion;
+    }
+    
+    // Método helper para verificar si es una imagen válida
+    public boolean esImagenValida() {
+        return tipoContenido != null && tipoContenido.startsWith("image/");
+    }
+    
+    // Método helper para obtener el tamaño en formato legible
+    public String getTamañoFormateado() {
+        if (tamaño == null) return "0 B";
+        
+        long bytes = tamaño;
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return String.format("%.1f KB", bytes / 1024.0);
+        if (bytes < 1024 * 1024 * 1024) return String.format("%.1f MB", bytes / (1024.0 * 1024.0));
+        return String.format("%.1f GB", bytes / (1024.0 * 1024.0 * 1024.0));
+    }
+    
+    // Método helper para verificar si tiene datos Base64
+    public boolean tieneDatos() {
+        return datos != null && !datos.trim().isEmpty();
+    }
+    
+    // Método para obtener la extensión del archivo
+    public String getExtension() {
+        if (nombre == null || !nombre.contains(".")) {
+            return "";
+        }
+        return nombre.substring(nombre.lastIndexOf(".") + 1).toLowerCase();
     }
 }
