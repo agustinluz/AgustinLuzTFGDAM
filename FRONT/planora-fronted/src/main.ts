@@ -43,3 +43,35 @@ app.use(pinia);
 router.isReady().then(() => {
   app.mount('#app');
 });
+
+
+import { addIcons } from 'ionicons'
+import {
+  trashBinOutline,
+  pencilOutline,
+  calendarOutline,
+  calendar,
+  timeOutline,
+  locationOutline,
+  alarmOutline,
+  checkmarkCircleOutline,
+  addOutline,
+  peopleOutline,
+  document,
+  documentOutline
+} from 'ionicons/icons'
+
+addIcons({
+  trashBinOutline,
+  pencilOutline,
+  calendarOutline,
+  calendar,
+  timeOutline,
+  locationOutline,
+  alarmOutline,
+  checkmarkCircleOutline,
+  addOutline,
+  peopleOutline,
+  document,
+  documentOutline
+})

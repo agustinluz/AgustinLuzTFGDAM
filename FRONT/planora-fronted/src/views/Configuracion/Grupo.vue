@@ -63,11 +63,10 @@
 
   import { useAuthStore } from '@/service/auth'
   import { groupService } from '@/service/GrupoService'
-  import BasicGroupInfo from './components/BasicGroupInfo.vue'
-  import GroupStats from './components/GroupStats.vue'
-  import ParticipantManagement from './components/ParticipantManagment.vue'
-  import GroupActions from './components/AccionesGrupo.vue'
-
+  import BasicGroupInfo from '@/views/Components/ConfiguracionGrupo/BasicGroupInfo.vue'
+  import GroupStats from '@/views/Components/ConfiguracionGrupo/GroupStats.vue'
+  import ParticipantManagement from '@/views/Components/ConfiguracionGrupo/ParticipantManagment.vue'
+  import GroupActions from '@/views/Components/ConfiguracionGrupo/AccionesGrupo.vue'
   const route = useRoute()
   const router = useRouter()
   const authStore = useAuthStore()

@@ -3,7 +3,7 @@
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
-          <ion-back-button default-href="/dashboard" />
+          <ion-back-button default-href="javascript:void(0)" @click="volver" />
         </ion-buttons>
         <ion-title>Detalle de Deudas</ion-title>
       </ion-toolbar>
@@ -34,13 +34,16 @@ import {
   IonItem, IonList, IonLabel, IonBackButton, IonButtons, IonText
 } from '@ionic/vue'
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import api from '@/service/api'
 
 const route = useRoute()
+const router = useRouter()
+
 const grupoId = route.params.grupoId
 const usuarioId = route.params.usuarioId
 const usuarioNombre = route.query.nombre
+
 const deudas = ref([])
 
 onMounted(async () => {
@@ -62,6 +65,10 @@ onMounted(async () => {
 
 const formatMonto = monto =>
   new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(parseFloat(monto) || 0)
+
+const volver = () => {
+  router.push({ name: 'ResumenGrupo', params: { grupoId } })
+}
 </script>
 
 <style scoped>

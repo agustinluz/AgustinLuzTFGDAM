@@ -45,13 +45,20 @@ const routes: Array<RouteRecordRaw> = [
     props: true // Esto permite que el componente reciba el id como prop
   },
   {
-    path: '/dashboard/:id/crear/nota',
-    component: () => import('../views/Creacion/CrearNota.vue'),
-    props: true
-  },
+  path: '/dashboard/:grupoId/notas/crear',
+  name: 'CrearNota',
+  component: () => import('@/views/Creacion/CrearEditarNotaPage.vue')
+},
+{
+  path: '/dashboard/:grupoId/notas/editar/:notaId',
+  name: 'EditarNota',
+  component: () => import('@/views/Creacion/CrearEditarNotaPage.vue')
+},
+{ path: '/dashboard/:grupoId/mis-notas', component: () => import('@/views/Detalles/Nota/MisNotasPage.vue'), props: true  },
   {
     path: '/dashboard/:id/crear/votacion',
-    component: () => import('../views/Creacion/CrearVotacion.vue'),
+    name: 'CrearVotacion',
+    component: () => import('@/views/Creacion/CrearVotacion.vue'),
     props: true
   },
   {
@@ -72,7 +79,20 @@ const routes: Array<RouteRecordRaw> = [
     path: '/dashboard/:grupoId/gastos/:gastoId/editar',
     name: 'EditarGasto', 
     component: () => import('@/views/Detalles/EditarGasto.vue')
-  },{
+  },
+  {
+    path: '/grupo/:grupoId/resumen',
+    name: 'ResumenGrupo',
+    component: () => import('@/views/Detalles/ResumenDeudas.vue'),
+    props: true
+  },
+  {
+  path: '/dashboard/:grupoId/deudas/:usuarioId',
+  name: 'DetalleDeudaUsuario',
+  props: true,  
+  component: () => import('@/views/Detalles/Gastos/DetalleDeudaUsuario.vue')
+},
+  {
     path: '/dashboard/:id/notas',
     component: () => import('../views/Detalles/NotasPage.vue'),
     props: true

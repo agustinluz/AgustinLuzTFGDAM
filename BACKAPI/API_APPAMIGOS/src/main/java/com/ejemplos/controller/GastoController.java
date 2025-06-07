@@ -9,6 +9,7 @@ import com.ejemplos.DTO.Gasto.DeudaGastoDTOConverter;
 import com.ejemplos.DTO.Gasto.GastoCreateDTO;
 import com.ejemplos.DTO.Gasto.GastoDTO;
 import com.ejemplos.DTO.Gasto.GastoDTOConverter;
+import com.ejemplos.DTO.Gasto.ResumenDeudaDTO;
 import com.ejemplos.DTO.Usuario.UsuarioDTO;
 import com.ejemplos.DTO.Usuario.UsuarioDTOConverter;
 import com.ejemplos.modelo.DeudaGasto;
@@ -276,6 +277,14 @@ public class GastoController {
     public ResponseEntity<List<DeudaGastoDTO>> obtenerDeudasGasto(@PathVariable Long gastoId) {
         List<DeudaGasto> deudas = deudaGastoService.obtenerDeudasPorGasto(gastoId);
         List<DeudaGastoDTO> deudasDTO = deudaGastoDTOConverter.toDTOList(deudas);
-        return ResponseEntity.ok(deudasDTO);
+        return ResponseEntity.ok(deudasDTO);	
     }
+    
+    @GetMapping("/grupos/{grupoId}/resumen")
+    public ResponseEntity<List<ResumenDeudaDTO>> obtenerResumenDeGrupo(@PathVariable Long grupoId) {
+        List<ResumenDeudaDTO> resumen = deudaGastoService.generarResumenPorGrupo(grupoId);
+        return ResponseEntity.ok(resumen);
+    }
+    
+    
 }

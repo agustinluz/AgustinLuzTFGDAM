@@ -1,5 +1,6 @@
 package com.ejemplos.service;
 
+import com.ejemplos.DTO.Gasto.ResumenDeudaDTO;
 import com.ejemplos.modelo.DeudaGasto;
 import com.ejemplos.modelo.DeudaGastoRepository;
 import com.ejemplos.modelo.Gasto;
@@ -13,7 +14,9 @@ import org.springframework.util.CollectionUtils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -282,7 +285,6 @@ public class DeudaGastoService {
         deuda.setAcreedor(acreedor);
         deuda.setMonto(monto);
         deuda.setSaldado(false);
-        deuda.setFechaCreacion(java.sql.Timestamp.valueOf(LocalDateTime.now()));
         return deuda;
     }
     
@@ -316,4 +318,39 @@ public class DeudaGastoService {
                     deudasExistentes.size(), gastoId);
         }
     }
+    
+    public List<ResumenDeudaDTO> generarResumenPorGrupo(Long grupoId) {
+        List<DeudaGasto> deudas = deudaGastoRepository.findByGastoGrupoId(grupoId);
+        Map<Long, ResumenDeudaDTO> resumenMap = new HashMap<>();
+
+        for (DeudaGasto deuda : deudas) {
+            Long deudorId = deuda.getDeudor().getId();
+            Long acreedorId = deuda.getAcreedor().getId();
+            double monto = deuda.getMonto().doubleValue();
+
+            // Deudor
+            resumenMap.putIfAbsent(deudorId, new ResumenDeudaDTO(
+                    deudorId,
+                    deuda.getDeudor().getNombre(),
+                    deuda.getDeudor().getEmail(),
+                    0.0
+            ));
+            resumenMap.get(deudorId).setBalance(resumenMap.get(deudorId).getBalance() - monto);
+
+            // Acreedor
+            resumenMap.putIfAbsent(acreedorId, new ResumenDeudaDTO(
+                    acreedorId,
+                    deuda.getAcreedor().getNombre(),
+                    deuda.getAcreedor().getEmail(),
+                    0.0
+            ));
+            resumenMap.get(acreedorId).setBalance(resumenMap.get(acreedorId).getBalance() + monto);
+        }
+
+        return new ArrayList<>(resumenMap.values());
+    }
+
+
+    
+    
 }

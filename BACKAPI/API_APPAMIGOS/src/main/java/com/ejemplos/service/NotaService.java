@@ -1,5 +1,6 @@
 package com.ejemplos.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,7 +53,9 @@ public class NotaService {
     
     // Crear nueva nota
     public Nota crear(Nota nota) {
+    	nota.setFechaCreacion(new Date());
         return notaRepository.save(nota);
+        
     }
     
     // Actualizar nota existente

@@ -16,4 +16,5 @@ public class DeudaGastoDTO {
     private String titulo;
     private BigDecimal monto;
     private boolean saldado;
+    private String metodoPago;
 }

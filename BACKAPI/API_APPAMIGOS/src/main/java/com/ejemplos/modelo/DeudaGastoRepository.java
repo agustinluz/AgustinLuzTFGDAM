@@ -71,4 +71,8 @@ public interface DeudaGastoRepository extends JpaRepository<DeudaGasto, Long> {
      */
     @Query("SELECT COUNT(d) > 0 FROM DeudaGasto d WHERE d.gasto.id = :gastoId AND d.saldado = false")
     boolean existenDeudasPendientesParaGasto(@Param("gastoId") Long gastoId);
+    
+    @Query("SELECT d FROM DeudaGasto d WHERE d.gasto.grupo.id = :grupoId")
+    List<DeudaGasto> findByGastoGrupoId(@Param("grupoId") Long grupoId);
+
 }

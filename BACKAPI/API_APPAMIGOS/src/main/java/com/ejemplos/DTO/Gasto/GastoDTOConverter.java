@@ -32,6 +32,7 @@
 	        dto.setMonto(gasto.getMonto());
 	        dto.setPartesIguales(gasto.isPartesIguales());
 	        dto.setCantidadesPersonalizadas(gasto.getCantidadesPersonalizadas());
+	        dto.setFechaCreacion(gasto.getFechaCreacion());
 
 	        
 	        if (gasto.getPagadoPor() != null) {

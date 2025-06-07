@@ -2,6 +2,7 @@ package com.ejemplos.DTO.Gasto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -25,5 +26,6 @@ public class GastoDTO {
     private List<DeudaGastoDTO> deudas;
     private boolean partesIguales;
     private Map<Long, BigDecimal> cantidadesPersonalizadas;
+    private Date fechaCreacion;
 
 }

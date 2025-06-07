@@ -23,6 +23,7 @@ public class DeudaGastoDTOConverter {
         dto.setTitulo(deudaGasto.getGasto().getTitulo());
         dto.setMonto(deudaGasto.getMonto());
         dto.setSaldado(deudaGasto.isSaldado());
+        dto.setMetodoPago(deudaGasto.getMetodoPago());
         
         return dto;
     }

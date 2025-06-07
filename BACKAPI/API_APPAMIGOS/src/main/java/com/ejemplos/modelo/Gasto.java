@@ -2,8 +2,11 @@ package com.ejemplos.modelo;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
@@ -39,6 +42,10 @@ public class Gasto implements Serializable {
     private String titulo;
     private boolean partesIguales;
 
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaCreacion = new Date();
+    
     @ManyToOne
     @JoinColumn(name = "pagado_por")
     private Usuario pagadoPor;

@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
@@ -42,9 +44,6 @@ public class DeudaGasto implements Serializable {
     private BigDecimal monto; // Monto que debe
     
     private boolean saldado = false;
-    
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechaCreacion;
     
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechaSaldado;

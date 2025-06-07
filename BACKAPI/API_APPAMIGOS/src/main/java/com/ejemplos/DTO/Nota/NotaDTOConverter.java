@@ -13,6 +13,7 @@ public class NotaDTOConverter {
         dto.setId(nota.getId());
         dto.setTitulo(nota.getTitulo());
         dto.setContenido(nota.getContenido());
+        dto.setFechaCreacion(nota.getFechaCreacion()); 
         
         if (nota.getGrupo() != null) {
             dto.setGrupoId(nota.getGrupo().getId());

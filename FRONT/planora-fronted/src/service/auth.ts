@@ -57,29 +57,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Login con Google
-    async loginWithGoogle(googleData: { email: string, nombre?: string }) {
-      try {
-        const response = await axios.post<{ token: string; usuario: User }>(`${API_BASE_URL}/login-google`, googleData)
-        const { token, usuario } = response.data
-
-        this.token = token
-        this.currentUser = usuario
-        this.isAuthenticated = true
-
-        localStorage.setItem('authToken', token)
-        localStorage.setItem('currentUser', JSON.stringify(usuario))
-
-        return { success: true, user: usuario }
-      } catch (error: any) {
-        console.error('Error en login con Google:', error)
-        return { 
-          success: false, 
-          message: error.response?.data || 'Error al iniciar sesión con Google' 
-        }
-      }
-    },
-
     // Registro
     async register(credentials: RegisterCredentials) {
       try {

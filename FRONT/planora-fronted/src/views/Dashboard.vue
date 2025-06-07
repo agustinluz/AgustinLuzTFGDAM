@@ -179,6 +179,12 @@
                 </div>
                 <span>Galería</span>
               </div>
+              <div class="access-item" @click="goTo('notas')">
+                <div class="access-icon">
+                  <ion-icon :icon="documentOutline" />
+                </div>
+                <span>Notas</span>
+              </div>
             </div>
           </ion-card-content>
         </ion-card>
@@ -235,7 +241,8 @@ import {
 import { 
   add, chevronBack, chevronForward, calendar, cash, checkboxOutline, images,
   logOutOutline, settingsOutline, people, timeOutline, calendarOutline,
-  appsOutline, documentText, closeOutline
+  appsOutline, documentText, closeOutline,
+  documentOutline
 } from 'ionicons/icons'
 import { ref, onMounted, computed } from 'vue'
 

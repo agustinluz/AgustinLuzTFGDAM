@@ -12,6 +12,4 @@ public class EventoCreateDTO {
     private String descripcion;
     private String ubicacion;
     private Date fecha;
-
-
 }

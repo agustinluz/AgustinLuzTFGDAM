@@ -1,7 +1,11 @@
 package com.ejemplos.modelo;
 
 import java.io.Serializable;
+import java.util.Date;
 
+import org.hibernate.annotations.CreationTimestamp;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,6 +31,12 @@ public class Nota implements Serializable {
     private Long id;
 
     private String titulo;
+    
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "fecha_creacion", nullable = false, updatable = false)
+    private Date fechaCreacion = new Date();
+
 
     @Lob
     private String contenido;

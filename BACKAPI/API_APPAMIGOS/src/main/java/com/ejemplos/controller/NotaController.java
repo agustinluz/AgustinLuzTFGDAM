@@ -128,6 +128,10 @@ public class NotaController {
             if (!notaExistente.getUsuario().getId().equals(usuario.getId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
+            System.out.println("ACTUALIZANDO NOTA ID " + notaId);
+            System.out.println("Título recibido: " + notaDTO.getTitulo());
+            System.out.println("Contenido recibido: " + notaDTO.getContenido());
+
 
             // Actualizar los campos de la nota
             notaExistente.setTitulo(notaDTO.getTitulo());
