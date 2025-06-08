@@ -2,6 +2,9 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-back-button :default-href="`/dashboard/${grupoId}`" />
+        </ion-buttons>
         <ion-title>Imágenes del Grupo</ion-title>
         <ion-buttons slot="end">
           <ion-button @click="irACrearImagen" fill="clear">
@@ -113,7 +116,7 @@
               <ion-card class="imagen-card">
                 <div class="imagen-container">
                   <img 
-                    :src="obtenerUrlImagen(imagen.id)" 
+                    ::src="imagen.preview"
                     :alt="imagen.nombre"
                     @error="manejarErrorImagen"
                     @load="onImageLoad"
@@ -195,8 +198,8 @@
             <p>Cargando imagen...</p>
           </div>
           <div v-else-if="imagenCompletaSeleccionada" class="ion-padding">
-            <img 
-              :src="imagenCompletaSeleccionada.datos ? `data:${imagenCompletaSeleccionada.tipoContenido};base64,${imagenCompletaSeleccionada.datos}` : obtenerUrlImagen(imagenCompletaSeleccionada.id)" 
+            <img
+              :src="imagenCompletaSeleccionada.datos ? `data:${imagenCompletaSeleccionada.tipoContenido};base64,${imagenCompletaSeleccionada.datos}` : imagenCompletaSeleccionada.preview"
               :alt="imagenCompletaSeleccionada.nombre"
               style="width: 100%; height: auto; border-radius: 8px;"
             />
@@ -275,6 +278,7 @@ import {
   peopleOutline,
   personOutline
 } from 'ionicons/icons'
+import { imageService } from '@/service/imagenService'
 
 const route = useRoute()
 const router = useRouter()
@@ -286,6 +290,7 @@ const eventos = ref<any[]>([])
 const imagenCompletaSeleccionada = ref<any>(null)
 const modalVistaAbierto = ref(false)
 const cargandoImagenCompleta = ref(false)
+
 
 // Obtener datos de localStorage
 const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
@@ -380,8 +385,20 @@ const cargarImagenes = async () => {
     if (filtros.eventoId) {
       imagenesData = imagenesData.filter((img: any) => img.eventoId === filtros.eventoId)
     }
-    
-    imagenes.value = imagenesData
+    const conPreviews = await Promise.all(
+      imagenesData.map(async (img: any) => {
+        try {
+          const datos = await imageService.getImageData(img.id)
+          img.preview = `data:${img.tipoContenido};base64,${datos}`
+        } catch {
+          img.preview = ''
+        }
+        return img
+      })
+    )
+
+    imagenes.value = conPreviews
+
   } catch (error) {
     console.error('Error al cargar imágenes:', error)
     mostrarToast('Error al cargar imágenes', 'danger')
@@ -393,10 +410,6 @@ const cargarImagenes = async () => {
 
 const irACrearImagen = () => {
   router.push(`/dashboard/${grupoId}/crear/imagen`)
-}
-
-const obtenerUrlImagen = (id: number): string => {
-  return `${API_BASE}/imagenes/${id}/datos`
 }
 
 const verImagenCompleta = async (imagen: any) => {
