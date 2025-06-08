@@ -1,7 +1,6 @@
 <template>
   <ion-page>
-    <AppHeader :title="store.grupo?.nombre || 'Dashboard'" @config="goToConfig" @logout="goToLogout" />
-
+    <AppHeader :title="store.grupo?.nombre || 'Dashboard'" @back="goToGroupList" @config="goToConfig" @logout="goToLogout" />
     <ion-content fullscreen>
       <ion-grid class="dashboard-grid">
         <!-- Estadísticas -->
@@ -164,7 +163,10 @@ function handleEdit(e: EventoDTO) {
 
 // Navegación
 function goToConfig() {
-  router.push({ name: 'group-config', params: { id: grupoId } })
+  router.push({ name: 'configuracionGrupo', params: { grupoId } })
+}
+function goToGroupList() {
+  router.push('/grupo')
 }
 function goToLogout() {
   router.push({ name: 'group-list' })

@@ -3,6 +3,9 @@
     <ion-toolbar color="primary">
       <ion-title>{{ title }}</ion-title>
       <ion-buttons slot="end">
+        <ion-button fill="clear" @click="$emit('back')">
+          <ion-icon :icon="homeOutline" slot="icon-only" />
+        </ion-button>
         <ion-button fill="clear" @click="$emit('config')">
           <ion-icon :icon="settingsOutline" slot="icon-only" />
         </ion-button>

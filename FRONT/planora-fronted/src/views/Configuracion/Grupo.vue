@@ -79,10 +79,13 @@
   const loading = ref(true)
 
   const isAdmin = computed(() => {
-    return grupo.value.adminId === authStore.currentUser?.id
+    const UsuarioAlmacenado = LocalStorage.getItem('usuario')
+    const localId = UsuarioAlmacenado ? JSON.parse(UsuarioAlmacenado).id : null
+    devolver grupo.value.adminId === (authStore.currentUser?.id || localId)
   })
 
   onMounted(() => {
+    authStore.initializeFromStorage()
     initializeComponent()
   })
 
