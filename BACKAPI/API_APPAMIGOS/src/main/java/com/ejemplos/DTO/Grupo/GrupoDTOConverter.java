@@ -1,8 +1,10 @@
 package com.ejemplos.DTO.Grupo;
 
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import com.ejemplos.modelo.Grupo;
+import com.ejemplos.modelo.UsuarioGrupo;
 
 @Component
 public class GrupoDTOConverter {
@@ -13,6 +15,13 @@ public class GrupoDTOConverter {
         dto.setNombre(grupo.getNombre());
         dto.setCodigoInvitacion(grupo.getCodigoInvitacion());
         dto.setImagenPerfil(grupo.getImagenPerfil());
+        Optional<UsuarioGrupo> adminUG = grupo.getUsuarioGrupos()
+                .stream()
+                .filter(ug -> "admin".equalsIgnoreCase(ug.getRol()))
+                .findFirst();
+
+        adminUG.ifPresent(ug -> dto.setAdminId(ug.getUsuario().getId()));
+
         return dto;
     }
     

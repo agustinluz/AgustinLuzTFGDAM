@@ -44,6 +44,7 @@
           <GroupActions 
             :is-admin="isAdmin"
             :grupo-id="grupoId"
+            :participants="participants"
             @transfer-admin="handleTransferAdmin"
             @leave-group="handleLeaveGroup"
             @delete-group="handleDeleteGroup"
@@ -54,12 +55,12 @@
   </template>
 
   <script setup lang="ts">
-  import { ref, onMounted, computed } from 'vue'
-  import { useRoute, useRouter } from 'vue-router'
+  import { ref, onMounted, computed } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
   import { 
     IonPage, IonHeader, IonToolbar, IonTitle, IonContent, 
     IonButtons, IonBackButton, IonSpinner, alertController, toastController 
-  } from '@ionic/vue'
+  } from '@ionic/vue';
 
   import { useAuthStore } from '@/service/auth'
   import { groupService } from '@/service/GrupoService'
@@ -73,16 +74,16 @@
 
   // Mejorar la obtención del grupoId con validación
   const grupoId = ref<number>(0)
-  const grupo = ref<{ adminId?: number; codigoInvitacion?: string; [key: string]: any }>({ codigoInvitacion: '' })
+  const grupo = ref<any>({ codigoInvitacion: '' })
   const groupStats = ref<any>({})
   const participants = ref<any[]>([])
   const loading = ref(true)
 
   const isAdmin = computed(() => {
-    const UsuarioAlmacenado = LocalStorage.getItem('usuario')
-    const localId = UsuarioAlmacenado ? JSON.parse(UsuarioAlmacenado).id : null
-    devolver grupo.value.adminId === (authStore.currentUser?.id || localId)
-  })
+  const usuarioAlmacenado = localStorage.getItem('usuario');
+  const localId = usuarioAlmacenado ? JSON.parse(usuarioAlmacenado).id : null;
+  return grupo.value.adminId === (authStore.currentUser?.id || localId);
+});
 
   onMounted(() => {
     authStore.initializeFromStorage()
@@ -218,8 +219,9 @@
   const handleGenerateCode = async () => {
     try {
       const response = await groupService.generateInviteCode(grupoId.value)
-      if (response && response.data) {
-        grupo.value.codigoInvitacion = response.data.codigoInvitacion
+      if (response && (response as any).data) {
+        const data = (response as any).data
+        ;(grupo.value as any).codigoInvitacion = data.codigoInvitacion
         showToast('Nuevo código generado', 'success')
       }
     } catch (error) {

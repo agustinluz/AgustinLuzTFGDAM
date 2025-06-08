@@ -60,6 +60,14 @@
           </div>
         </div>
 
+        <div class="stat-item">
+          <ion-icon :icon="checkboxOutline" class="stat-icon"></ion-icon>
+          <div class="stat-content">
+            <div class="stat-number">{{ stats.totalVotaciones || 0 }}</div>
+            <div class="stat-label">Votaciones</div>
+          </div>
+        </div>
+
         <!-- Miembros regulares -->
         <div class="stat-item">
           <ion-icon :icon="personOutline" class="stat-icon"></ion-icon>
@@ -69,6 +77,7 @@
           </div>
         </div>
       </div>
+
 
       <!-- Información adicional -->
       <div class="additional-info" v-if="stats.grupoId">
@@ -88,10 +97,6 @@ import {
   IonCard, IonCardHeader, IonCardTitle, IonCardContent,
   IonButton, IonIcon, IonItem, IonLabel
 } from '@ionic/vue'
-import { 
-  refreshOutline, peopleOutline, shieldCheckmarkOutline,
-  calendarOutline, cardOutline, documentTextOutline, personOutline
-} from 'ionicons/icons'
 
 interface Props {
   stats: any

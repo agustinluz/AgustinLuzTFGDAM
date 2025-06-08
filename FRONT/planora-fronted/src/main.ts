@@ -79,6 +79,18 @@ import {
   cash,
   checkboxOutline,
   images,
+
+  refreshOutline,
+  shieldCheckmarkOutline,
+  cardOutline, 
+  documentTextOutline, 
+  personOutline,
+  personCircleOutline,
+
+  personAddOutline,
+  personRemoveOutline,
+  personCircle,
+  
 } from 'ionicons/icons'
 
 addIcons({
@@ -104,4 +116,14 @@ addIcons({
   cash,
   checkboxOutline,
   images,
+  refreshOutline,
+  shieldCheckmarkOutline,
+  cardOutline, 
+  documentTextOutline, 
+  personOutline,
+  personCircleOutline,
+
+  personAddOutline,
+  personRemoveOutline,
+  personCircle,
 })

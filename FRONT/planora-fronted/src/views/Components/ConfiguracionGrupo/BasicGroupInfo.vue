@@ -8,12 +8,13 @@
       <!-- Avatar del grupo -->
       <div class="group-avatar-section">
         <ion-avatar class="group-avatar">
-          <img
+           <img
             :src="grupo.imagenPerfil || '/assets/default-group.png'"
             :alt="grupo.nombre"
           />
         </ion-avatar>
-         <input
+         <!-- Hidden file inputs for camera and gallery -->
+        <input
           ref="cameraInput"
           type="file"
           accept="image/*"
@@ -50,11 +51,10 @@
       </ion-item>
 
       <!-- Código de invitación -->
-      <ion-item>
+      <ion-item v-if="isAdmin">
         <ion-label position="stacked">Código de Invitación</ion-label>
         <ion-input :value="grupo.codigoInvitacion" readonly></ion-input>
         <ion-button 
-          v-if="isAdmin"
           fill="clear" 
           slot="end"
           @click="copyInviteCode"
@@ -175,6 +175,31 @@ const saveChanges = () => {
   isEditing.value = false
 }
 
+const onImageSelected = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (input.files && input.files[0]) {
+    const file = input.files[0]
+
+    if (file.size > 5 * 1024 * 1024) {
+      toastController
+        .create({
+          message: 'La imagen no puede superar los 5MB',
+          duration: 2000,
+          color: 'warning',
+          position: 'top'
+        })
+        .then(t => t.present())
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = e => {
+      editData.value.imagenPerfil = e.target?.result as string
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
 const changeGroupImage = async () => {
   const actionSheet = await actionSheetController.create({
     header: 'Cambiar imagen del grupo',
@@ -202,30 +227,7 @@ const changeGroupImage = async () => {
   
   await actionSheet.present()
 }
-const onImageSelected = (event: Event) => {
-  const input = event.target as HTMLInputElement
-  if (input.files && input.files[0]) {
-    const file = input.files[0]
 
-    if (file.size > 5 * 1024 * 1024) {
-      toastController
-        .create({
-          message: 'La imagen no puede superar los 5MB',
-          duration: 2000,
-          color: 'warning',
-          position: 'top'
-        })
-        .then(t => t.present())
-      return
-    }
-
-    const reader = new FileReader()
-    reader.onload = e => {
-      editData.value.imagenPerfil = e.target?.result as string
-    }
-    reader.readAsDataURL(file)
-  }
-}
 
 const copyInviteCode = async () => {
   try {
