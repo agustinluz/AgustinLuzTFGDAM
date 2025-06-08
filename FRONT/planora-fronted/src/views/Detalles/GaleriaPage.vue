@@ -319,7 +319,8 @@ const api = {
   async obtenerImagenesPorGrupo(grupoId: number) {
     const response = await fetch(`${API_BASE}/imagenes/grupo/${grupoId}`)
     if (!response.ok) throw new Error('Error al obtener imágenes')
-    return response.json()
+    const data = await response.json()
+    return data.imagenes ?? data
   },
 
   async obtenerImagenCompleta(id: number) {

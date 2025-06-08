@@ -655,7 +655,7 @@ const confirmarEliminacionMultiple = async () => {
 const eliminarImagenesMultiple = async () => {
   try {
     const promesas = imagenesSeleccionadas.value.map(id => 
-      axios.delete(`${import.meta.env.VITE_API_URL}/imagenes/${id}`)
+      imageService.deleteImage(id)
     );
     
     await Promise.all(promesas);

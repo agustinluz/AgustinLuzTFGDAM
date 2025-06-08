@@ -1,10 +1,6 @@
 <template>
   <ion-page>
-    <AppHeader
-      :title="store.grupo?.nombre || 'Dashboard'"
-      @config="goToConfig"
-      @logout="goToLogout"
-    />
+    <AppHeader :title="store.grupo?.nombre || 'Dashboard'" @config="goToConfig" @logout="goToLogout" />
 
     <ion-content fullscreen>
       <ion-grid class="dashboard-grid">
@@ -20,10 +16,7 @@
               </ion-card>
             </template>
             <template v-else>
-              <StatsGrid
-                :membersCount="store.participantes.length"
-                :upcomingCount="upcomingEventos.length"
-              />
+              <StatsGrid :membersCount="store.participantes.length" :upcomingCount="upcomingEventos.length" />
             </template>
           </ion-col>
         </ion-row>
@@ -33,28 +26,18 @@
           <ion-col size="12" size-lg="6">
             <transition name="fade-up" mode="out-in">
               <template v-if="!store.loading" key="calendar">
-                <CompactCalendar
-                  :headerDays="headerDays"
-                  :currentMonthYear="currentMonthYear"
-                  :calendarDays="calendarDays"
-                  :eventDates="eventDates"
-                  @prev-month="previousMonth"
-                  @next-month="nextMonth"
-                  @select-day="selectDay"
-                />
+                <CompactCalendar :headerDays="headerDays" :currentMonthYear="currentMonthYear"
+                  :calendarDays="calendarDays" :eventDates="eventDates" @prev-month="previousMonth"
+                  @next-month="nextMonth" @select-day="selectDay" />
               </template>
             </transition>
           </ion-col>
           <ion-col size="12" size-lg="6">
             <transition-group name="list-stagger" tag="div">
               <template v-if="!store.loading" key="events">
-                <EventsList
-                  :events="eventsForSelectedDay.length
-                    ? eventsForSelectedDay
-                    : upcomingEventos"
-                  :limit="3"
-                  @view-event="openEvent"
-                />
+                <EventsList :events="eventsForSelectedDay.length
+                  ? eventsForSelectedDay
+                  : upcomingEventos" :limit="3" @view-event="openEvent" />
               </template>
             </transition-group>
           </ion-col>
@@ -75,23 +58,16 @@
               <ion-skeleton-text animated style="width: 100%; height: 4rem" />
             </template>
             <template v-else>
-              <QuickActions @navigate="goToSection" />
+              <QuickActions />
             </template>
           </ion-col>
         </ion-row>
       </ion-grid>
 
       <!-- Modal de evento -->
-      <EventModal
-        v-if="selectedEvent"
-        :event="selectedEvent"
-        :visible="!!selectedEvent"
-        :userRole="store.usuario?.role ?? 'member'"
-        :userId="store.usuario?.id ?? ''"
-        @close="closeModal"
-        @delete-event="handleDelete"
-        @edit-event="handleEdit"
-      />
+      <EventModal v-if="selectedEvent" :event="selectedEvent" :visible="!!selectedEvent"
+        :userRole="store.usuario?.role ?? 'member'" :userId="store.usuario?.id ?? ''" @close="closeModal"
+        @delete-event="handleDelete" @edit-event="handleEdit" />
 
       <!-- Botón Agregar -->
       <ion-fab slot="fixed" vertical="bottom" horizontal="end">
@@ -211,6 +187,7 @@ function createEvent() {
 .fade-up-enter-active {
   transition: all 0.3s ease;
 }
+
 .fade-up-enter-from {
   opacity: 0;
   transform: translateY(10px);
@@ -219,15 +196,18 @@ function createEvent() {
 .list-stagger-enter-active {
   transition: all 0.25s ease;
 }
+
 .list-stagger-enter-from {
   opacity: 0;
   transform: translateY(5px);
 }
+
 .list-stagger-enter-to {
   opacity: 1;
   transform: translateY(0);
 }
-.list-stagger-enter-active > * {
+
+.list-stagger-enter-active>* {
   transition-delay: calc(var(--enter-index) * 50ms);
 }
 </style>

@@ -1,36 +1,88 @@
 <template>
   <ion-card class="quick-access-card">
-    <ion-card-header>
-      <div class="section-title">
-        <ion-icon :icon="appsOutline" color="secondary" />
-        <ion-card-title>Acciones rápidas</ion-card-title>
-      </div>
+    <ion-card-header class="quick-access-header">
+      <ion-icon :icon="appsOutline" color="secondary" />
+      <ion-card-title>Acciones rápidas</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <div class="quick-access-grid">
-        <div class="access-item" v-for="item in items" :key="item.label" @click="$emit('navigate', item.route)">
-          <div class="access-icon">
-            <ion-icon :icon="item.icon" />
-          </div>
-          <span>{{ item.label }}</span>
-        </div>
-      </div>
+      <ion-grid class="quick-access-grid">
+        <ion-row>
+          <ion-col
+            size="4"
+            v-for="item in items"
+            :key="item.label"
+            class="access-item"
+            @click="navigate(item)"
+          >
+            <ion-button fill="clear" class="access-button">
+              <ion-icon :icon="item.icon" class="access-icon" />
+              <ion-label class="access-label">{{ item.label }}</ion-label>
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
     </ion-card-content>
   </ion-card>
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
-import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon } from '@ionic/vue'
-import { appsOutline, cash, calendar, checkboxOutline, images, documentOutline } from 'ionicons/icons'
+import { useRouter, useRoute } from 'vue-router'
+import { appsOutline, cash, calendarOutline, checkboxOutline, images, documentOutline } from 'ionicons/icons'
+import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon, IonGrid, IonRow, IonCol, IonButton, IonLabel } from '@ionic/vue'
 
-type Item = { label: string; icon: any; route: string }
+interface Item {
+  label: string
+  icon: any
+  path: string
+}
+
+const router = useRouter()
+const route = useRoute()
+const grupoId = route.params.id as string
 
 const items: Item[] = [
-  { label: 'Gastos', icon: cash, route: 'gastos' },
-  { label: 'Eventos', icon: calendar, route: 'eventos' },
-  { label: 'Votos', icon: checkboxOutline, route: 'votaciones' },
-  { label: 'Galería', icon: images, route: 'galeria' },
-  { label: 'Notas', icon: documentOutline, route: 'notas' }
+  { label: 'Gastos',    icon: cash,          path: `/dashboard/${grupoId}/gastos` },
+  { label: 'Eventos',   icon: calendarOutline, path: `/dashboard/${grupoId}/eventos` },
+  { label: 'Votos',     icon: checkboxOutline, path: `/dashboard/${grupoId}/votaciones` },
+  { label: 'Galería',   icon: images,        path: `/dashboard/${grupoId}/galeria` },
+  { label: 'Notas',     icon: documentOutline, path: `/dashboard/${grupoId}/notas` }
 ]
+
+function navigate(item: Item) {
+  router.push(item.path)
+}
 </script>
+
+<style scoped lang="scss">
+.quick-access-card {
+  border-radius: 1rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+}
+
+.quick-access-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.quick-access-grid {
+  --ion-grid-padding: 0;
+}
+
+.access-item {
+  text-align: center;
+}
+
+.access-button {
+  flex-direction: column;
+}
+
+.access-icon {
+  font-size: 1.75rem;
+}
+
+.access-label {
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+</style>
