@@ -12,5 +12,8 @@ public class EventoDTO {
     private Date fecha;
     private Long grupoId;
     private String grupoNombre;
+
+    // ← NUEVO campo
+    private Long creadorId;
 }
 

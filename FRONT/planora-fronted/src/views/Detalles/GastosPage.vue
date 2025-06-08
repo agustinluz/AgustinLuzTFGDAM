@@ -15,7 +15,11 @@
       </div>
 
       <div v-else>
-        <GastosStats :total="formatMonto(totalGastos)" :cantidad="gastos.length" :pendientes="gastosPendientes" />
+        <GastosStats
+          :total="formatMonto(totalGastos)"
+          :cantidad="gastos.length"
+          :pendientes="gastosPendientes"
+        />
 
         <GastosSegment
           :total="gastos.length"
@@ -38,15 +42,13 @@
       </div>
 
       <GastoDetalleModal
-  :abierto="modalAbierto"
-  :gasto="gastoSeleccionado"
-  :config="config"
-  @cerrar="modalAbierto = false"
-  @editar="editarGasto"
-  @eliminar="confirmarEliminarGasto"
-  @marcarSaldado="marcarSaldado"
-/>
-
+        :abierto="modalAbierto"
+        :gasto="gastoSeleccionado"
+        @cerrar="modalAbierto = false"
+        @editar="editarGasto"
+        @eliminar="onEliminarGasto"
+        @marcarSaldado="onMarcarSaldado"
+      />
 
       <ion-action-sheet
         :is-open="mostrarOpciones"
@@ -61,10 +63,10 @@
 </template>
 
 <script setup>
-import { IonPage, IonContent, IonSpinner, IonActionSheet } from '@ionic/vue'
-import { useRoute, useRouter } from 'vue-router'
 import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useGastos } from '@/Composable/useGasto'
+
 import GastosHeader from './Gastos/GastosHeader.vue'
 import GastosStats from './Gastos/GastosStats.vue'
 import GastosSegment from './Gastos/GastosSegment.vue'
@@ -72,7 +74,6 @@ import GastosLista from './Gastos/GastosLista.vue'
 import GastosEmpty from './Gastos/GastosEmpty.vue'
 import GastoDetalleModal from './Gastos/GastoDetalleModal.vue'
 import GastosFab from './Gastos/GastosFab.vue'
-import { useConfiguracionGasto } from '@/Composable/UseConfiguracionGasto'
 
 const route = useRoute()
 const router = useRouter()
@@ -81,7 +82,7 @@ const grupo = ref({ nombre: 'Grupo' })
 
 const mostrarOpciones = ref(false)
 const modalAbierto = ref(false)
-const { config, cargarConfig } = useConfiguracionGasto(grupoId)
+
 const {
   gastos,
   gastoSeleccionado,
@@ -105,42 +106,60 @@ const añadirGasto = () => {
 }
 
 const verDetalles = async (gasto) => {
-  seleccionarGasto(gasto)
+  await seleccionarGasto(gasto)
   modalAbierto.value = true
 }
 
-const cerrarModal = () => {
-  modalAbierto.value = false
-}
-
-const editarGasto = (id) => {
-  cerrarModal()
-  router.push(`/dashboard/${grupoId}/gastos/${id}/editar`)
-}
-
-const confirmarEliminarGasto = async () => {
-  if (gastoSeleccionado.value) {
-    await eliminarGasto(gastoSeleccionado.value.id)
-    cerrarModal()
+// --- nuevos wrappers ---
+const onMarcarSaldado = async (gastoId, participanteId, metodo, notas) => {
+  modalAbierto.value = false        // 1) cerramos modal
+  try {
+    await marcarSaldado(gastoId, participanteId, metodo, notas)
+  } catch (e) {
+    console.error(e)
+  } finally {
+    await cargarGastos()            // 2) refrescamos lista
   }
 }
 
+const onEliminarGasto = async () => {
+  if (!gastoSeleccionado.value) return
+  modalAbierto.value = false
+  try {
+    await eliminarGasto(gastoSeleccionado.value.id)
+  } catch (e) {
+    console.error(e)
+  } finally {
+    await cargarGastos()
+  }
+}
+// -----------------------------
+
+const editarGasto = (id) => {
+  modalAbierto.value = false
+  router.push(`/dashboard/${grupoId}/gastos/${id}/editar`)
+}
+
 const mensajeVacio = computed(() =>
-  filtro.value === 'pendientes' ? 'No hay gastos pendientes' : 'No hay gastos registrados'
+  filtro.value === 'pendientes'
+    ? 'No hay gastos pendientes'
+    : 'No hay gastos registrados'
 )
 
 const opcionesMenu = [
   { text: 'Resumen completo', handler: () => router.push(`/grupo/${grupoId}/resumen`) },
-  { text: 'Configuración', handler: () => router.push(`/grupo/${grupoId}/config`) },
-  { text: 'Cancelar', role: 'cancel' }
+  { text: 'Crear nuevo gasto', handler: añadirGasto },
+  { text: 'Cancelar',         role: 'cancel' }
 ]
 
 const formatMonto = (monto) =>
-  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(Number(monto) || 0)
+  new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'EUR'
+  }).format(Number(monto) || 0)
 
 onMounted(() => {
   cargarGastos()
-  cargarConfig()
 })
 </script>
 

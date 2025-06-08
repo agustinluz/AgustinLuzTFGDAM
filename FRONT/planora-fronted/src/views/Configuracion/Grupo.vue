@@ -3,7 +3,7 @@
       <ion-header>
         <ion-toolbar>
           <ion-buttons slot="start">
-            <ion-back-button default-href="/grupos"></ion-back-button>
+            <ion-back-button default-href="/grupo"></ion-back-button>
           </ion-buttons>
           <ion-title>Configuración del Grupo</ion-title>
         </ion-toolbar>

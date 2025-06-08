@@ -13,9 +13,6 @@ public class GrupoDTOConverter {
         dto.setNombre(grupo.getNombre());
         dto.setCodigoInvitacion(grupo.getCodigoInvitacion());
         dto.setImagenPerfil(grupo.getImagenPerfil());
-        if (grupo.getAdmin() != null) {
-            dto.setAdminId(grupo.getAdmin().getId());
-        }
         return dto;
     }
     

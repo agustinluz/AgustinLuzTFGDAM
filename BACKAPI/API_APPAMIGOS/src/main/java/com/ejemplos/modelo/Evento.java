@@ -19,31 +19,36 @@ import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Data
 @Entity
 @Table(name = "eventos")
 public class Evento implements Serializable {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Lob
-	private String descripcion;
+    @Lob
+    private String descripcion;
 
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date fecha;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fecha;
 
-	private String titulo;
-	private String ubicacion;
+    private String titulo;
+    private String ubicacion;
 
-	@ManyToOne
-	@JoinColumn(name = "grupo_id")
-	private Grupo grupo;
+    @ManyToOne
+    @JoinColumn(name = "grupo_id", nullable = false)
+    private Grupo grupo;
 
-	@OneToMany(mappedBy = "evento")
-	private List<Gasto> gastos;
+    // ← NUEVO: quién creó este evento
+    @ManyToOne
+    @JoinColumn(name = "creador_id", nullable = false)
+    private Usuario creador;
 
-	@OneToMany(mappedBy = "evento")
-	private List<Imagen> imagenes;
+    @OneToMany(mappedBy = "evento")
+    private List<Gasto> gastos;
+
+    @OneToMany(mappedBy = "evento")
+    private List<Imagen> imagenes;
 }
+

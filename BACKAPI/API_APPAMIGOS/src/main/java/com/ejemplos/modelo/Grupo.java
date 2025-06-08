@@ -31,12 +31,7 @@ public class Grupo implements Serializable {
     @Lob
     @Column(name = "imagen_perfil", columnDefinition = "LONGTEXT")
     private String imagenPerfil;
-
-    
-    @ManyToOne
-    @JoinColumn(name = "admin_id")
-    private Usuario admin; // Usuario administrador del grupo
-    
+   
     @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UsuarioGrupo> usuarioGrupos;
     

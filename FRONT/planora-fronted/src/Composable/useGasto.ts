@@ -1,106 +1,79 @@
-import { ref, computed, Ref } from 'vue';
+// src/Composable/useGastos.ts
+import { ref, computed, onMounted } from 'vue';
 import GastoService from '@/service/GastosService';
 
-interface DeudaGasto {
-  id: number;
-  deudorId: number;
-  deudorNombre: string;
-  acreedorId: number;
-  acreedorNombre: string;
-  gastoId: number;
-  titulo: string;
-  monto: number;
-  saldado: boolean;
-}
+// Interfaces locales para tipado
+interface Usuario { id: number; nombre: string; }
+interface DeudaGasto { deudorId: number; deudorNombre: string; monto: number; saldado: boolean; }
+interface GastoResumen { id: number; titulo: string; monto: number; eventoId: number | null; deudas: DeudaGasto[]; partesIguales: boolean; usuarios: Usuario[]; }
+interface Evento { id: number; titulo: string; }
+interface GastoDetalle extends GastoResumen { fechaCreacion: string; evento?: Evento; pagadoPor: Usuario; }
 
-interface Gasto {
-  id: number;
-  titulo: string;
-  monto: number;
-  deudas: DeudaGasto[];
-  pendiente?: boolean;
-}
+enum Filtro { TODOS = 'todos', PENDIENTES = 'pendientes' }
 
 export function useGastos(grupoId: number) {
-  const gastos: Ref<Gasto[]> = ref([]);
-  const gastoSeleccionado: Ref<Gasto | null> = ref(null);
-  const cargando = ref(true);
-  const filtro = ref<'todos' | 'pendientes'>('todos');
+  const gastos = ref<GastoResumen[]>([]);
+  const gastoSeleccionado = ref<GastoDetalle | null>(null);
+  const cargando = ref(false);
+  const filtro = ref<Filtro>(Filtro.TODOS);
 
   const totalGastos = computed(() =>
-    gastos.value.reduce((sum, g) => sum + parseFloat(String(g.monto || 0)), 0)
+    gastos.value.reduce((sum, g) => sum + Number(g.monto || 0), 0)
   );
 
   const gastosPendientes = computed(() =>
-    gastos.value.filter(g => g.pendiente).length
+    gastos.value.filter(g => g.deudas.some(d => !d.saldado)).length
   );
 
   const gastosFiltrados = computed(() =>
-    filtro.value === 'pendientes'
-      ? gastos.value.filter(g => g.pendiente)
+    filtro.value === Filtro.PENDIENTES
+      ? gastos.value.filter(g => g.deudas.some(d => !d.saldado))
       : gastos.value
   );
 
   const cargarGastos = async () => {
     cargando.value = true;
     try {
-      const data: Gasto[] = await GastoService.obtenerGastos(grupoId);
-      gastos.value = data.map(g => {
-        const tienePendientes = Array.isArray(g.deudas) && g.deudas.some((d: DeudaGasto) => !d.saldado);
-        return {
-          ...g,
-          pendiente: tienePendientes
-        };
-      });
+      const data = await GastoService.obtenerGastos(grupoId);
+      gastos.value = data;
     } catch (e) {
-      console.error('Error al cargar gastos', e);
+      console.error('Error cargando gastos', e);
+      gastos.value = [];
     } finally {
       cargando.value = false;
     }
   };
 
-  const seleccionarGasto = (gasto: Gasto) => {
-    gastoSeleccionado.value = gasto;
+  const seleccionarGasto = async (resumen: { id: number }) => {
+    try {
+      const detalle = await GastoService.obtenerGastoPorId(resumen.id);
+      gastoSeleccionado.value = detalle;
+    } catch (e) {
+      console.error('Error obteniendo detalle de gasto', e);
+      gastoSeleccionado.value = null;
+    }
   };
 
-  const marcarSaldado = async (
-  gastoId: number,
-  participanteId: number,
-  metodoPago: string = 'efectivo',
-  notas: string = ''
-) => {
-  if (!participanteId || typeof participanteId !== 'number') {
-    console.warn('❌ Participante ID inválido:', participanteId)
-    return
-  }
-  try {
-    await GastoService.marcarSaldado(gastoId, participanteId, { metodoPago, notas })
-    await cargarGastos()
-  } catch (e) {
-    console.error('Error al marcar saldado', e)
-  }
-}
+  const marcarSaldado = async (gastoId: number, participanteId: number, metodo = 'efectivo', notas = '') => {
+    try {
+      await GastoService.marcarSaldado(gastoId, participanteId, { metodoPago: metodo, notas });
+      await cargarGastos();
+    } catch (e) {
+      console.error('Error marcando saldado', e);
+    }
+  };
 
+  const eliminarGasto = async (id: number) => {
+    try {
+      await GastoService.eliminarGasto(id);
+      gastoSeleccionado.value = null;
+      await cargarGastos();
+    } catch (e) {
+      console.error('Error eliminando gasto', e);
+    }
+  };
 
-  const obtenerGastoPorId = async (gastoId: number) => {
-  try {
-    return await GastoService.obtenerGastoPorId(gastoId)
-  } catch (e) {
-    console.error('Error al obtener gasto por ID', e)
-    return null
-  }
-}
-
-const eliminarGasto = async (gastoId: number) => {
-  try {
-    await GastoService.eliminarGasto(gastoId)
-    gastoSeleccionado.value = null
-    await cargarGastos()
-  } catch (e) {
-    console.error('Error al eliminar gasto', e)
-  }
-}
-
+  onMounted(cargarGastos);
 
   return {
     gastos,
@@ -113,7 +86,6 @@ const eliminarGasto = async (gastoId: number) => {
     cargarGastos,
     seleccionarGasto,
     marcarSaldado,
-    eliminarGasto,
-    obtenerGastoPorId
+    eliminarGasto
   };
 }

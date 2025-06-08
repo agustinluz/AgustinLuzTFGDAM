@@ -11,6 +11,8 @@ import com.ejemplos.DTO.Evento.EventoDTOConverter;
 import com.ejemplos.modelo.Evento;
 import com.ejemplos.modelo.Grupo;
 import com.ejemplos.modelo.Usuario;
+import com.ejemplos.modelo.UsuarioGrupo;
+import com.ejemplos.modelo.UsuarioGrupoRepository;
 import com.ejemplos.security.JwtUtil;
 import com.ejemplos.service.EventoService;
 import com.ejemplos.service.GrupoService;
@@ -36,6 +38,9 @@ public class EventoController {
 
     @Autowired
     private JwtUtil jwtUtil;
+    
+    @Autowired
+    private UsuarioGrupoRepository usuarioGrupoRepo;
 
     @PostMapping("/{grupoId}/crear")
     public ResponseEntity<EventoDTO> crearEventoEnGrupo(
@@ -59,6 +64,8 @@ public class EventoController {
             // Crear evento usando el converter
             Evento evento = eventoDTOConverter.convertToEntity(dto);
             evento.setGrupo(grupo);
+            
+            evento.setCreador(usuario);
             
             Evento eventoGuardado = eventoService.crear(evento);
             EventoDTO response = eventoDTOConverter.convertToDTO(eventoGuardado);
@@ -92,36 +99,49 @@ public class EventoController {
 
     @PutMapping("/{eventoId}")
     public ResponseEntity<EventoDTO> actualizarEvento(
-            @PathVariable Long eventoId,
-            @RequestBody EventoCreateDTO dto,
-            @RequestHeader("Authorization") String token) {
-        try {
-            // Validar token y usuario
-            String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
-            Usuario usuario = usuarioService.obtenerPorEmail(email).orElse(null);
-            if (usuario == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
+        @PathVariable Long eventoId,
+        @RequestBody EventoCreateDTO dto,
+        @RequestHeader("Authorization") String token) {
+      // 1. Valida token → usuario
+      String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+      Usuario usuario = usuarioService.obtenerPorEmail(email).orElse(null);
+      if (usuario == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      }
 
-            Evento eventoExistente = eventoService.obtenerPorId(eventoId).orElse(null);
-            if (eventoExistente == null) {
-                return ResponseEntity.notFound().build();
-            }
+      // 2. Busca el evento
+      Evento eventoExistente = eventoService.obtenerPorId(eventoId).orElse(null);
+      if (eventoExistente == null) {
+        return ResponseEntity.notFound().build();
+      }
 
-            // Actualizar campos
-            eventoExistente.setTitulo(dto.getTitulo());
-            eventoExistente.setDescripcion(dto.getDescripcion());
-            eventoExistente.setFecha(dto.getFecha());
-            eventoExistente.setUbicacion(dto.getUbicacion());
+      // 3. Consulta el rol del usuario en el grupo del evento
+      Long grupoId = eventoExistente.getGrupo().getId();
+      UsuarioGrupo ug = usuarioGrupoRepo
+          .findByUsuarioIdAndGrupoId(usuario.getId(), grupoId)
+          .orElse(null);
+      if (ug == null) {
+        // no pertenece al grupo → forbidden
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+      }
 
-            Evento actualizado = eventoService.actualizar(eventoExistente);
-            EventoDTO response = eventoDTOConverter.convertToDTO(actualizado);
+      // 4. Comprueba que sea cre­ador o admin del grupo
+      boolean esCreador = usuario.getId().equals(eventoExistente.getCreador().getId());
+      boolean esAdmin   = "admin".equalsIgnoreCase(ug.getRol());
+      if (!esCreador && !esAdmin) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+      }
 
-            return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+      // 5. Actualiza campos permitidos
+      eventoExistente.setTitulo(dto.getTitulo());
+      eventoExistente.setDescripcion(dto.getDescripcion());
+      eventoExistente.setFecha(dto.getFecha());
+      eventoExistente.setUbicacion(dto.getUbicacion());
+
+      // 6. Guarda y devuelve DTO
+      Evento actualizado = eventoService.actualizar(eventoExistente);
+      EventoDTO response = eventoDTOConverter.convertToDTO(actualizado);
+      return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{eventoId}")

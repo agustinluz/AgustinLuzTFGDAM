@@ -24,7 +24,7 @@
                 <ion-icon :icon="person" color="primary" />
                 <div>
                   <strong>Pagado por:</strong>
-                  <p>{{ gasto.pagadoPor?.nombre }}</p>
+                  <p>{{ gasto.pagadoPor.nombre }}</p>
                 </div>
               </div>
               <div class="info-item">
@@ -45,20 +45,23 @@
           </ion-card-content>
         </ion-card>
 
-        <ion-card v-if="agrupados.length">
+        <ion-card v-if="agrupados.length > 0">
           <ion-card-header>
             <ion-card-title>Participantes ({{ agrupados.length }})</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <div class="info-item">
-  <ion-icon :icon="cashOutline" color="success" />
-  <div>
-    <strong>Total pagado:</strong>
-    <p>{{ formatMonto(gasto.monto) }}</p>
-  </div>
-</div>
+              <ion-icon :icon="cashOutline" color="success" />
+              <div>
+                <strong>Total pagado:</strong>
+                <p>{{ formatMonto(gasto.monto) }}</p>
+              </div>
+            </div>
 
-            <ion-item v-for="p in agrupados" :key="p.deudorId + '-' + p.total">
+            <ion-item
+              v-for="p in agrupados"
+              :key="`${p.deudorId}-${p.total}`"
+            >
               <ion-avatar slot="start">
                 <div class="avatar-text">{{ getInitials(p.deudorNombre) }}</div>
               </ion-avatar>
@@ -75,10 +78,23 @@
                 <p>{{ formatMonto(p.total) }}</p>
                 <p v-if="p.esPagador" class="acreedor-label">Pagador</p>
               </ion-label>
-              <div v-if="!p.saldado && !p.esPagador">
-                <ion-input v-model="form.metodoPago" placeholder="Método de pago" class="input-inline" />
-                <ion-input v-model="form.notas" placeholder="Notas (opcional)" class="input-inline" />
-                <ion-button fill="clear" size="small" color="success" @click="emitirSaldado(p)">
+              <div v-if="!p.saldado && !p.esPagador" class="actions-inline">
+                <ion-input
+                  v-model="form.metodoPago"
+                  placeholder="Método de pago"
+                  class="input-inline"
+                />
+                <ion-input
+                  v-model="form.notas"
+                  placeholder="Notas (opcional)"
+                  class="input-inline"
+                />
+                <ion-button
+                  fill="clear"
+                  size="small"
+                  color="success"
+                  @click="emitirSaldado(p)"
+                >
                   <ion-icon :icon="checkmarkCircle" />
                   <span class="ml-1">Marcar Saldado</span>
                 </ion-button>
@@ -94,11 +110,20 @@
         </ion-card>
 
         <div class="modal-actions">
-          <ion-button expand="block" fill="outline" @click="emit('editar', gasto.id)">
+          <ion-button
+            expand="block"
+            fill="outline"
+            @click="emit('editar', gasto.id)"
+          >
             <ion-icon :icon="create" slot="start" />
             Editar
           </ion-button>
-          <ion-button expand="block" fill="clear" color="danger" @click="emit('eliminar')">
+          <ion-button
+            expand="block"
+            fill="clear"
+            color="danger"
+            @click="emit('eliminar')"
+          >
             <ion-icon :icon="trash" slot="start" />
             Eliminar
           </ion-button>
@@ -108,79 +133,173 @@
   </ion-modal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
-  IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonContent,
-  IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent,
-  IonItem, IonAvatar, IonLabel, IonInput
+  IonModal,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle,
+  IonCardContent,
+  IonItem,
+  IonAvatar,
+  IonLabel,
+  IonInput
 } from '@ionic/vue'
 import {
-  close, person, calendar, star, create, trash,
-  checkmarkCircle, medalOutline
+  close,
+  person,
+  calendar,
+  star,
+  create,
+  trash,
+  checkmarkCircle,
+  medalOutline,
+  cashOutline
 } from 'ionicons/icons'
 import { defineProps, defineEmits, computed, reactive, nextTick } from 'vue'
 
-const props = defineProps({
-  abierto: Boolean,
-  gasto: Object
-})
-const emit = defineEmits(['cerrar', 'editar', 'eliminar', 'marcarSaldado'])
+// ==== Interfaces de tipos ====
+interface Usuario {
+  id: number
+  nombre: string
+}
+interface Deuda {
+  deudorId: number
+  deudorNombre: string
+  monto: number | string
+  saldado: boolean
+}
+interface Evento {
+  id: number
+  nombre: string
+}
+interface GastoDetalle {
+  id: number
+  titulo: string
+  monto: number | string
+  fecha: string
+  pagadoPor: Usuario
+  evento?: Evento
+  partesIguales: boolean
+  usuarios: Usuario[]
+  deudas: Deuda[]
+}
 
+// ==== Props y Emits tipados ====
+const props = defineProps<{
+  abierto: boolean
+  gasto: GastoDetalle | null
+}>()
+
+const emit = defineEmits<{
+  (e: 'cerrar'): void
+  (e: 'editar', id: number): void
+  (e: 'eliminar'): void
+  (
+    e: 'marcarSaldado',
+    gastoId: number,
+    participanteId: number,
+    metodoPago: string,
+    notas: string
+  ): void
+}>()
+
+// ==== Estado local ====
 const form = reactive({
   metodoPago: 'efectivo',
   notas: ''
 })
 
-const emitirSaldado = async (p) => {
-  if (!p?.deudorId || typeof p.deudorId !== 'number' || !props.gasto?.id) {
-    console.warn('❌ Datos inválidos para marcar saldado:', p)
-    return
-  }
-  emit('marcarSaldado', props.gasto.id, p.deudorId, form.metodoPago, form.notas)
-  console.log(`✅ Deuda de ${p.deudorNombre} marcada como saldada`)
+// ==== Métodos ====
+const emitirSaldado = async (p: { deudorId: number; deudorNombre: string }) => {
+  if (!props.gasto) return
+  emit(
+    'marcarSaldado',
+    props.gasto.id,
+    p.deudorId,
+    form.metodoPago,
+    form.notas
+  )
   await nextTick()
 }
 
+// ==== Lógica de agrupación ====
 const agrupados = computed(() => {
-  const resultado = []
-  if (!props.gasto?.deudas) return resultado
+  const resultado: {
+    deudorId: number
+    deudorNombre: string
+    total: number
+    saldado: boolean
+    esPagador: boolean
+  }[] = []
 
-  const agrupacion = new Map()
+  const g = props.gasto
+  if (!g) return resultado
 
-  for (const deuda of props.gasto.deudas) {
-    // ⛔️ Ignorar deudas del pagador hacia sí mismo
-    if (deuda.deudorId === deuda.acreedorId) continue
+  const participantes = g.usuarios
+  const share = g.partesIguales
+    ? Number(g.monto) / participantes.length
+    : null
 
-    const key = deuda.deudorId
-    if (!agrupacion.has(key)) {
-      agrupacion.set(key, {
-        deudorId: deuda.deudorId,
-        deudorNombre: deuda.deudorNombre,
-        total: 0,
-        saldado: true,
-        esPagador: false
-      })
+  for (const u of participantes) {
+    // omitimos al pagador
+    if (u.id === g.pagadoPor.id) continue
+
+    let total = 0
+    let saldado = true
+
+    const deuda = g.deudas.find(d => d.deudorId === u.id)
+
+    if (share !== null) {
+      total = share
+      saldado = deuda ? deuda.saldado : false
+    } else {
+      total = deuda ? Number(deuda.monto) : 0
+      saldado = deuda ? deuda.saldado : false
     }
-    const entrada = agrupacion.get(key)
-    entrada.total += parseFloat(deuda.monto || 0)
-    if (!deuda.saldado) {
-      entrada.saldado = false
-    }
+
+    resultado.push({
+      deudorId: u.id,
+      deudorNombre: u.nombre,
+      total,
+      saldado,
+      esPagador: false
+    })
   }
 
-  return Array.from(agrupacion.values())
+  return resultado
 })
 
+// ==== Helpers de formato ====
+const formatMonto = (m: number | string): string =>
+  new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'EUR'
+  }).format(Number(m) || 0)
 
-const formatMonto = monto =>
-  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(parseFloat(monto) || 0)
-
-const formatFecha = fecha =>
-  new Date(fecha).toLocaleDateString('es-ES', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+const formatFecha = (f: string | Date): string =>
+  new Date(f).toLocaleDateString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   })
 
-const getInitials = nombre => nombre?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'NA'
+const getInitials = (nombre: string): string =>
+  nombre
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
 </script>
 
 <style scoped>
@@ -223,5 +342,10 @@ const getInitials = nombre => nombre?.split(' ').map(n => n[0]).join('').toUpper
   --padding-start: 0;
   --padding-end: 0;
   font-size: 0.9rem;
+}
+.actions-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 </style>

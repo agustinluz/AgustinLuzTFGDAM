@@ -1,0 +1,19 @@
+    $primary: #3b82f6;
+    $primary-tint: rgba(59, 130, 246, 0.1);
+    $secondary: #f59e0b;
+    $tertiary: #6b7280;
+    $shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    $shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+    @mixin card-base {
+      border-radius: 1rem;
+      box-shadow: $shadow;
+      transition: transform .2s ease, box-shadow .2s ease;
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: $shadow-hover;
+      }
+    }
+
+    

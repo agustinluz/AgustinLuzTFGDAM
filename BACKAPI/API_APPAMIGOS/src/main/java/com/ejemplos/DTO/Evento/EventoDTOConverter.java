@@ -9,24 +9,27 @@ import java.util.Date;
 @Component
 public class EventoDTOConverter {
     
-    public EventoDTO convertToDTO(Evento evento) {
-        if (evento == null) return null;
-        
-        EventoDTO dto = new EventoDTO();
-        dto.setId(evento.getId());
-        dto.setTitulo(evento.getTitulo());
-        dto.setDescripcion(evento.getDescripcion());
-        dto.setUbicacion(evento.getUbicacion());
-        dto.setFecha(evento.getFecha());
-        
-        if (evento.getGrupo() != null) {
-            dto.setGrupoId(evento.getGrupo().getId());
-            dto.setGrupoNombre(evento.getGrupo().getNombre());
-        }
-        
-        return dto;
-    }
-    
+	public EventoDTO convertToDTO(Evento evento) {
+	    if (evento == null) return null;
+
+	    EventoDTO dto = new EventoDTO();
+	    dto.setId(evento.getId());
+	    dto.setTitulo(evento.getTitulo());
+	    dto.setDescripcion(evento.getDescripcion());
+	    dto.setUbicacion(evento.getUbicacion());
+	    dto.setFecha(evento.getFecha());
+
+	    if (evento.getGrupo() != null) {
+	        dto.setGrupoId(evento.getGrupo().getId());
+	        dto.setGrupoNombre(evento.getGrupo().getNombre());
+	    }
+	    // ← NUEVO:
+	    if (evento.getCreador() != null) {
+	        dto.setCreadorId(evento.getCreador().getId());
+	    }
+
+	    return dto;
+	}
     public Evento convertToEntity(EventoCreateDTO dto) {
         if (dto == null) return null;
         

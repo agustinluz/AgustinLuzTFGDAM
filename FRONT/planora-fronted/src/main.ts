@@ -6,6 +6,7 @@ import { IonicVue } from '@ionic/vue';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
+import '@/styles/global.scss'
 
 /* Basic CSS for apps built with Ionic */
 import '@ionic/vue/css/normalize.css';
@@ -45,6 +46,7 @@ router.isReady().then(() => {
 });
 
 
+
 import { addIcons } from 'ionicons'
 import {
   trashBinOutline,
@@ -58,7 +60,25 @@ import {
   addOutline,
   peopleOutline,
   document,
-  documentOutline
+  documentOutline,
+
+  chevronBack,
+  chevronForward,
+
+
+  // Header
+  settingsOutline,
+  logOutOutline,
+
+  // EventModal
+  closeOutline,
+  documentText,
+  
+  // QuickActions
+  appsOutline,
+  cash,
+  checkboxOutline,
+  images,
 } from 'ionicons/icons'
 
 addIcons({
@@ -73,5 +93,15 @@ addIcons({
   addOutline,
   peopleOutline,
   document,
-  documentOutline
+  documentOutline,
+  chevronBack,
+  chevronForward,
+  settingsOutline,
+  logOutOutline,
+  closeOutline,
+  documentText,
+  appsOutline,
+  cash,
+  checkboxOutline,
+  images,
 })

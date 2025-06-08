@@ -60,8 +60,9 @@ public class Usuario implements Serializable {
     @JsonIgnore
     private List<DeudaGasto> creditos; // Dinero que le deben a este usuario
 
+    @OneToMany(mappedBy = "creador", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Evento> eventosCreados;
 
-	
 	
 
 

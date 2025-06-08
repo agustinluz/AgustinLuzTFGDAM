@@ -190,7 +190,7 @@ public class GastoController {
         return ResponseEntity.ok(participantesDTO);
     }
 
-    @PostMapping("grupos/{gastoId}/participantes/{participanteId}/saldado")
+    @PostMapping("/grupos/{gastoId}/participantes/{participanteId}/saldado")
     public ResponseEntity<Map<String, Object>> marcarComoSaldado(
             @PathVariable Long gastoId,
             @PathVariable Long participanteId,
