@@ -24,7 +24,7 @@ interface RegisterCredentials {
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     currentUser: null as User | null,
-    token: localStorage.getItem('authToken') || null,
+    token: localStorage.getItem('token') || null,
     isAuthenticated: false
   }),
 
@@ -44,7 +44,7 @@ export const useAuthStore = defineStore('auth', {
         this.currentUser = usuario
         this.isAuthenticated = true
 
-        localStorage.setItem('authToken', token)
+        localStorage.setItem('token', token)
         localStorage.setItem('currentUser', JSON.stringify(usuario))
 
         return { success: true, user: usuario }
@@ -77,13 +77,13 @@ export const useAuthStore = defineStore('auth', {
       this.token = null
       this.isAuthenticated = false
       
-      localStorage.removeItem('authToken')
+      localStorage.removeItem('token')
       localStorage.removeItem('currentUser')
     },
 
     // Inicializar desde localStorage
     initializeFromStorage() {
-      const token = localStorage.getItem('authToken')
+      const token = localStorage.getItem('token')
       const userData = localStorage.getItem('currentUser')
 
       if (token && userData) {

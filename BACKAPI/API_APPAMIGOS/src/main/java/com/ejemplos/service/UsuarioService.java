@@ -30,8 +30,17 @@ public class UsuarioService {
         return usuarioRepository.findById(id);
     }
     
-    public Optional<Usuario> obtenerPorGrupoId(Long id) {
-        return usuarioRepository.findById(id);
+    /**
+     * Obtiene los usuarios pertenecientes a un grupo.
+     *
+     * @param grupoId identificador del grupo
+     * @return lista de usuarios que pertenecen al grupo
+     */
+    public List<Usuario> obtenerPorGrupoId(Long grupoId) {
+        return usuarioGrupoRepository.findByGrupoId(grupoId)
+                .stream()
+                .map(UsuarioGrupo::getUsuario)
+                .toList();
     }
     public Optional<Usuario> findByEmail(String email) {
         return usuarioRepository.findByEmail(email);
