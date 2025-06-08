@@ -15,7 +15,7 @@
               </ion-card>
             </template>
             <template v-else>
-              <StatsGrid :membersCount="store.participantes.length" :upcomingCount="upcomingEventos.length" />
+              <StatsGrid :membersCount="store.participantes.length" :upcomingCount="upcomingEventos.length" @show-stats="loadUserStats" />
             </template>
           </ion-col>
         </ion-row>

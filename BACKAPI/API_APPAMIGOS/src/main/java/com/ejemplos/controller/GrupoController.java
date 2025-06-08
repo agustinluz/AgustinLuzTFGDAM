@@ -16,6 +16,7 @@ import com.ejemplos.DTO.Usuario.UsuarioGrupoDTOConverter;
 import com.ejemplos.modelo.Grupo;
 import com.ejemplos.modelo.Usuario;
 import com.ejemplos.modelo.UsuarioGrupo;
+import com.ejemplos.service.AsistenciaEventoService;
 import com.ejemplos.service.GrupoService;
 import com.ejemplos.service.UsuarioGrupoService;
 import com.ejemplos.service.UsuarioService;
@@ -45,6 +46,16 @@ public class GrupoController {
 	@Autowired
 	private UsuarioGrupoDTOConverter usuarioGrupoDTOConverter;
 
+	@Autowired
+    private AsistenciaEventoService asistenciaEventoService;
+	
+	@GetMapping("/buscar-usuario")
+    public ResponseEntity<UsuarioDTO> buscarUsuarioPorEmail(@RequestParam String email) {
+            return usuarioService.obtenerPorEmail(email)
+                            .map(usuarioDTOConverter::convertToDTO)
+                            .map(ResponseEntity::ok)
+                            .orElse(ResponseEntity.notFound().build());
+    }
 	// Obtener grupo por ID
 	@GetMapping("/{id}")
 	public ResponseEntity<GrupoDTO> obtenerGrupo(@PathVariable Long id) {
@@ -165,30 +176,35 @@ public class GrupoController {
 
 	// Registrar usuario en grupo (crear usuario si no existe)
 	@PostMapping("/{id}/usuarios")
-	public ResponseEntity<UsuarioDTO> registrarUsuarioEnGrupo(@PathVariable Long id,
-			@RequestBody UsuarioCreateDTO usuarioDTO) {
+    public ResponseEntity<?> registrarUsuarioEnGrupo(@PathVariable Long id,
+                    @RequestBody UsuarioCreateDTO usuarioDTO) {
 
-		Grupo grupo = grupoService.obtenerPorId(id).orElse(null);
-		if (grupo == null) {
-			return ResponseEntity.notFound().build();
-		}
-
-		Usuario usuario = usuarioService.obtenerPorEmail(usuarioDTO.getEmail()).orElseGet(() -> {
-			Usuario u = new Usuario();
-			u.setNombre(usuarioDTO.getNombre());
-			u.setEmail(usuarioDTO.getEmail());
-			u.setPassword(usuarioDTO.getPassword());
-			return usuarioService.crear(u);
-		});
-
-		UsuarioGrupo ug = new UsuarioGrupo();
-		ug.setGrupo(grupo);
-		ug.setUsuario(usuario);
-		ug.setRol("miembro");
-		usuarioGrupoService.guardar(ug);
-
-		return ResponseEntity.ok(usuarioDTOConverter.convertToDTO(usuario));
+	Grupo grupo = grupoService.obtenerPorId(id).orElse(null);
+	if (grupo == null) {
+		return ResponseEntity.notFound().build();
 	}
+
+            Usuario usuario = usuarioService.obtenerPorEmail(usuarioDTO.getEmail()).orElse(null);
+            if (usuario == null) {
+                    Usuario u = new Usuario();
+                    u.setNombre(usuarioDTO.getNombre());
+                    u.setEmail(usuarioDTO.getEmail());
+                    u.setPassword(usuarioDTO.getPassword());
+                    try {
+                            usuario = usuarioService.crear(u);
+                    } catch (IllegalArgumentException e) {
+                            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+                    }
+            }
+
+	UsuarioGrupo ug = new UsuarioGrupo();
+	ug.setGrupo(grupo);
+	ug.setUsuario(usuario);
+	ug.setRol("miembro");
+	usuarioGrupoService.guardar(ug);
+
+	return ResponseEntity.ok(usuarioDTOConverter.convertToDTO(usuario));
+}
 
 	// Invitar usuario existente al grupo
 	@PostMapping("/{grupoId}/invitar")
@@ -381,6 +397,42 @@ public class GrupoController {
 
 		return ResponseEntity.ok(stats);
 	}
+	
+	// Obtener estadísticas por usuario en el grupo
+    @GetMapping("/{id}/estadisticas/usuarios")
+    public ResponseEntity<List<Map<String, Object>>> obtenerEstadisticasUsuarios(@PathVariable Long id,
+                    @RequestHeader("usuarioId") Long usuarioId) {
+
+            boolean esMiembro = usuarioGrupoService.obtenerPorUsuarioIdYGrupoId(usuarioId, id).isPresent();
+            if (!esMiembro) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            List<UsuarioGrupo> asociaciones = usuarioGrupoService.obtenerPorGrupoId(id);
+            List<Map<String, Object>> resultado = new ArrayList<>();
+
+            for (UsuarioGrupo ug : asociaciones) {
+                    Usuario u = ug.getUsuario();
+                    Map<String, Object> userStats = new HashMap<>();
+                    userStats.put("usuarioId", u.getId());
+                    userStats.put("nombreUsuario", u.getNombre());
+                    userStats.put("rol", ug.getRol());
+
+                    long creados = Optional.ofNullable(u.getEventosCreados())
+                                    .orElse(List.of())
+                                    .stream()
+                                    .filter(e -> e.getGrupo().getId().equals(id))
+                                    .count();
+                    userStats.put("eventosCreados", creados);
+
+                    long asistencias = asistenciaEventoService.contarAsistenciasPorUsuarioYGrupo(u.getId(), id);
+                    userStats.put("eventosAsistidos", asistencias);
+
+                    resultado.add(userStats);
+            }
+
+            return ResponseEntity.ok(resultado);
+    }
 
 	// Eliminar grupo (solo admin)
 	@DeleteMapping("/{id}")

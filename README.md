@@ -31,3 +31,12 @@ Asegúrese de que MySQL esté en ejecución y actualice los archivos `applicatio
 
 - [ BACKAPI/API_APPAMIGOS/README.md ]( BACKAPI/API_APPAMIGOS/README.md )
 - [ FRONT/planora-fronted/README.md ]( FRONT/planora-fronted/README.md )
+
+
+
+## Invitaciones y creación de usuarios
+
+El endpoint `POST /api/grupos/{id}/usuarios` permite añadir participantes a un grupo.
+Si el email proporcionado no existe en la base de datos se creará automáticamente
+un nuevo usuario antes de asociarlo al grupo. El email debe ser único y el
+servidor devolverá `400 Bad Request` si ya está registrado.

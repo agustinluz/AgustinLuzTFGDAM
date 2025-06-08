@@ -12,10 +12,10 @@ export interface EventoDTO {
   titulo: string
   descripcion?: string
   ubicacion?: string
-  fecha: string         // ISO date
+  fecha: string
   grupoId: number
   grupoNombre: string
-  creadorId: number     // ¡asegúrate de que el backend lo rellene!
+  creadorId: number
 }
 
 export interface UsuarioGrupoDTO {
@@ -26,7 +26,16 @@ export interface UsuarioGrupoDTO {
   emailUsuario: string
 }
 
-const API = import.meta.env.VITE_API_URL // p.e. "http://localhost:8080/api"
+export interface UsuarioStatsDTO {
+  usuarioId: number
+  nombreUsuario: string
+  rol: string
+  eventosCreados: number
+  eventosAsistidos: number
+}
+
+const API = import.meta.env.VITE_API_URL
+
 export const dashboardService = {
   async getGrupo(grupoId: string): Promise<GrupoDTO> {
     const res = await fetch(`${API}/grupos/${grupoId}`)
@@ -42,7 +51,7 @@ export const dashboardService = {
 
   async getParticipantes(grupoId: string, usuarioId: string): Promise<UsuarioGrupoDTO[]> {
     const res = await fetch(`${API}/grupos/${grupoId}/usuarios`, {
-      headers: { 'usuarioId': usuarioId }
+      headers: {  usuarioId }
     })
     if (!res.ok) throw new Error('Error al cargar participantes')
     return res.json()
@@ -53,10 +62,18 @@ export const dashboardService = {
     if (!res.ok) throw new Error('Error al cargar detalle de evento')
     return res.json()
   },
-  // En DashboardService
-async deleteEvento(eventoId: string): Promise<void> {
-  const res = await fetch(`${API}/eventos/${eventoId}`, { method: 'DELETE' })
-  if (!res.ok) throw new Error('Error al eliminar evento')
-}
+
+async getUsuarioStats(grupoId: string, usuarioId: string): Promise<UsuarioStatsDTO[]> {
+    const res = await fetch(`${API}/grupos/${grupoId}/estadisticas/usuarios`, {
+      headers: { usuarioId }
+    })
+    if (!res.ok) throw new Error('Error al cargar estadisticas')
+    return res.json()
+  },
+
+  async deleteEvento(eventoId: string): Promise<void> {
+    const res = await fetch(`${API}/eventos/${eventoId}`, { method: 'DELETE' })
+    if (!res.ok) throw new Error('Error al eliminar evento')
+  }
 
 }

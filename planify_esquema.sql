@@ -15,12 +15,10 @@ CREATE TABLE grupos (
 -- Tabla usuarios
 CREATE TABLE usuarios (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    grupo_id BIGINT,
-    email VARCHAR(255),
+    email VARCHAR(255) unique,
     nombre VARCHAR(255),
     password VARCHAR(255),
     PRIMARY KEY (id),
-    CONSTRAINT FK_usuario_grupo FOREIGN KEY (grupo_id) REFERENCES grupos (id)
 ) ENGINE=InnoDB;
 
 -- Tabla eventos
@@ -100,4 +98,14 @@ CREATE TABLE votos (
     PRIMARY KEY (id),
     CONSTRAINT FK_voto_votacion FOREIGN KEY (votacion_id) REFERENCES votaciones (id),
     CONSTRAINT FK_voto_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
+) ENGINE=InnoDB;
+-- Tabla asistencias a eventos
+CREATE TABLE asistencias_eventos (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    usuario_id BIGINT NOT NULL,
+    evento_id BIGINT NOT NULL,
+    asistio BIT,
+    PRIMARY KEY (id),
+    CONSTRAINT FK_asistencia_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    CONSTRAINT FK_asistencia_evento FOREIGN KEY (evento_id) REFERENCES eventos(id)
 ) ENGINE=InnoDB;
