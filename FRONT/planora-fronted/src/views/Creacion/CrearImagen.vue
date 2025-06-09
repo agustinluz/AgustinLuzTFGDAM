@@ -2,6 +2,9 @@
   <IonPage>
     <IonHeader>
       <IonToolbar>
+        <IonButtons slot="start">
+          <IonBackButton :default-href="`/dashboard/${contexto.grupoId}/galeria`" />
+        </IonButtons>
         <IonTitle>Galería - {{ contexto.grupoNombre }}</IonTitle>
         <IonButtons slot="end">
           <IonButton @click="abrirModalSubida" fill="clear">

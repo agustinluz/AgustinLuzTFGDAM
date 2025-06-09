@@ -14,6 +14,7 @@ import com.ejemplos.modelo.Usuario;
 import com.ejemplos.modelo.UsuarioGrupo;
 import com.ejemplos.modelo.UsuarioGrupoRepository;
 import com.ejemplos.security.JwtUtil;
+import com.ejemplos.service.EventoAsistenteService;
 import com.ejemplos.service.EventoService;
 import com.ejemplos.service.GrupoService;
 import com.ejemplos.service.UsuarioService;
@@ -42,6 +43,10 @@ public class EventoController {
     @Autowired
     private UsuarioGrupoRepository usuarioGrupoRepo;
 
+    @Autowired
+    private EventoAsistenteService eventoAsistenteService;
+
+    
     @PostMapping("/{grupoId}/crear")
     public ResponseEntity<EventoDTO> crearEventoEnGrupo(
             @PathVariable Long grupoId,
@@ -74,6 +79,46 @@ public class EventoController {
             
         } catch (Exception e) {
             e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    @PostMapping("/{eventoId}/asistencia")
+    public ResponseEntity<?> marcarAsistencia(
+            @PathVariable Long eventoId,
+            @RequestParam boolean asistio,
+            @RequestHeader("Authorization") String token) {
+        try {
+            String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+            Usuario usuario = usuarioService.obtenerPorEmail(email).orElse(null);
+            if (usuario == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            Evento evento = eventoService.obtenerPorId(eventoId).orElse(null);
+            if (evento == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            eventoAsistenteService.marcarAsistencia(evento, usuario, asistio);
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{eventoId}/asistencia/estadisticas")
+    public ResponseEntity<?> obtenerEstadisticas(@PathVariable Long eventoId) {
+        try {
+            long total = eventoAsistenteService.contarInvitados(eventoId);
+            long asistieron = eventoAsistenteService.contarAsistentes(eventoId);
+            return ResponseEntity.ok(
+                    java.util.Map.of(
+                            "eventoId", eventoId,
+                            "totalInvitados", total,
+                            "asistieron", asistieron));
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

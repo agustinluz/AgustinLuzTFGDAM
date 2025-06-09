@@ -35,5 +35,13 @@ export const imageService = {
   async getFullImage(id: number) {
     const res = await api.get(`/imagenes/${id}`);
     return res.data;
+  },
+
+   async getImageData(id: number) {
+    const res = await api.get(`/imagenes/${id}/datos`);
+    const data = res.data as { datos?: string };
+    return data.datos || '';
   }
+
+
 };

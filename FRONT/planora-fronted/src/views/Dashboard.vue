@@ -1,7 +1,6 @@
 <template>
   <ion-page>
-    <AppHeader :title="store.grupo?.nombre || 'Dashboard'" @config="goToConfig" @logout="goToLogout" />
-
+    <AppHeader :title="store.grupo?.nombre || 'Dashboard'" @back="goToGroupList" @config="goToConfig" @logout="goToLogout" />
     <ion-content fullscreen>
       <ion-grid class="dashboard-grid">
         <!-- Estadísticas -->
@@ -16,7 +15,7 @@
               </ion-card>
             </template>
             <template v-else>
-              <StatsGrid :membersCount="store.participantes.length" :upcomingCount="upcomingEventos.length" />
+              <StatsGrid :membersCount="store.participantes.length" :upcomingCount="upcomingEventos.length" @show-stats="loadUserStats" />
             </template>
           </ion-col>
         </ion-row>
@@ -69,6 +68,8 @@
         :userRole="store.usuario?.role ?? 'member'" :userId="store.usuario?.id ?? ''" @close="closeModal"
         @delete-event="handleDelete" @edit-event="handleEdit" />
 
+
+        <UserStatsModal :visible="showUserStats" :stats="statsUsuarios" @close="showUserStats = false" />
       <!-- Botón Agregar -->
       <ion-fab slot="fixed" vertical="bottom" horizontal="end">
         <ion-fab-button color="primary" @click="createEvent">
@@ -89,6 +90,8 @@ import type { EventoDTO } from '@/service/DashboardService'
 // Componentes
 import AppHeader from '@/views/Components/Dashboard/AppHeader.vue'
 import StatsGrid from '@/views/Components/Dashboard/StatsGrid.vue'
+import { dashboardService, type UsuarioStatsDTO } from '@/service/DashboardService'
+import UserStatsModal from '@/views/Components/Dashboard/UserStatsModal.vue'
 import CompactCalendar from '@/views/Components/Dashboard/CompactCalendar.vue'
 import EventsList from '@/views/Components/Dashboard/EventList.vue'
 import ParticipantGrid from '@/views/Components/Dashboard/ParticipantGrid.vue'
@@ -123,6 +126,8 @@ const grupoId = localStorage.getItem('grupoActivoId')!
 
 // Modal state
 const selectedEvent = ref<EventoDTO | null>(null)
+const showUserStats = ref(false)
+const statsUsuarios = ref<UsuarioStatsDTO[]>([])
 
 // Formatted month-year
 const currentMonthYear = computed(() =>
@@ -149,6 +154,12 @@ async function openEvent(e: EventoDTO) {
   selectedEvent.value = await store.getEventoDetalle(String(e.id))
 }
 
+// Dummy handler for StatsGrid event
+async function loadUserStats() {
+  statsUsuarios.value = await dashboardService.getUsuarioStats(grupoId, store.usuario?.id ?? '')
+  showUserStats.value = true
+}
+
 function closeModal() {
   selectedEvent.value = null
 }
@@ -164,7 +175,10 @@ function handleEdit(e: EventoDTO) {
 
 // Navegación
 function goToConfig() {
-  router.push({ name: 'group-config', params: { id: grupoId } })
+  router.push({ name: 'configuracionGrupo', params: { grupoId } })
+}
+function goToGroupList() {
+  router.push('/grupo')
 }
 function goToLogout() {
   router.push({ name: 'group-list' })

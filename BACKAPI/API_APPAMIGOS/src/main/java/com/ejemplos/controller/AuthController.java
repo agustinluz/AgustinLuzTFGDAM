@@ -64,20 +64,24 @@ public class AuthController {
     }
 
     @PostMapping("/registro")
-    public ResponseEntity<UsuarioDTO> registrarUsuario(@RequestBody UsuarioCreateDTO dto) {
+    public ResponseEntity<?> registrarUsuario(@RequestBody UsuarioCreateDTO dto) {
         Usuario usuario = new Usuario();
         usuario.setNombre(dto.getNombre());
         usuario.setEmail(dto.getEmail());
         usuario.setPassword(dto.getPassword());
 
-        Usuario creado = usuarioService.crear(usuario);
+        try {
+            Usuario creado = usuarioService.crear(usuario);
 
-        UsuarioDTO response = new UsuarioDTO();
-        response.setId(creado.getId());
-        response.setNombre(creado.getNombre());
-        response.setEmail(creado.getEmail());
+            UsuarioDTO response = new UsuarioDTO();
+            response.setId(creado.getId());
+            response.setNombre(creado.getNombre());
+            response.setEmail(creado.getEmail());
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
     
     @GetMapping("/invitacion/{codigo}")

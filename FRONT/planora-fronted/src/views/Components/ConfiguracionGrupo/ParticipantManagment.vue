@@ -24,11 +24,11 @@
       <div class="participants-list">
         <ion-item-group>
           <ion-item-divider>
-            <ion-label>Participantes ({{ participants.length }})</ion-label>
+            <ion-label>Participantes ({{ displayParticipants.length }})</ion-label>
           </ion-item-divider>
 
           <ion-item 
-            v-for="participant in participants" 
+            v-for="participant in displayParticipants" 
             :key="participant.id"
             class="participant-item"
           >
@@ -247,6 +247,16 @@ const participantActionButtons = computed(() => [
     role: 'cancel'
   }
 ])
+// Normalizar participantes para usar propiedades consistentes
+const displayParticipants = computed(() =>
+  props.participants.map((p: any) => ({
+    id: p.id ?? p.usuarioId,
+    nombre: p.nombre ?? p.nombreUsuario,
+    email: p.email ?? p.emailUsuario,
+    esAdmin: p.esAdmin ?? (p.rol ? p.rol.toLowerCase() === 'admin' : false),
+    fechaUnion: p.fechaUnion
+  }))
+)
 
 // Methods
 const getInitial = (nombre: string | null | undefined): string => {

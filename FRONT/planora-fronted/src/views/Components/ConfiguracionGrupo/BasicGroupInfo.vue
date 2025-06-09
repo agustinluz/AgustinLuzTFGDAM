@@ -8,14 +8,30 @@
       <!-- Avatar del grupo -->
       <div class="group-avatar-section">
         <ion-avatar class="group-avatar">
-          <img 
-            :src="grupo.imagenPerfil || '/assets/default-group.png'" 
+           <img
+            :src="grupo.imagenPerfil || '/assets/default-group.png'"
             :alt="grupo.nombre"
           />
         </ion-avatar>
-        <ion-button 
-          v-if="isAdmin" 
-          fill="clear" 
+         <!-- Hidden file inputs for camera and gallery -->
+        <input
+          ref="cameraInput"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          @change="onImageSelected"
+          style="display: none"
+        />
+        <input
+          ref="galleryInput"
+          type="file"
+          accept="image/*"
+          @change="onImageSelected"
+          style="display: none"
+        />
+        <ion-button
+          v-if="isAdmin"
+          fill="clear"
           size="small"
           @click="changeGroupImage"
         >
@@ -35,11 +51,10 @@
       </ion-item>
 
       <!-- Código de invitación -->
-      <ion-item>
+      <ion-item v-if="isAdmin">
         <ion-label position="stacked">Código de Invitación</ion-label>
         <ion-input :value="grupo.codigoInvitacion" readonly></ion-input>
         <ion-button 
-          v-if="isAdmin"
           fill="clear" 
           slot="end"
           @click="copyInviteCode"
@@ -113,7 +128,8 @@ interface Props {
 
 const props = defineProps<Props>()
 const emit = defineEmits(['update-group', 'generate-code'])
-
+const cameraInput = ref<HTMLInputElement | null>(null)
+const galleryInput = ref<HTMLInputElement | null>(null)
 const isEditing = ref(false)
 const editData = ref({
   nombre: '',
@@ -159,6 +175,31 @@ const saveChanges = () => {
   isEditing.value = false
 }
 
+const onImageSelected = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (input.files && input.files[0]) {
+    const file = input.files[0]
+
+    if (file.size > 5 * 1024 * 1024) {
+      toastController
+        .create({
+          message: 'La imagen no puede superar los 5MB',
+          duration: 2000,
+          color: 'warning',
+          position: 'top'
+        })
+        .then(t => t.present())
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = e => {
+      editData.value.imagenPerfil = e.target?.result as string
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
 const changeGroupImage = async () => {
   const actionSheet = await actionSheetController.create({
     header: 'Cambiar imagen del grupo',
@@ -167,16 +208,14 @@ const changeGroupImage = async () => {
         text: 'Cámara',
         icon: cameraOutline,
         handler: () => {
-          // TODO: Implementar captura desde cámara
-          console.log('Camera selected')
+           cameraInput.value?.click()
         }
       },
       {
         text: 'Galería',
         icon: 'image-outline',
         handler: () => {
-          // TODO: Implementar selección desde galería
-          console.log('Gallery selected')
+          galleryInput.value?.click()
         }
       },
       {
@@ -188,6 +227,7 @@ const changeGroupImage = async () => {
   
   await actionSheet.present()
 }
+
 
 const copyInviteCode = async () => {
   try {

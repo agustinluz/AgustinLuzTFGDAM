@@ -64,7 +64,7 @@ import {
 
   chevronBack,
   chevronForward,
-
+  homeOutline,           // ← Añadido
 
   // Header
   settingsOutline,
@@ -79,6 +79,17 @@ import {
   cash,
   checkboxOutline,
   images,
+
+  refreshOutline,
+  shieldCheckmarkOutline,
+  cardOutline,
+  documentTextOutline,
+  personOutline,
+  personCircleOutline,
+
+  personAddOutline,
+  personRemoveOutline,
+  personCircle,
 } from 'ionicons/icons'
 
 addIcons({
@@ -96,6 +107,7 @@ addIcons({
   documentOutline,
   chevronBack,
   chevronForward,
+  homeOutline,           // ← Añadido
   settingsOutline,
   logOutOutline,
   closeOutline,
@@ -104,4 +116,15 @@ addIcons({
   cash,
   checkboxOutline,
   images,
+  refreshOutline,
+  shieldCheckmarkOutline,
+  cardOutline,
+  documentTextOutline,
+  personOutline,
+  personCircleOutline,
+  personAddOutline,
+  personRemoveOutline,
+  personCircle,
+  
 })
+

@@ -5,11 +5,12 @@
       <ion-toolbar color="primary">
         <ion-title>Mis Grupos</ion-title>
         <ion-buttons slot="end">
-          <ion-button v-if="grupoActivo" fill="clear" @click="irAConfiguracion" class="config-btn">
-            <ion-icon :icon="settings" slot="icon-only"></ion-icon>
-          </ion-button>
+          
           <ion-button fill="clear" @click="() => router.push('/perfil')">
             <ion-icon :icon="person" slot="icon-only"></ion-icon>
+          </ion-button>
+          <ion-button fill="clear" @click="() => router.push('/invitaciones')">
+            <ion-icon :icon="mailOutline" slot="icon-only"></ion-icon>
           </ion-button>
           <ion-button fill="clear" @click="logout">
             <ion-icon :icon="logOutOutline" slot="icon-only"></ion-icon>
@@ -73,15 +74,15 @@
                     <div class="grupo-stats">
                       <div class="stat-item">
                         <ion-icon :icon="people" size="small"></ion-icon>
-                        <span>{{ grupo.participantes?.length || 0 }}</span>
+                        <span>{{ grupo.participantesCount ?? 0 }}</span>
                       </div>
                       <div class="stat-item">
                         <ion-icon :icon="calendar" size="small"></ion-icon>
-                        <span>{{ grupo.eventos?.length || 0 }}</span>
+                        <span>{{ grupo.eventosCount ?? 0 }}</span>
                       </div>
                       <div class="stat-item">
                         <ion-icon :icon="camera" size="small"></ion-icon>
-                        <span>{{ grupo.fotos?.length || 0 }}</span>
+                        <span>{{ grupo.fotosCount ?? 0 }}</span>
                       </div>
                     </div>
                   </ion-card-content>
@@ -259,6 +260,7 @@ import {
 } from '@ionic/vue'
 import {
   camera,
+  mailOutline,
   people,
   key,
   calendar,
@@ -311,6 +313,21 @@ const cargarGrupos = async () => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/usuario/${usuario.value.id}`)
     if (res.ok) {
       grupos.value = await res.json()
+      for (const g of grupos.value) {
+        const [uRes, eRes, fRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_URL}/grupos/${g.id}/usuarios`),
+          fetch(`${import.meta.env.VITE_API_URL}/eventos/${g.id}/eventos`),
+          fetch(`${import.meta.env.VITE_API_URL}/imagenes/grupo/${g.id}`)
+        ])
+        g.participantesCount = uRes.ok ? (await uRes.json()).length : 0
+        g.eventosCount = eRes.ok ? (await eRes.json()).length : 0
+        if (fRes.ok) {
+          const data = await fRes.json()
+          g.fotosCount = data.total || 0
+        } else {
+          g.fotosCount = 0
+        }
+      }
     } else {
       grupos.value = []
     }
@@ -319,38 +336,6 @@ const cargarGrupos = async () => {
   }
   cargando.value = false
 }
-
-// Actualizar el método irAConfiguracion en tu primer archivo
-const irAConfiguracion = async () => {
-  if (grupoActivo.value) {
-    console.log('Navegando a configuración del grupo:', grupoActivo.value.id);
-    
-    // Asegurar que el ID esté guardado en localStorage
-    localStorage.setItem('grupoActivoId', grupoActivo.value.id.toString());
-    
-    // Navegar usando el ID del grupo activo
-    router.push(`/grupo/${grupoActivo.value.id}/configuracion`);
-  } else {
-    console.error('No hay grupo activo disponible');
-    
-    // Intentar obtener el ID del localStorage como fallback
-    const grupoActivoId = localStorage.getItem('grupoActivoId');
-    if (grupoActivoId) {
-      console.log('Usando grupo del localStorage:', grupoActivoId);
-      router.push(`/grupo/${grupoActivoId}/configuracion`);
-    } else {
-      // Si no hay grupo activo, mostrar error
-      const toast = await toastController.create({
-        message: 'No hay grupo activo seleccionado',
-        duration: 2000,
-        position: 'top',
-        color: 'warning'
-      });
-      toast.present();
-    }
-  }
-};
-
 const manejarImagenGrupo = (event) => {
   const file = event.target.files[0]
   if (file) {

@@ -89,7 +89,7 @@ public class DeudaGastoService {
         }
         
         DeudaGasto deuda = deudaOpt.get();
-        salarDeuda(deuda, metodoPago, notas);
+        saldarDeuda(deuda, metodoPago, notas);
         
         log.info("Deuda marcada como saldada exitosamente - ID: {}, Monto: {}", 
                 deuda.getId(), deuda.getMonto());
@@ -300,7 +300,7 @@ public class DeudaGastoService {
                 .findFirst();
     }
     
-    private void salarDeuda(DeudaGasto deuda, String metodoPago, String notas) {
+    private void saldarDeuda(DeudaGasto deuda, String metodoPago, String notas) {
         deuda.setSaldado(true);
         deuda.setFechaSaldado(java.sql.Timestamp.valueOf(LocalDateTime.now()));
         deuda.setMetodoPago(metodoPago);

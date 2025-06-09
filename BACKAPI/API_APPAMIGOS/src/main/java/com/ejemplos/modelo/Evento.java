@@ -1,9 +1,11 @@
 package com.ejemplos.modelo;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,6 +14,7 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
@@ -50,5 +53,22 @@ public class Evento implements Serializable {
 
     @OneToMany(mappedBy = "evento")
     private List<Imagen> imagenes;
+    
+
+    @ManyToMany
+    @JoinTable(
+        name = "evento_asistentes",
+        joinColumns = @JoinColumn(name = "evento_id"),
+        inverseJoinColumns = @JoinColumn(name = "usuario_id")
+    )
+    private List<Usuario> asistentes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventoAsistente> eventoAsistentes = new ArrayList<>();
+    
+    
+    @OneToMany(mappedBy = "evento")
+    private List<AsistenciaEvento> asistencias;
 }
+
 
