@@ -129,7 +129,7 @@
     if (isNaN(id) || id === 0) {
       console.error('No se pudo obtener un ID de grupo válido')
       showToast('Error: No se pudo identificar el grupo', 'danger')
-      router.push('/grupos')
+      router.push('/grupo')
       return
     }
     
@@ -172,7 +172,7 @@
     } catch (error) {
       console.error('Error al cargar grupo:', error)
       showToast('Grupo no encontrado', 'warning')
-      router.push('/grupos')
+      router.push('/grupo')
     }
   }
 
@@ -216,7 +216,7 @@
     statsUsuarios.value = await dashboardService.getUsuarioStats(String(grupoId.value), String(authStore.currentUser?.id ?? ''))
     showUserStats.value = true
   }
-  
+
   const handleUpdateGroup = async (updateData: any) => {
     try {
       await groupService.updateGroup(grupoId.value, updateData)
@@ -278,7 +278,7 @@
             try {
               await groupService.leaveGroup(grupoId.value)
               showToast('Has salido del grupo', 'success')
-              router.push('/grupos')
+              router.push('/grupo')
             } catch (error) {
               console.error('Error al salir del grupo:', error)
               showToast('Error al salir del grupo', 'danger')
@@ -302,7 +302,7 @@
             try {
               await groupService.deleteGroup(grupoId.value)
               showToast('Grupo eliminado', 'success')
-              router.push('/grupos')
+              router.push('/grupo')
             } catch (error) {
               console.error('Error al eliminar grupo:', error)
               showToast('Error al eliminar grupo', 'danger')

@@ -26,23 +26,27 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/dashboard/:id/crear',
+    name: 'crear',
     component: () => import('../views/Creacion/Crear.vue'),
-    props: true // Esto permite que el componente reciba el id como prop
+    props: true
   },
   {
     path: '/dashboard/:id/crear/gasto',
+    name: 'crear-gasto',
     component: () => import('../views/Creacion/CrearGasto.vue'),
-    props: true // Esto permite que el componente reciba el id como prop
+    props: true
   },
   {
     path: '/dashboard/:id/crear/evento',
+    name: 'crear-evento',
     component: () => import('../views/Creacion/CrearEvento.vue'),
-    props: true // Esto permite que el componente reciba el id como prop
+    props: true
   },
    {
     path: '/dashboard/:id/crear/imagen',
+    name: 'crear-imagen',
     component: () => import('../views/Creacion/CrearImagen.vue'),
-    props: true // Esto permite que el componente reciba el id como prop
+    props: true
   },
   {
   path: '/dashboard/:grupoId/notas/crear',

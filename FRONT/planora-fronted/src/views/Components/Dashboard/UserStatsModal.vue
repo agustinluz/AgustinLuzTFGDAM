@@ -1,5 +1,5 @@
 <template>
-  <ion-modal v-model:visible="visible" backdrop-dismiss="false">
+  <ion-modal v-model:visible="close" backdrop-dismiss="false">
     <ion-header>
       <ion-toolbar color="primary" class="toolbar">
         <ion-title class="title">Estadísticas de usuarios</ion-title>

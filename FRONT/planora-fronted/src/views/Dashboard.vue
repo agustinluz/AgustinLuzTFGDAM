@@ -170,7 +170,9 @@ function goToLogout() {
   localStorage.clear()
   router.push('/login')
 }
-function createEvent()  { router.push({ name: 'event-create', params: { grupoId } }) }
+function createEvent()  {
+  router.push(`/dashboard/${grupoId}/crear`)
+}
 function goToAllEvents(){ router.push({ name: 'event-list', params: { grupoId } }) }
 
 // Mostrar modal de stats
