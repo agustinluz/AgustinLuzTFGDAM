@@ -1,5 +1,5 @@
 <template>
-  <ion-card>
+  <ion-card @click="$emit('show-users')" style="cursor:pointer">
     <ion-card-header>
       <ion-card-title>
         Estadísticas
@@ -97,13 +97,24 @@ import {
   IonCard, IonCardHeader, IonCardTitle, IonCardContent,
   IonButton, IonIcon, IonItem, IonLabel
 } from '@ionic/vue'
+import {
+  peopleOutline,
+  shieldCheckmarkOutline,
+  calendarOutline,
+  cardOutline,
+  documentTextOutline,
+  checkboxOutline,
+  personOutline,
+  refreshOutline
+} from 'ionicons/icons'
+
 
 interface Props {
   stats: any
 }
 
 defineProps<Props>()
-defineEmits(['refresh'])
+defineEmits(['refresh', 'show-users'])
 </script>
 
 <style scoped>

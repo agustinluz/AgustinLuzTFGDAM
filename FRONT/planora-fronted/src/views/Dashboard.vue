@@ -1,81 +1,100 @@
 <template>
   <ion-page>
-    <AppHeader :title="store.grupo?.nombre || 'Dashboard'" @back="goToGroupList" @config="goToConfig" @logout="goToLogout" />
-    <ion-content fullscreen>
-      <ion-grid class="dashboard-grid">
-        <!-- Estadísticas -->
-        <ion-row>
-          <ion-col size="12" size-md="6" size-xl="4">
-            <template v-if="store.loading">
-              <ion-card>
-                <ion-card-content>
-                  <ion-skeleton-text animated style="width: 60%; height: 2rem; margin-bottom: .5rem" />
-                  <ion-skeleton-text animated style="width: 40%; height: 1.5rem" />
-                </ion-card-content>
-              </ion-card>
-            </template>
-            <template v-else>
-              <StatsGrid :membersCount="store.participantes.length" :upcomingCount="upcomingEventos.length" @show-stats="loadUserStats" />
-            </template>
-          </ion-col>
-        </ion-row>
+    <AppHeader
+      :title="store.grupo?.nombre || 'Dashboard'"
+      @back="goToGroupList"
+      @config="goToConfig"
+      @logout="goToLogout"
+    />
 
-        <!-- Calendario compacto + Lista de eventos -->
-        <ion-row>
-          <ion-col size="12" size-lg="6">
-            <transition name="fade-up" mode="out-in">
-              <template v-if="!store.loading" key="calendar">
-                <CompactCalendar :headerDays="headerDays" :currentMonthYear="currentMonthYear"
-                  :calendarDays="calendarDays" :eventDates="eventDates" @prev-month="previousMonth"
-                  @next-month="nextMonth" @select-day="selectDay" />
-              </template>
-            </transition>
-          </ion-col>
-          <ion-col size="12" size-lg="6">
-            <transition-group name="list-stagger" tag="div">
-              <template v-if="!store.loading" key="events">
-                <EventsList :events="eventsForSelectedDay.length
-                  ? eventsForSelectedDay
-                  : upcomingEventos" :limit="3" @view-event="openEvent" />
-              </template>
-            </transition-group>
-          </ion-col>
-        </ion-row>
+    <ion-content class="dashboard">
+      <!-- 1. Estadísticas -->
+      <section class="section stats">
+        <StatsGrid
+          v-if="!store.loading"
+          :membersCount="store.participantes.length"
+          :upcomingCount="upcomingEventos.length"
+        />
+        <ion-skeleton-text
+          v-else
+          animated
+          style="width: 70%; height: 2rem; margin: 1rem auto"
+        />
+      </section>
 
-        <!-- Participantes + Acciones rápidas -->
-        <ion-row>
-          <ion-col size="12" size-md="6">
-            <template v-if="store.loading">
-              <ion-skeleton-text animated style="width: 100%; height: 4rem" />
-            </template>
-            <template v-else>
-              <ParticipantGrid :participants="store.participantes" />
-            </template>
-          </ion-col>
-          <ion-col size="12" size-md="6">
-            <template v-if="store.loading">
-              <ion-skeleton-text animated style="width: 100%; height: 4rem" />
-            </template>
-            <template v-else>
-              <QuickActions />
-            </template>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
+      <!-- 2. Calendario + Próximos eventos -->
+      <section class="section calendar-events">
+        <CompactCalendar
+          v-if="!store.loading"
+          :headerDays="headerDays"
+          :currentMonthYear="currentMonthYear"
+          :calendarDays="calendarDays"
+          :eventDates="eventDates"
+          @prev-month="previousMonth"
+          @next-month="nextMonth"
+          @select-day="selectDay"
+        />
+        <div class="events-panel">
+          <EventsList
+            v-if="!store.loading"
+            :events="eventsForSelectedDay.length
+              ? eventsForSelectedDay
+              : upcomingEventos"
+            :limit="4"
+            @view-event="openEvent"
+          />
+          <ion-button
+            v-if="!store.loading"
+            fill="clear"
+            class="view-all"
+            @click="goToAllEvents"
+          >
+            Ver todos →
+          </ion-button>
+          <ion-skeleton-text
+            v-else
+            animated
+            style="width: 90%; height: 1.5rem; margin: 0.5rem auto"
+          />
+        </div>
+      </section>
 
-      <!-- Modal de evento -->
-      <EventModal v-if="selectedEvent" :event="selectedEvent" :visible="!!selectedEvent"
-        :userRole="store.usuario?.role ?? 'member'" :userId="store.usuario?.id ?? ''" @close="closeModal"
-        @delete-event="handleDelete" @edit-event="handleEdit" />
+      <!-- 3. Participantes + Acciones rápidas -->
+      <section class="section participants-actions">
+        <div v-if="!store.loading">
+          <ParticipantGrid :participants="store.participantes" />
+          <QuickActions />
+        </div>
+        <div v-else class="loading-placeholder">
+          <ion-skeleton-text animated style="width: 100%; height: 4rem" />
+        </div>
+      </section>
 
-
-        <UserStatsModal :visible="showUserStats" :stats="statsUsuarios" @close="showUserStats = false" />
-      <!-- Botón Agregar -->
-      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <!-- 4. Botón flotante de añadir evento -->
+      <ion-fab vertical="bottom" horizontal="end">
         <ion-fab-button color="primary" @click="createEvent">
           <ion-icon :icon="add" />
         </ion-fab-button>
       </ion-fab>
+
+      <!-- 5. Modal de detalles de evento -->
+      <EventModal
+        v-if="selectedEvent"
+        :visible="!!selectedEvent"
+        :event="selectedEvent"
+        :userRole="store.usuario?.role ?? 'member'"
+        :userId="store.usuario?.id ?? ''"
+        @close="closeModal"
+        @delete-event="handleDelete"
+        @edit-event="handleEdit"
+      />
+
+      <!-- 6. Modal de estadísticas de usuarios -->
+      <UserStatsModal
+        :visible="showStatsModal"
+        :stats="store.userStats"
+        @close="showStatsModal = false"
+      />
     </ion-content>
   </ion-page>
 </template>
@@ -88,140 +107,122 @@ import { useCalendar } from '@/Composable/useCalendar'
 import type { EventoDTO } from '@/service/DashboardService'
 
 // Componentes
-import AppHeader from '@/views/Components/Dashboard/AppHeader.vue'
-import StatsGrid from '@/views/Components/Dashboard/StatsGrid.vue'
-import { dashboardService, type UsuarioStatsDTO } from '@/service/DashboardService'
-import UserStatsModal from '@/views/Components/Dashboard/UserStatsModal.vue'
-import CompactCalendar from '@/views/Components/Dashboard/CompactCalendar.vue'
-import EventsList from '@/views/Components/Dashboard/EventList.vue'
-import ParticipantGrid from '@/views/Components/Dashboard/ParticipantGrid.vue'
-import QuickActions from '@/views/Components/Dashboard/QuickAction.vue'
-import EventModal from '@/views/Components/Dashboard/EventModal.vue'
+import AppHeader        from '@/views/Components/Dashboard/AppHeader.vue'
+import StatsGrid        from '@/views/Components/Dashboard/StatsGrid.vue'
+import CompactCalendar  from '@/views/Components/Dashboard/CompactCalendar.vue'
+import EventsList       from '@/views/Components/Dashboard/EventList.vue'
+import ParticipantGrid  from '@/views/Components/Dashboard/ParticipantGrid.vue'
+import QuickActions     from '@/views/Components/Dashboard/QuickAction.vue'
+import EventModal       from '@/views/Components/Dashboard/EventModal.vue'
+import UserStatsModal   from '@/views/Components/Dashboard/UserStatsModal.vue'
 
-// Ionic
-import {
-  IonPage, IonContent, IonGrid, IonRow, IonCol,
-  IonFab, IonFabButton, IonIcon, IonCardContent, IonCard
-} from '@ionic/vue'
-import { IonSkeletonText } from '@ionic/vue'
-import { add } from 'ionicons/icons'
+import { IonContent } from '@ionic/vue'
+import { add }        from 'ionicons/icons'
 
-// Store & Composable
 const store = useDashboardStore()
 const {
-  currentDate,
-  selectedDate,
-  headerDays,
-  calendarDays,
-  eventDates,
-  eventsForSelectedDay,
-  previousMonth,
-  nextMonth,
-  selectDay
+  currentDate, headerDays, calendarDays,
+  eventDates, eventsForSelectedDay,
+  previousMonth, nextMonth, selectDay
 } = useCalendar()
 
-// Router
 const router = useRouter()
 const grupoId = localStorage.getItem('grupoActivoId')!
 
-// Modal state
-const selectedEvent = ref<EventoDTO | null>(null)
-const showUserStats = ref(false)
-const statsUsuarios = ref<UsuarioStatsDTO[]>([])
+// Estado local
+const selectedEvent   = ref<EventoDTO | null>(null)
+const showStatsModal  = ref(false)
 
-// Formatted month-year
 const currentMonthYear = computed(() =>
   currentDate.value.toLocaleString('default', { month: 'long', year: 'numeric' })
 )
 
-// Upcoming this week
 const upcomingEventos = computed(() =>
   store.eventos.filter(e => {
-    const delta = new Date(e.fecha).getTime() - Date.now()
-    return delta >= 0 && delta < 7 * 24 * 60 * 60 * 1000
+    const dt = new Date(e.fecha).getTime() - Date.now()
+    return dt >= 0 && dt < 7 * 24 * 60 * 60 * 1000
   })
 )
 
-// Initial data load
 onMounted(() => {
   const user = JSON.parse(localStorage.getItem('usuario')!)
   store.usuario = user
   store.fetchAll(grupoId, user.id)
 })
 
-// Handlers
+// Handlers de eventos
 async function openEvent(e: EventoDTO) {
   selectedEvent.value = await store.getEventoDetalle(String(e.id))
 }
-
-// Dummy handler for StatsGrid event
-async function loadUserStats() {
-  statsUsuarios.value = await dashboardService.getUsuarioStats(grupoId, store.usuario?.id ?? '')
-  showUserStats.value = true
-}
-
-function closeModal() {
-  selectedEvent.value = null
-}
-
+function closeModal() { selectedEvent.value = null }
 function handleDelete(id: number) {
   store.deleteEvento(String(id))
   closeModal()
 }
-
 function handleEdit(e: EventoDTO) {
   router.push({ name: 'event-edit', params: { id: e.id } })
 }
 
 // Navegación
-function goToConfig() {
-  router.push({ name: 'configuracionGrupo', params: { grupoId } })
-}
-function goToGroupList() {
-  router.push('/grupo')
-}
+function goToConfig()    { router.push({ name: 'configuracionGrupo', params: { grupoId } }) }
+function goToGroupList() { router.push('/grupo') }
 function goToLogout() {
-  router.push({ name: 'group-list' })
+  localStorage.clear()
+  router.push('/login')
 }
-function goToSection(route: string) {
-  router.push({ name: route, params: { grupoId } })
-}
-function createEvent() {
-  router.push({ name: 'event-create', params: { grupoId } })
-}
+function createEvent()  { router.push({ name: 'event-create', params: { grupoId } }) }
+function goToAllEvents(){ router.push({ name: 'event-list', params: { grupoId } }) }
+
+// Mostrar modal de stats
+function toggleStats() { showStatsModal.value = !showStatsModal.value }
 </script>
 
 <style scoped lang="scss">
-.dashboard-grid {
-  --ion-grid-padding: 1.5rem;
-  --ion-grid-column-padding: 1rem;
-  --ion-grid-row-padding: 1rem;
-}
+.dashboard {
+  background: var(--ion-color-background);
 
-.fade-up-enter-active {
-  transition: all 0.3s ease;
-}
+  .section {
+    padding: calc(var(--spacing-unit) * 2);
+    & + .section { margin-top: calc(var(--spacing-unit) * 2); }
+  }
 
-.fade-up-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
+  .stats {
+    display: flex;
+    justify-content: center;
+  }
 
-.list-stagger-enter-active {
-  transition: all 0.25s ease;
-}
+  .calendar-events {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: calc(var(--spacing-unit) * 2);
+    @media (max-width: 768px) { grid-template-columns: 1fr; }
 
-.list-stagger-enter-from {
-  opacity: 0;
-  transform: translateY(5px);
-}
+    .events-panel {
+      display: flex;
+      flex-direction: column;
+      .view-all {
+        align-self: flex-end;
+        margin-top: var(--spacing-unit);
+        font-size: var(--font-size-sm);
+      }
+    }
+  }
 
-.list-stagger-enter-to {
-  opacity: 1;
-  transform: translateY(0);
-}
+  .participants-actions {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: calc(var(--spacing-unit) * 2);
+    @media (max-width: 768px) { grid-template-columns: 1fr; }
+  }
 
-.list-stagger-enter-active>* {
-  transition-delay: calc(var(--enter-index) * 50ms);
+  .loading-placeholder {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-unit);
+  }
+
+  ion-fab-button {
+    box-shadow: var(--box-shadow-md);
+  }
 }
 </style>

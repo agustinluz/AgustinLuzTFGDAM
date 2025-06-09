@@ -1,22 +1,26 @@
 <template>
   <ion-card class="quick-access-card">
-    <ion-card-header class="quick-access-header">
-      <ion-icon :icon="appsOutline" color="secondary" />
+    <ion-card-header class="header">
+      <ion-icon :icon="appsOutline" class="header-icon" />
       <ion-card-title>Acciones rápidas</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <ion-grid class="quick-access-grid">
+      <ion-grid class="grid">
         <ion-row>
           <ion-col
-            size="4"
             v-for="item in items"
             :key="item.label"
-            class="access-item"
-            @click="navigate(item)"
+            size="4" size-sm="6"
+            class="col"
           >
-            <ion-button fill="clear" class="access-button">
-              <ion-icon :icon="item.icon" class="access-icon" />
-              <ion-label class="access-label">{{ item.label }}</ion-label>
+            <ion-button
+              fill="clear"
+              class="btn"
+              @click="navigate(item)"
+              :aria-label="item.label"
+            >
+              <ion-icon :icon="item.icon" class="icon" />
+              <ion-label class="label">{{ item.label }}</ion-label>
             </ion-button>
           </ion-col>
         </ion-row>
@@ -27,25 +31,28 @@
 
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import { appsOutline, cash, calendarOutline, checkboxOutline, images, documentOutline } from 'ionicons/icons'
-import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon, IonGrid, IonRow, IonCol, IonButton, IonLabel } from '@ionic/vue'
+import {
+  IonCard, IonCardHeader, IonCardTitle,
+  IonCardContent, IonIcon, IonGrid, IonRow, IonCol,
+  IonButton, IonLabel
+} from '@ionic/vue'
+import {
+  appsOutline, cash, calendarOutline,
+  checkboxOutline, images, documentOutline
+} from 'ionicons/icons'
 
-interface Item {
-  label: string
-  icon: any
-  path: string
-}
+interface Item { label: string; icon: any; path: string }
 
 const router = useRouter()
 const route = useRoute()
-const grupoId = route.params.id as string
+const grupoId = String(route.params.id)
 
 const items: Item[] = [
-  { label: 'Gastos',    icon: cash,          path: `/dashboard/${grupoId}/gastos` },
-  { label: 'Eventos',   icon: calendarOutline, path: `/dashboard/${grupoId}/eventos` },
-  { label: 'Votos',     icon: checkboxOutline, path: `/dashboard/${grupoId}/votaciones` },
-  { label: 'Galería',   icon: images,        path: `/dashboard/${grupoId}/galeria` },
-  { label: 'Notas',     icon: documentOutline, path: `/dashboard/${grupoId}/notas` }
+  { label: 'Gastos',  icon: cash,            path: `/dashboard/${grupoId}/gastos` },
+  { label: 'Eventos', icon: calendarOutline, path: `/dashboard/${grupoId}/eventos` },
+  { label: 'Votos',   icon: checkboxOutline, path: `/dashboard/${grupoId}/votaciones` },
+  { label: 'Galería', icon: images,          path: `/dashboard/${grupoId}/galeria` },
+  { label: 'Notas',   icon: documentOutline, path: `/dashboard/${grupoId}/notas` }
 ]
 
 function navigate(item: Item) {
@@ -55,34 +62,41 @@ function navigate(item: Item) {
 
 <style scoped lang="scss">
 .quick-access-card {
-  border-radius: 1rem;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  background: var(--ion-color-surface);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-sm);
+  margin-bottom: calc(var(--spacing-unit) * 2);
 }
-
-.quick-access-header {
+.header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-unit);
+  padding: var(--spacing-unit);
 }
-
-.quick-access-grid {
+.header-icon {
+  font-size: var(--font-size-lg);
+  color: var(--ion-color-secondary);
+}
+.grid {
   --ion-grid-padding: 0;
+  padding: 0 var(--spacing-unit) var(--spacing-unit);
 }
-
-.access-item {
+.col {
   text-align: center;
+  margin-bottom: var(--spacing-unit);
 }
-
-.access-button {
+.btn {
   flex-direction: column;
+  transition: transform 0.2s;
 }
-
-.access-icon {
-  font-size: 1.75rem;
+.btn:hover {
+  transform: translateY(-2px);
 }
-
-.access-label {
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
+.icon {
+  font-size: var(--font-size-xl);
+}
+.label {
+  font-size: var(--font-size-sm);
+  margin-top: 4px;
 }
 </style>

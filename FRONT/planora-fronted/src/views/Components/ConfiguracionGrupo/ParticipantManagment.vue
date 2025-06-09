@@ -48,10 +48,7 @@
                 >
                   {{ participant.esAdmin ? 'Administrador' : 'Miembro' }}
                 </ion-chip>
-                <span class="join-date">
-                  Desde: {{ formatDate(participant.fechaUnion) }}
-                </span>
-              </p>
+                </p>  
             </ion-label>
 
             <!-- Acciones del participante (solo para admins) -->
@@ -130,40 +127,6 @@
                     </ion-button>
                   </ion-item>
                 </div>
-
-                <!-- Crear nuevo usuario -->
-                <div class="create-user-section">
-                  <ion-item-divider>
-                    <ion-label>O crear nuevo usuario</ion-label>
-                  </ion-item-divider>
-
-                  <ion-item>
-                    <ion-label position="stacked">Nombre completo</ion-label>
-                    <ion-input
-                      v-model="newUser.nombre"
-                      placeholder="Nombre del nuevo usuario"
-                    ></ion-input>
-                  </ion-item>
-
-                  <ion-item>
-                    <ion-label position="stacked">Email</ion-label>
-                    <ion-input
-                      v-model="newUser.email"
-                      type="email"
-                      placeholder="email@ejemplo.com"
-                    ></ion-input>
-                  </ion-item>
-
-                  <ion-button 
-                    expand="block" 
-                    color="secondary"
-                    @click="createAndInviteUser"
-                    :disabled="!newUser.nombre || !newUser.email"
-                  >
-                    <ion-icon :icon="personAddOutline" slot="start"></ion-icon>
-                    Crear e Invitar
-                  </ion-button>
-                </div>
               </ion-card-content>
             </ion-card>
           </div>
@@ -219,10 +182,6 @@ const inviteEmail = ref('')
 const searchResult = ref<any>(null)
 const selectedParticipant = ref<any>(null)
 
-const newUser = ref({
-  nombre: '',
-  email: ''
-})
 
 // Computed
 const participantActionButtons = computed(() => [
@@ -264,21 +223,6 @@ const getInitial = (nombre: string | null | undefined): string => {
     return '?'
   }
   return nombre.charAt(0).toUpperCase()
-}
-
-const formatDate = (dateString: string) => {
-  if (!dateString) return 'Fecha no disponible'
-  
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  } catch {
-    return 'Fecha no válida'
-  }
 }
 
 const showParticipantActions = (participant: any) => {
@@ -323,27 +267,6 @@ const inviteUser = async () => {
     showToast('Error al invitar usuario', 'danger')
   }
 }
-
-const createAndInviteUser = async () => {
-  if (!newUser.value.nombre.trim() || !newUser.value.email.trim()) {
-    showToast('Por favor completa todos los campos', 'warning')
-    return
-  }
-
-  try {
-    await groupService.registerUserInGroup(props.grupoId, {
-      nombre: newUser.value.nombre.trim(),
-      email: newUser.value.email.trim()
-    })
-    showToast(`Usuario ${newUser.value.nombre} creado e invitado correctamente`, 'success')
-    resetInviteModal()
-    emit('participantUpdated')
-  } catch (error) {
-    console.error('Error creando usuario:', error)
-    showToast('Error al crear usuario', 'danger')
-  }
-}
-
 const promoteToAdmin = async () => {
   if (!selectedParticipant.value) return
 
@@ -457,7 +380,6 @@ const resetInviteModal = () => {
   showInviteModal.value = false
   inviteEmail.value = ''
   searchResult.value = null
-  newUser.value = { nombre: '', email: '' }
 }
 
 const showToast = async (message: string, color: string) => {
@@ -512,11 +434,6 @@ const showToast = async (message: string, color: string) => {
   margin-top: 4px;
 }
 
-.join-date {
-  font-size: 12px;
-  color: var(--ion-color-medium);
-}
-
 .modal-content {
   padding: 16px;
 }
@@ -527,9 +444,7 @@ const showToast = async (message: string, color: string) => {
   border-radius: 8px;
 }
 
-.create-user-section {
-  margin-top: 24px;
-}
+
 
 ion-item-divider {
   --background: var(--ion-color-light);

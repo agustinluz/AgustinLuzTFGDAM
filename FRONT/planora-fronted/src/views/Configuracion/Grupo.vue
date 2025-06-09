@@ -25,9 +25,10 @@
           />
 
           <!-- Estadísticas del grupo -->
-          <GroupStats 
+          <GroupStats
             :stats="groupStats"
             @refresh="loadGroupStats"
+            @show-users="handleShowUserStats"
           />
 
           <!-- Gestión de participantes -->
@@ -49,6 +50,8 @@
             @leave-group="handleLeaveGroup"
             @delete-group="handleDeleteGroup"
           />
+
+          <UserStatsModal :visible="showUserStats" :stats="statsUsuarios" @close="showUserStats = false" />
         </div>
       </ion-content>
     </ion-page>
@@ -66,6 +69,8 @@
   import { groupService } from '@/service/GrupoService'
   import BasicGroupInfo from '@/views/Components/ConfiguracionGrupo/BasicGroupInfo.vue'
   import GroupStats from '@/views/Components/ConfiguracionGrupo/GroupStats.vue'
+   import UserStatsModal from '@/views/Components/Dashboard/UserStatsModal.vue'
+  import { dashboardService, type UsuarioStatsDTO } from '@/service/DashboardService'
   import ParticipantManagement from '@/views/Components/ConfiguracionGrupo/ParticipantManagment.vue'
   import GroupActions from '@/views/Components/ConfiguracionGrupo/AccionesGrupo.vue'
   const route = useRoute()
@@ -78,6 +83,8 @@
   const groupStats = ref<any>({})
   const participants = ref<any[]>([])
   const loading = ref(true)
+  const showUserStats = ref(false)
+  const statsUsuarios = ref<UsuarioStatsDTO[]>([])
 
   const isAdmin = computed(() => {
   const usuarioAlmacenado = localStorage.getItem('usuario');
@@ -205,6 +212,11 @@
     }
   }
 
+  const handleShowUserStats = async () => {
+    statsUsuarios.value = await dashboardService.getUsuarioStats(String(grupoId.value), String(authStore.currentUser?.id ?? ''))
+    showUserStats.value = true
+  }
+  
   const handleUpdateGroup = async (updateData: any) => {
     try {
       await groupService.updateGroup(grupoId.value, updateData)

@@ -3,11 +3,11 @@
     <ion-card-header>
       <div class="header">
         <ion-button fill="clear" size="small" @click="$emit('prev-month')">
-          <ion-icon icon="chevron-back" />
+          <ion-icon :icon="chevronBack" />
         </ion-button>
         <h3 class="title">{{ currentMonthYear }}</h3>
         <ion-button fill="clear" size="small" @click="$emit('next-month')">
-          <ion-icon icon="chevron-forward" />
+          <ion-icon :icon="chevronForward" />
         </ion-button>
       </div>
       <div class="weekdays">
@@ -20,13 +20,13 @@
           v-for="day in calendarDays"
           :key="day.date.toISOString()"
           @click="$emit('select-day', day)"
-          :class="[
-            'day',
-            { 'other-month': !day.isCurrentMonth },
-            { today: day.isToday },
-            { selected: day.isSelected },
-            { 'has-event': eventDates.includes(day.date.toDateString()) }
-          ]"
+          :class="{
+            day: true,
+            'other-month': !day.isCurrentMonth,
+            today: day.isToday,
+            selected: day.isSelected,
+            'has-event': eventDates.includes(day.date.toDateString())
+          }"
         >
           {{ day.day }}
         </div>
@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { defineProps } from 'vue'
-import { IonCard, IonCardHeader, IonCardContent, IonButton, IonIcon } from '@ionic/vue'
+import { chevronBack, chevronForward } from 'ionicons/icons'
 import type { CalendarDay } from '@/Composable/useCalendar'
 
 const props = defineProps<{
@@ -50,35 +50,55 @@ const props = defineProps<{
 
 <style scoped lang="scss">
 .calendar-card {
-  @include card-base;
+  background: var(--ion-color-surface);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-sm);
+
   .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: var(--spacing-unit);
     .title {
+      font-size: var(--font-size-md);
+      font-weight: 500;
       margin: 0;
-      font-size: 1.25rem;
     }
   }
+
   .weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     text-align: center;
-    font-weight: 500;
-    margin-top: 0.5rem;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--ion-color-medium);
+    margin-bottom: var(--spacing-unit);
   }
+
   .days-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    margin-top: 0.5rem;
+    gap: 4px;
+
     .day {
-      padding: 0.5rem;
+      padding: calc(var(--spacing-unit) * 0.75);
       text-align: center;
+      border-radius: var(--border-radius);
       cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      &:hover { transform: scale(1.05); }
+
       &.other-month { color: var(--ion-color-medium); }
-      &.today { border: 1px solid var(--ion-color-primary); border-radius: 0.25rem; }
-      &.selected { background-color: var(--ion-color-primary-tint); border-radius: 0.25rem; }
-      &.has-event { background-color: var(--ion-color-secondary-tint); border-radius: 0.25rem; }
+      &.today {
+        border: 2px solid var(--ion-color-primary);
+      }
+      &.selected {
+        background: var(--ion-color-primary-tint);
+      }
+      &.has-event {
+        background: var(--ion-color-secondary-tint);
+      }
     }
   }
 }
