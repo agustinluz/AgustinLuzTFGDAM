@@ -14,10 +14,12 @@ import com.ejemplos.DTO.Usuario.UsuarioDTOConverter;
 import com.ejemplos.DTO.Usuario.UsuarioGrupoDTO;
 import com.ejemplos.DTO.Usuario.UsuarioGrupoDTOConverter;
 import com.ejemplos.modelo.Grupo;
+import com.ejemplos.modelo.Invitacion;
 import com.ejemplos.modelo.Usuario;
 import com.ejemplos.modelo.UsuarioGrupo;
 import com.ejemplos.service.AsistenciaEventoService;
 import com.ejemplos.service.GrupoService;
+import com.ejemplos.service.InvitacionService;
 import com.ejemplos.service.UsuarioGrupoService;
 import com.ejemplos.service.UsuarioService;
 
@@ -48,6 +50,9 @@ public class GrupoController {
 
 	@Autowired
     private AsistenciaEventoService asistenciaEventoService;
+	
+	@Autowired
+    private InvitacionService invitacionService;
 	
 	@GetMapping("/buscar-usuario")
     public ResponseEntity<UsuarioDTO> buscarUsuarioPorEmail(@RequestParam String email) {
@@ -233,13 +238,15 @@ public class GrupoController {
 			return ResponseEntity.status(HttpStatus.CONFLICT).build();
 		}
 
-		UsuarioGrupo ug = new UsuarioGrupo();
-		ug.setGrupo(grupo);
-		ug.setUsuario(usuario);
-		ug.setRol("miembro");
-		usuarioGrupoService.guardar(ug);
-
-		return ResponseEntity.ok(usuarioGrupoDTOConverter.convertToDTO(ug));
+		Invitacion invitacion = invitacionService.crearInvitacion(grupo, usuario);
+        UsuarioGrupoDTO dto = new UsuarioGrupoDTO();
+        dto.setGrupoId(grupo.getId());
+        dto.setUsuarioId(usuario.getId());
+        dto.setNombreUsuario(usuario.getNombre());
+        dto.setEmailUsuario(usuario.getEmail());
+        dto.setRol("pendiente");
+        return ResponseEntity.ok(dto);
+		
 	}
 
 	// Cambiar rol de usuario

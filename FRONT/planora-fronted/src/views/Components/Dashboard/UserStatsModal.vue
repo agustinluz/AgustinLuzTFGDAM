@@ -25,7 +25,6 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel } from '@ionic/vue'
 import { closeOutline } from 'ionicons/icons'
 import type { UsuarioStatsDTO } from '@/service/DashboardService'
 

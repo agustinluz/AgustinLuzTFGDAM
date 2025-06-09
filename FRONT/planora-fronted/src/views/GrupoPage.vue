@@ -9,6 +9,9 @@
           <ion-button fill="clear" @click="() => router.push('/perfil')">
             <ion-icon :icon="person" slot="icon-only"></ion-icon>
           </ion-button>
+          <ion-button fill="clear" @click="() => router.push('/invitaciones')">
+            <ion-icon :icon="mailOutline" slot="icon-only"></ion-icon>
+          </ion-button>
           <ion-button fill="clear" @click="logout">
             <ion-icon :icon="logOutOutline" slot="icon-only"></ion-icon>
           </ion-button>
@@ -257,6 +260,7 @@ import {
 } from '@ionic/vue'
 import {
   camera,
+  mailOutline,
   people,
   key,
   calendar,

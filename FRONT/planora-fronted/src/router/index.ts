@@ -113,6 +113,10 @@ const routes: Array<RouteRecordRaw> = [
     name: 'configuracionGrupo',
     component: () => import('../views/Configuracion/Grupo.vue'),
     props: true 
+  },
+  {
+    path: '/invitaciones',
+    component: () => import('../views/InvitacionesPage.vue')
   }
 
 
