@@ -8,13 +8,16 @@ import org.springframework.web.bind.annotation.*;
 import com.ejemplos.DTO.Nota.NotaCreateDTO;
 import com.ejemplos.DTO.Nota.NotaDTO;
 import com.ejemplos.DTO.Nota.NotaDTOConverter;
+import com.ejemplos.modelo.Evento;
 import com.ejemplos.modelo.Grupo;
 import com.ejemplos.modelo.Nota;
 import com.ejemplos.modelo.NotaRepository;
 import com.ejemplos.modelo.Usuario;
 import com.ejemplos.security.JwtUtil;
+import com.ejemplos.service.EventoService;
 import com.ejemplos.service.GrupoService;
 import com.ejemplos.service.NotaService;
+import com.ejemplos.service.UsuarioGrupoService;
 import com.ejemplos.service.UsuarioService;
 
 import java.util.List;
@@ -39,11 +42,19 @@ public class NotaController {
 
     @Autowired
     private NotaDTOConverter notaDTOConverter;
+    
+    @Autowired
+    private EventoService eventoService;
+
+    @Autowired
+    private UsuarioGrupoService usuarioGrupoService;
+
 
     @Autowired
     private JwtUtil jwtUtil;
 
     
+    // Crear nota en un grupo
     // Crear nota en un grupo
     @PostMapping("/{grupoId}/crear")
     public ResponseEntity<NotaDTO> crearNota(
@@ -64,10 +75,23 @@ public class NotaController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
+            // Verificar que el usuario pertenece al grupo
+            if (!usuarioGrupoService.usuarioPerteneceAlGrupo(usuario.getId(), grupoId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
             // Crear la nota
             Nota nota = notaDTOConverter.convertToEntity(notaDTO);
             nota.setGrupo(grupo);
             nota.setUsuario(usuario);
+
+            if (notaDTO.getEventoId() != null) {
+                Evento evento = eventoService.obtenerPorId(notaDTO.getEventoId()).orElse(null);
+                if (evento == null || !evento.getGrupo().getId().equals(grupoId)) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+                }
+                nota.setEvento(evento);
+            }
 
             Nota guardada = notaService.crear(nota);
             NotaDTO response = notaDTOConverter.convertToDTO(guardada);
@@ -80,11 +104,17 @@ public class NotaController {
         }
     }
     
- // Listar notas de un grupo
+    
     @GetMapping("/{grupoId}/notas")
-    public ResponseEntity<List<NotaDTO>> listarNotasGrupo(@PathVariable Long grupoId) {
+    public ResponseEntity<List<NotaDTO>> listarNotasGrupo(@PathVariable Long grupoId,
+                                                         @RequestParam(required = false) Long eventoId) {
         try {
-            List<Nota> notas = notaRepository.findByGrupoId(grupoId);
+            List<Nota> notas;
+            if (eventoId != null) {
+                notas = notaRepository.findByGrupoIdAndEventoId(grupoId, eventoId);
+            } else {
+                notas = notaRepository.findByGrupoId(grupoId);
+            }
             List<NotaDTO> notasDTO = notas.stream()
                     .map(notaDTOConverter::convertToDTO)
                     .collect(Collectors.toList());
@@ -93,7 +123,6 @@ public class NotaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 
     // Obtener nota específica por ID
     @GetMapping("/{notaId}")

@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -33,6 +34,10 @@ public class Usuario implements Serializable {
     @Column(unique = true)
     private String email;
     private String nombre;
+    
+    @Lob
+    @Column(name = "foto_perfil", columnDefinition = "LONGTEXT")
+    private String fotoPerfil;
     
     @JsonIgnore
     private String password;

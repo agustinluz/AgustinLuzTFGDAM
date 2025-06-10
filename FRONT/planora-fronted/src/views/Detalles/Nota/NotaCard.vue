@@ -4,10 +4,10 @@
       <div class="nota-header">
         <ion-card-title>{{ nota.titulo }}</ion-card-title>
         <div class="nota-actions">
-          <ion-button @click="$emit('editar', nota)" fill="clear" size="small" v-if="esProietario">
+          <ion-button @click="$emit('editar', nota)" fill="clear" size="small">
             <ion-icon :icon="createOutline" />
           </ion-button>
-          <ion-button @click="$emit('eliminar', nota)" fill="clear" size="small" color="danger" v-if="esProietario">
+          <ion-button @click="$emit('eliminar', nota)" fill="clear" size="small" color="danger">
             <ion-icon :icon="trashOutline" />
           </ion-button>
         </div>
@@ -34,8 +34,7 @@ import { IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, 
 import { createOutline, trashOutline } from 'ionicons/icons'
 
 const props = defineProps({
-  nota: Object,
-  esProietario: Boolean
+  nota: Object
 })
 
 defineEmits(['editar', 'eliminar', 'ver'])

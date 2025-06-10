@@ -20,12 +20,13 @@
           v-for="day in calendarDays"
           :key="day.date.toISOString()"
           @click="$emit('select-day', day)"
-          :class="{
+  :class="{
             day: true,
             'other-month': !day.isCurrentMonth,
             today: day.isToday,
             selected: day.isSelected,
-            'has-event': eventDates.includes(day.date.toDateString())
+            'has-event': eventDates.includes(day.date.toDateString()),
+            'event-past': pastEventDates.includes(day.date.toDateString())
           }"
         >
           {{ day.day }}
@@ -45,6 +46,7 @@ const props = defineProps<{
   currentMonthYear: string
   calendarDays: CalendarDay[]
   eventDates: string[]
+  pastEventDates: string[]
 }>()
 </script>
 
@@ -95,6 +97,10 @@ const props = defineProps<{
       }
       &.selected {
         background: var(--ion-color-primary-tint);
+      }
+       &.event-past {
+        background: var(--ion-color-medium);
+        color: #fff;
       }
       &.has-event {
         background: var(--ion-color-secondary-tint);

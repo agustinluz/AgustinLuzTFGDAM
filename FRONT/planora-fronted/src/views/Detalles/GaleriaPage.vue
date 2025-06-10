@@ -37,7 +37,7 @@
                   <ion-label position="floating">Filtrar por Evento</ion-label>
                   <ion-select 
                     v-model="filtros.eventoId"
-                    @ionSelectionChange="cargarImagenes"
+                    @ionChange="onEventoChange"
                     placeholder="Todos los eventos"
                     interface="popover"
                   >
@@ -106,11 +106,12 @@
 
         <ion-grid>
           <ion-row>
-            <ion-col 
-              v-for="imagen in imagenes" 
-              :key="imagen.id" 
-              size="6" 
-              size-md="4" 
+           <ion-col
+              class="imagen-col"
+              v-for="imagen in imagenes"
+              :key="imagen.id"
+              size="6"
+              size-md="4"
               size-lg="3"
             >
               <ion-card class="imagen-card">
@@ -412,6 +413,12 @@ const irACrearImagen = () => {
   router.push(`/dashboard/${grupoId}/crear/imagen`)
 }
 
+const onEventoChange = (ev: CustomEvent) => {
+  const value = ev.detail.value
+  filtros.eventoId = value !== undefined && value !== null && value !== '' ? Number(value) : null
+  cargarImagenes()
+}
+
 const verImagenCompleta = async (imagen: any) => {
   modalVistaAbierto.value = true
   cargandoImagenCompleta.value = true
@@ -653,7 +660,9 @@ onMounted(async () => {
 .imagen-container {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 1;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
 }
 
 .imagen-preview {
@@ -690,7 +699,10 @@ onMounted(async () => {
 .imagen-container:hover .imagen-preview {
   transform: scale(1.05);
 }
-
+.imagen-col {
+  display: flex;
+  justify-content: center;
+}
 .image-name {
   font-weight: 600;
   margin-bottom: 8px;

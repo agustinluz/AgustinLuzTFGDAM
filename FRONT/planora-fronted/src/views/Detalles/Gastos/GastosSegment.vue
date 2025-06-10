@@ -6,6 +6,9 @@
     <ion-segment-button value="pendientes">
       <ion-label>Pendientes ({{ pendientes }})</ion-label>
     </ion-segment-button>
+    <ion-segment-button value="saldados">
+      <ion-label>Saldados ({{ saldados }})</ion-label>
+    </ion-segment-button>
   </ion-segment>
 </template>
 
@@ -14,7 +17,7 @@ import { IonSegment, IonSegmentButton, IonLabel } from '@ionic/vue';
 import { defineProps, defineEmits } from 'vue';
 import { IonIcon } from '@ionic/vue';
 import { ref, watch } from 'vue';
-const props = defineProps(['total', 'pendientes', 'valorInicial']);
+const props = defineProps(['total', 'pendientes', 'valorInicial', 'saldados', 'valorInicial']);
 const modelo = ref(props.valorInicial || 'todos');
 watch(() => props.valorInicial, v => (modelo.value = v));
 defineEmits(['filtrar']);

@@ -95,6 +95,9 @@ public class UsuarioController {
             if (updateDTO.getNombre() != null && !updateDTO.getNombre().trim().isEmpty()) {
                 usuario.setNombre(updateDTO.getNombre().trim());
             }
+            if (updateDTO.getFotoPerfil() != null) {
+                usuario.setFotoPerfil(updateDTO.getFotoPerfil());
+            }
 
             // Actualizar contraseña si se proporciona
             if (updateDTO.getPassword() != null && !updateDTO.getPassword().trim().isEmpty()) {

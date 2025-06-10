@@ -87,10 +87,13 @@
   const statsUsuarios = ref<UsuarioStatsDTO[]>([])
 
   const isAdmin = computed(() => {
-  const usuarioAlmacenado = localStorage.getItem('usuario');
-  const localId = usuarioAlmacenado ? JSON.parse(usuarioAlmacenado).id : null;
-  return grupo.value.adminId === (authStore.currentUser?.id || localId);
-});
+    const usuarioAlmacenado = localStorage.getItem('usuario');
+    const localId = usuarioAlmacenado ? JSON.parse(usuarioAlmacenado).id : null;
+    const id = authStore.currentUser?.id || localId;
+    return participants.value.some(p =>
+      (p.usuarioId ?? p.id) === id && (p.rol?.toLowerCase() === 'admin' || p.esAdmin)
+    );
+  });
 
   onMounted(() => {
     authStore.initializeFromStorage()

@@ -24,6 +24,7 @@
         <GastosSegment
           :total="gastos.length"
           :pendientes="gastosPendientes"
+          :saldados="gastosSaldados"
           :valorInicial="filtro"
           @filtrar="filtro = $event"
         />
@@ -90,6 +91,7 @@ const {
   filtro,
   totalGastos,
   gastosPendientes,
+  gastosSaldados,
   gastosFiltrados,
   cargarGastos,
   seleccionarGasto,
@@ -140,11 +142,11 @@ const editarGasto = (id) => {
   router.push(`/dashboard/${grupoId}/gastos/${id}/editar`)
 }
 
-const mensajeVacio = computed(() =>
-  filtro.value === 'pendientes'
-    ? 'No hay gastos pendientes'
-    : 'No hay gastos registrados'
-)
+const mensajeVacio = computed(() => {
+  if (filtro.value === 'pendientes') return 'No hay gastos pendientes'
+  if (filtro.value === 'saldados') return 'No hay gastos saldados'
+  return 'No hay gastos registrados'
+})
 
 const opcionesMenu = [
   { text: 'Resumen completo', handler: () => router.push(`/grupo/${grupoId}/resumen`) },

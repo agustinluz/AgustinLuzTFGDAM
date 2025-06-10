@@ -19,14 +19,17 @@
         >
           <ion-label>
             <h2>{{ u.nombre }}</h2>
-            <p v-if="balances[u.id] > 0" class="text-success">
-              Le deben {{ formatMonto(balances[u.id]) }}
+            <p v-if="getResumen(u.id).debe" class="text-danger">
+              Debe {{ formatMonto(getResumen(u.id).debe) }}
             </p>
-            <p v-else-if="balances[u.id] < 0" class="text-danger">
-              Debe {{ formatMonto(Math.abs(balances[u.id])) }}
+            <p v-if="getResumen(u.id).leDeben" class="text-success">
+              Le deben {{ formatMonto(getResumen(u.id).leDeben) }}
             </p>
-            <p v-else class="text-paid">
-              ✅ Pagado
+            <p
+              v-if="!getResumen(u.id).debe && !getResumen(u.id).leDeben"
+              class="text-paid"
+            >
+              ✅ Sin deudas
             </p>
           </ion-label>
         </ion-item>
@@ -54,8 +57,8 @@ const grupoId = route.params.grupoId
 
 // Lista de todos los usuarios del grupo
 const usuarios = ref([])
-// Mapa usuarioId → balance neto de deudas PENDIENTES
-const balances = ref({})
+// Resumen de deudas por usuario
+const resumenes = ref([])
 
 onMounted(async () => {
   try {
@@ -63,16 +66,10 @@ onMounted(async () => {
     const { data: u } = await api.get(`/grupos/${grupoId}/usuarios`)
     usuarios.value = u
 
-    // 2) Obtener sólo las deudas PENDIENTES
+    // 2) Obtener resumen de deudas
     const { data: resumen } = await api.get(`/gasto/grupos/${grupoId}/resumen`)
     // resumen: [{ usuarioId, nombre, email, balance }, …]
-
-    // 3) Convertir a mapa para acceso O(1)
-    const m = {}
-    for (const r of resumen) {
-      m[r.usuarioId] = r.balance
-    }
-    balances.value = m
+    resumenes.value = resumen
 
   } catch (error) {
     console.error('Error al cargar resumen de deudas:', error)
@@ -94,6 +91,8 @@ const verDetalle = (usuario) => {
 const volver = () => {
   router.push(`/dashboard/${grupoId}`)
 }
+const getResumen = (id) =>
+  resumenes.value.find(r => r.usuarioId === id) || { debe: 0, leDeben: 0 }
 
 const formatMonto = (m) =>
   new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(m || 0)

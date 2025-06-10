@@ -13,6 +13,7 @@ public class UsuarioGrupoDTO {
     // Información adicional del usuario (opcional)
     private String nombreUsuario;
     private String emailUsuario;
+    private String fotoPerfil;
     
     // Información adicional del grupo (opcional)
     private String nombreGrupo;

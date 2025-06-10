@@ -13,8 +13,10 @@
     </ion-header>
 
     <ion-content class="ion-padding">
-      <NotaForm :titulo="titulo" :contenido="contenido" :cargando="isLoading" :modo="esEdicion ? 'editar' : 'crear'"
-        @guardar="guardarNota" @update:titulo="titulo = $event" @update:contenido="contenido = $event" />
+      <NotaForm :titulo="titulo" :contenido="contenido" :evento-id="eventoId" :eventos="eventos"
+       :cargando="isLoading" :modo="esEdicion ? 'editar' : 'crear'"
+        @guardar="guardarNota" @update:titulo="titulo = $event" @update:contenido="contenido = $event"
+         @update:eventoId="eventoId = $event" />
 
       <ion-toast :is-open="showToast" :message="toastMessage" :color="toastColor" :duration="3000" position="top"
         @did-dismiss="showToast = false" />
@@ -31,7 +33,8 @@ import {
 } from '@ionic/vue'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NotasService } from '../../service/NotaService'
+import { NotasService } from '@/service/NotaService'
+import { EventosService, Evento } from '@/service/EventoService'
 import NotaForm from '@/views/Components/Nota/NotaForm.vue'
 import { arrowBack } from 'ionicons/icons'
 
@@ -40,6 +43,8 @@ const router = useRouter()
 
 const grupoId = ref(route.params.grupoId || route.params.id)
 const notaId = ref(route.params.notaId)
+const eventoId = ref<number | null>(null)
+const eventos = ref<Evento[]>([])
 
 const titulo = ref('')
 const contenido = ref('')
@@ -59,6 +64,11 @@ const mostrarToast = (message: string, color = 'success') => {
 }
 
 onMounted(async () => {
+  try {
+    eventos.value = await EventosService.obtenerEventosGrupo(Number(grupoId.value))
+  } catch (e) {
+    eventos.value = []
+  }
   if (esEdicion.value) {
     try {
       isLoading.value = true
@@ -67,6 +77,7 @@ onMounted(async () => {
       const nota = await NotasService.obtenerNotaPorId(Number(notaId.value),token)
       titulo.value = nota.titulo
       contenido.value = nota.contenido
+      eventoId.value = nota.eventoId || null
     } catch (error) {
       console.error('Error cargando nota:', error)
       mostrarToast('Error al cargar la nota', 'danger')
@@ -92,7 +103,8 @@ const guardarNota = async () => {
 
       await NotasService.actualizarNota(Number(notaId.value), {
         titulo: titulo.value.trim(),
-        contenido: contenido.value.trim()
+        contenido: contenido.value.trim(),
+        eventoId: eventoId.value
       }, token)
       mostrarToast('Nota actualizada', 'success')
     } else {
@@ -101,7 +113,8 @@ const guardarNota = async () => {
 
       await NotasService.crearNota(Number(grupoId.value), {
         titulo: titulo.value.trim(),
-        contenido: contenido.value.trim()
+        contenido: contenido.value.trim(),
+        eventoId: eventoId.value
       }, token)
       mostrarToast('Nota creada', 'success')
     }

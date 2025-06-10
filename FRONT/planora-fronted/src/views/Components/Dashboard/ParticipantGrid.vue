@@ -14,7 +14,8 @@
             class="col"
           >
             <ion-avatar class="avatar" :title="p.nombreUsuario">
-              <span class="initials">{{ getInitials(p.nombreUsuario) }}</span>
+              <img v-if="p.fotoPerfil" :src="p.fotoPerfil" />
+              <span v-else class="initials">{{ getInitials(p.nombreUsuario) }}</span>
             </ion-avatar>
             <p class="name">{{ p.nombreUsuario }}</p>
           </ion-col>
@@ -81,6 +82,12 @@ const participants = props.participants
       align-items: center;
       justify-content: center;
       border-radius: 50%;
+      overflow: hidden;
+    }
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     .initials {
       font-weight: 600;

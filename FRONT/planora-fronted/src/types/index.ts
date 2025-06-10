@@ -23,6 +23,7 @@ export interface UsuarioGrupoDTO {
   rol: 'admin' | 'member'
   nombreUsuario: string
   emailUsuario: string
+  fotoPerfil?: string
 }
 
 // Tipo local de usuario

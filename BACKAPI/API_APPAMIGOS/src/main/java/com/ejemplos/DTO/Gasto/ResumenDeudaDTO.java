@@ -11,5 +11,10 @@ public class ResumenDeudaDTO {
     private Long usuarioId;
     private String nombre;
     private String email;
-    private double balance; // positivo: le deben, negativo: debe
+    private double debe;
+    private double leDeben;
+
+    public double getBalance() {
+        return leDeben - debe;
+    }
 }

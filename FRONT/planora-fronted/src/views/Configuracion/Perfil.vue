@@ -31,6 +31,14 @@
                 <ion-input v-model="formData.email" placeholder="correo@ejemplo.com" type="email" required></ion-input>
               </ion-item>
 
+              <ion-item>
+                <ion-label position="stacked">Foto de perfil</ion-label>
+                <input type="file" accept="image/*" @change="onFileChange" />
+              </ion-item>
+              <ion-item v-if="formData.fotoPerfil">
+                <img :src="formData.fotoPerfil" class="preview" />
+              </ion-item>
+
               <!-- Separador -->
               <div class="password-section">
                 <h3>Cambiar Contraseña</h3>
@@ -134,8 +142,10 @@ const router = useIonRouter()
 const formData = reactive({
   nombre: '',
   email: '',
+  fotoPerfil: '',
   currentPassword: '',
   password: ''
+  
 })
 
 const confirmPassword = ref('')
@@ -187,6 +197,7 @@ const cargarDatosUsuario = async () => {
       
       formData.nombre = usuarioData.nombre
       formData.email = usuarioData.email
+      formData.fotoPerfil = usuarioData.fotoPerfil || ''
       usuarioCargado.value = true
     } else if (response.status === 401) {
       mostrarError('Sesión expirada')
@@ -200,6 +211,16 @@ const cargarDatosUsuario = async () => {
     usuarioCargado.value = true
   }
 }
+const onFileChange = async (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = () => {
+    formData.fotoPerfil = reader.result
+  }
+  reader.readAsDataURL(file)
+}
+
 
 const validarFormulario = () => {
   // Validar nombre
@@ -264,13 +285,14 @@ const actualizarPerfil = async () => {
 
     // Preparar datos para enviar
     const datosActualizacion = {
-      nombre: formData.nombre.trim(),
-      email: formData.email.trim(),
-      ...(formData.password && {
-        currentPassword: formData.currentPassword,
-        password: formData.password
-      })
-    }
+    nombre: formData.nombre.trim(),
+    email: formData.email.trim(),
+    fotoPerfil: formData.fotoPerfil,
+    ...(formData.password && {
+      currentPassword: formData.currentPassword,
+      password: formData.password
+    })
+  }
 
     const url = `${import.meta.env.VITE_API_URL}/usuarios/${usuarioId}`
 
@@ -291,6 +313,7 @@ const actualizarPerfil = async () => {
       const usuarioLocal = JSON.parse(localStorage.getItem('usuario'))
       usuarioLocal.nombre = usuarioActualizado.nombre
       usuarioLocal.email = usuarioActualizado.email
+      usuarioLocal.fotoPerfil = usuarioActualizado.fotoPerfil
       localStorage.setItem('usuario', JSON.stringify(usuarioLocal))
 
       mostrarExito('Perfil actualizado correctamente')
@@ -395,5 +418,11 @@ ion-item {
 
 ion-card {
   margin: 0;
+}
+
+.preview {
+  max-width: 120px;
+  border-radius: 8px;
+  margin-top: 8px;
 }
 </style>

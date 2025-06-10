@@ -6,6 +6,7 @@ export interface Nota {
   contenido: string
   grupoId: number
   grupoNombre?: string
+  eventoId?: number
   creadaPorId: number
   creadaPorNombre?: string
   fechaCreacion: string
@@ -14,6 +15,7 @@ export interface Nota {
 export interface NotaCrear {
   titulo: string
   contenido: string
+  eventoId?: number | null
 }
 
 
@@ -29,8 +31,10 @@ function getAuthHeader(token: string) {
 
 
 export class NotasService {
-  static async obtenerNotasPorGrupo(grupoId: number, token:string): Promise<Nota[]> {
-    const response = await api.get(`/nota/${grupoId}/notas`, getAuthHeader(token))
+   
+  static async obtenerNotasPorGrupo(grupoId: number, token:string, eventoId?: number | null): Promise<Nota[]> {
+    const url = eventoId ? `/nota/${grupoId}/notas?eventoId=${eventoId}` : `/nota/${grupoId}/notas`
+    const response = await api.get(url, getAuthHeader(token))
     return response.data as Nota[]
   }
 

@@ -30,6 +30,7 @@
           :currentMonthYear="currentMonthYear"
           :calendarDays="calendarDays"
           :eventDates="eventDates"
+          :pastEventDates="pastEventDates"
           @prev-month="previousMonth"
           @next-month="nextMonth"
           @select-day="selectDay"
@@ -37,9 +38,7 @@
         <div class="events-panel">
           <EventsList
             v-if="!store.loading"
-            :events="eventsForSelectedDay.length
-              ? eventsForSelectedDay
-              : upcomingEventos"
+            :events="eventsToShow"
             :limit="4"
             @view-event="openEvent"
           />
@@ -122,7 +121,7 @@ import { add }        from 'ionicons/icons'
 const store = useDashboardStore()
 const {
   currentDate, selectedDate,headerDays, calendarDays,
-  eventDates, eventsForSelectedDay,
+  eventDates, eventsForSelectedDay, pastEventDates,
   previousMonth, nextMonth, selectDay
 } = useCalendar()
 
@@ -143,8 +142,12 @@ const upcomingEventos = computed(() =>
     return dt >= 0 && dt < 7 * 24 * 60 * 60 * 1000
   })
 )
-const daySelected = computed(() =>
-  selectedDate.value.toDateString() !== new Date().toDateString()
+const daySelected = computed(() => !!selectedDate.value)
+const selectedDayHasEvents = computed(() => eventsForSelectedDay.value.length > 0)
+const eventsToShow = computed(() =>
+  daySelected.value
+    ? eventsForSelectedDay.value
+    : upcomingEventos.value
 )
 
 onMounted(() => {

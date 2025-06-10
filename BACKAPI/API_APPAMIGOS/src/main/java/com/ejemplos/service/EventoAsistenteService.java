@@ -35,4 +35,7 @@ public class EventoAsistenteService {
     public long contarAsistentes(Long eventoId) {
         return repository.countByEventoIdAndAsistioTrue(eventoId);
     }
+    public java.util.List<EventoAsistente> obtenerPorEvento(Long eventoId) {
+        return repository.findByEventoId(eventoId);
+    }
 }

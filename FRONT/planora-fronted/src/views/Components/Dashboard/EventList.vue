@@ -7,6 +7,7 @@
         v-for="e in events.slice(0, limit)"
         :key="e.id"
         @click="$emit('view-event', e)"
+        :class="{ past: isPast(e.fecha) }"
       >
         <ion-badge slot="start">{{ formatDateBadge(e.fecha) }}</ion-badge>
         <ion-label>
@@ -39,6 +40,7 @@ const formatDateBadge = (iso: string) => {
   const d = new Date(iso)
   return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
 }
+const isPast = (iso: string) => new Date(iso).getTime() < Date.now()
 </script>
 
 <style scoped lang="scss">
@@ -58,6 +60,9 @@ const formatDateBadge = (iso: string) => {
     }
     ion-icon {
       color: var(--ion-color-medium);
+    }
+    &.past {
+      opacity: 0.6;
     }
   }
   .empty-state {

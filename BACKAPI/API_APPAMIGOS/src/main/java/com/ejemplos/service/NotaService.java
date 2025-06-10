@@ -51,6 +51,15 @@ public class NotaService {
         return notaRepository.findByGrupoIdAndUsuarioId(grupoId, usuarioId);
     }
     
+ // Obtener notas por grupo y evento
+    public List<Nota> obtenerPorGrupoYEvento(Long grupoId, Long eventoId) {
+        return notaRepository.findByGrupoIdAndEventoId(grupoId, eventoId);
+    }
+
+    public List<Nota> obtenerPorGrupoYEventoOrdenadas(Long grupoId, Long eventoId) {
+        return notaRepository.findByGrupoIdAndEventoIdOrderByIdDesc(grupoId, eventoId);
+    }
+    
     // Crear nueva nota
     public Nota crear(Nota nota) {
     	nota.setFechaCreacion(new Date());

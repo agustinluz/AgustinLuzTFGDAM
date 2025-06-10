@@ -314,21 +314,23 @@ public class GrupoController {
 
 	// Salir del grupo
 	@DeleteMapping("/{grupoId}/salir")
-	public ResponseEntity<Void> salirDelGrupo(@PathVariable Long grupoId, @RequestHeader("usuarioId") Long usuarioId) {
+    public ResponseEntity<Void> salirDelGrupo(@PathVariable Long grupoId, @RequestHeader("usuarioId") Long usuarioId) {
 
-		UsuarioGrupo ug = usuarioGrupoService.obtenerPorUsuarioIdYGrupoId(usuarioId, grupoId).orElse(null);
-		if (ug == null) {
-			return ResponseEntity.notFound().build();
-		}
+            UsuarioGrupo ug = usuarioGrupoService.obtenerPorUsuarioIdYGrupoId(usuarioId, grupoId).orElse(null);
+            if (ug == null) {
+                    return ResponseEntity.notFound().build();
+            }
 
-		// No permitir que el admin salga sin transferir
-		if ("admin".equalsIgnoreCase(ug.getRol())) {
-			return ResponseEntity.badRequest().build();
-		}
+            if ("admin".equalsIgnoreCase(ug.getRol())) {
+                    int admins = usuarioGrupoService.contarAdminsPorGrupo(grupoId);
+                    if (admins <= 1) {
+                            return ResponseEntity.badRequest().build();
+                    }
+            }
 
-		usuarioGrupoService.eliminarUsuarioDeGrupo(usuarioId, grupoId);
-		return ResponseEntity.ok().build();
-	}
+            usuarioGrupoService.eliminarUsuarioDeGrupo(usuarioId, grupoId);
+            return ResponseEntity.ok().build();
+    }
 
 	// Obtener información de un participante específico
 	@GetMapping("/{grupoId}/usuarios/{usuarioId}")

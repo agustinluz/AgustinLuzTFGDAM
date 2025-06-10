@@ -320,8 +320,8 @@ public class DeudaGastoService {
     }
     
     public List<ResumenDeudaDTO> generarResumenPorGrupo(Long grupoId) {
-        // Ahora usa el método correcto
-        List<DeudaGasto> deudas = deudaGastoRepository.findByGasto_Grupo_Id(grupoId);
+        // Solo consideramos las deudas pendientes para evitar duplicados
+        List<DeudaGasto> deudas = deudaGastoRepository.findDeudasPendientesByGrupoId(grupoId);
         Map<Long, ResumenDeudaDTO> resumenMap = new HashMap<>();
 
         for (DeudaGasto deuda : deudas) {
@@ -329,27 +329,28 @@ public class DeudaGastoService {
             Long acreedorId = deuda.getAcreedor().getId();
             double monto    = deuda.getMonto().doubleValue();
 
-            // Para el deudor restamos
-            resumenMap
-              .computeIfAbsent(deudorId, id ->
-                new ResumenDeudaDTO(id,
-                                    deuda.getDeudor().getNombre(),
-                                    deuda.getDeudor().getEmail(),
-                                    0.0))
-              .setBalance(resumenMap.get(deudorId).getBalance() - monto);
+            // Acumular en "debe" para el deudor
+            ResumenDeudaDTO rDeudor = resumenMap.computeIfAbsent(deudorId, id ->
+                    new ResumenDeudaDTO(id,
+                                        deuda.getDeudor().getNombre(),
+                                        deuda.getDeudor().getEmail(),
+                                        0.0,
+                                        0.0));
+            rDeudor.setDebe(rDeudor.getDebe() + monto);
 
-            // Para el acreedor sumamos
-            resumenMap
-              .computeIfAbsent(acreedorId, id ->
-                new ResumenDeudaDTO(id,
-                                    deuda.getAcreedor().getNombre(),
-                                    deuda.getAcreedor().getEmail(),
-                                    0.0))
-              .setBalance(resumenMap.get(acreedorId).getBalance() + monto);
+            // Acumular en "leDeben" para el acreedor
+            ResumenDeudaDTO rAcreedor = resumenMap.computeIfAbsent(acreedorId, id ->
+                    new ResumenDeudaDTO(id,
+                                        deuda.getAcreedor().getNombre(),
+                                        deuda.getAcreedor().getEmail(),
+                                        0.0,
+                                        0.0));
+            rAcreedor.setLeDeben(rAcreedor.getLeDeben() + monto);
         }
 
         return new ArrayList<>(resumenMap.values());
     }
+
 
 
     
