@@ -3,7 +3,7 @@
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
-          <ion-back-button default-href="/dashboard" />
+          <ion-back-button default-href="javascript:void(0)" @click="volver" />
         </ion-buttons>
         <ion-title>Detalle de Deudas</ion-title>
       </ion-toolbar>
@@ -12,13 +12,18 @@
     <ion-content class="ion-padding">
       <h2>Deudas de {{ usuarioNombre }}</h2>
 
-      <ion-list v-if="deudas.length > 0">
-        <ion-item v-for="deuda in deudas" :key="deuda.id">
+      <ion-list v-if="resumenDeudas.length">
+        <ion-item
+          v-for="item in resumenDeudas"
+          :key="item.acreedorId"
+        >
           <ion-label>
-            <p>Le debe a <strong>{{ deuda.acreedorNombre }}</strong></p>
-            <p class="text-danger">Monto: {{ formatMonto(deuda.monto) }}</p>
-            <p v-if="deuda.saldado" class="text-success">✅ Saldado</p>
-            <p v-else class="text-warning">⏳ Pendiente</p>
+            <p>Le debe a <strong>{{ item.acreedorNombre }}</strong></p>
+            <p :class="item.saldado ? 'text-success' : 'text-danger'">
+              Monto: {{ formatMonto(item.monto) }}
+              <span v-if="item.saldado">✅ Saldo</span>
+              <span v-else>⏳ Pendiente</span>
+            </p>
           </ion-label>
         </ion-item>
       </ion-list>
@@ -33,39 +38,62 @@ import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
   IonItem, IonList, IonLabel, IonBackButton, IonButtons, IonText
 } from '@ionic/vue'
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import api from '@/service/api'
 
 const route = useRoute()
-const grupoId = route.params.grupoId
-const usuarioId = route.params.usuarioId
+const router = useRouter()
+
+const grupoId       = route.params.grupoId
+const usuarioId     = route.params.usuarioId
 const usuarioNombre = route.query.nombre
+
+// 1) Traemos todas las deudas individuales:
 const deudas = ref([])
 
 onMounted(async () => {
   try {
     const { data: gastos } = await api.get(`/gasto/${grupoId}/gastos`)
-    const todasDeudas = []
-
-    for (const gasto of gastos) {
-      const { data: deudasGasto } = await api.get(`/gasto/${gasto.id}/deudas`)
-      const filtradas = deudasGasto.filter(d => d.deudorId == usuarioId)
-      todasDeudas.push(...filtradas)
+    const todas = []
+    for (const g of gastos) {
+      const { data: deudasGasto } = await api.get(`/gasto/${g.id}/deudas`)
+      // filtrar solo las de este usuario
+      todas.push(...deudasGasto.filter(d => d.deudorId === Number(usuarioId)))
     }
-
-    deudas.value = todasDeudas
+    deudas.value = todas
   } catch (e) {
     console.error('Error cargando deudas del usuario', e)
   }
 })
 
+// 2) Computed que agrupa por acreedorId:
+const resumenDeudas = computed(() => {
+  const mapa = new Map()
+  for (const d of deudas.value) {
+    const key = d.acreedorId
+    if (!mapa.has(key)) {
+      mapa.set(key, {
+        acreedorId:      key,
+        acreedorNombre:  d.acreedorNombre,
+        monto:           0,
+        saldado:         true
+      })
+    }
+    const acc = mapa.get(key)
+    acc.monto   += parseFloat(d.monto)
+    if (!d.saldado) acc.saldado = false
+  }
+  return Array.from(mapa.values())
+})
+
+const volver = () => router.push({ name: 'ResumenGrupo', params: { grupoId } })
+
 const formatMonto = monto =>
-  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(parseFloat(monto) || 0)
+  new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(monto||0)
 </script>
 
 <style scoped>
-.text-success { color: green }
-.text-warning { color: orange }
-.text-danger { color: red }
+.text-success { color: green; }
+.text-danger  { color: red; }
 </style>

@@ -31,6 +31,11 @@ public interface DeudaGastoRepository extends JpaRepository<DeudaGasto, Long> {
     List<DeudaGasto> findByGastoId(Long gastoId);
     
     /**
+     * Todas las deudas (saldadas o no) de los gastos cuyo grupo.id = grupoId
+     */
+    List<DeudaGasto> findByGasto_Grupo_Id(Long grupoId);
+    
+    /**
      * Encuentra deudas pendientes entre dos usuarios específicos
      */
     @Query("SELECT d FROM DeudaGasto d WHERE d.deudor.id = :deudorId AND d.acreedor.id = :acreedorId AND d.saldado = false")
@@ -47,12 +52,6 @@ public interface DeudaGastoRepository extends JpaRepository<DeudaGasto, Long> {
      */
     @Query("SELECT COALESCE(SUM(d.monto), 0) FROM DeudaGasto d WHERE d.acreedor.id = :acreedorId AND d.saldado = false")
     BigDecimal calcularTotalCreditosPendientes(@Param("acreedorId") Long acreedorId);
-    
-    /**
-     * Encuentra deudas por grupo (útil para reportes)
-     */
-    @Query("SELECT d FROM DeudaGasto d WHERE d.gasto.grupo.id = :grupoId")
-    List<DeudaGasto> findByGrupoId(@Param("grupoId") Long grupoId);
     
     /**
      * Encuentra deudas pendientes por grupo
@@ -72,7 +71,5 @@ public interface DeudaGastoRepository extends JpaRepository<DeudaGasto, Long> {
     @Query("SELECT COUNT(d) > 0 FROM DeudaGasto d WHERE d.gasto.id = :gastoId AND d.saldado = false")
     boolean existenDeudasPendientesParaGasto(@Param("gastoId") Long gastoId);
     
-    @Query("SELECT d FROM DeudaGasto d WHERE d.gasto.grupo.id = :grupoId")
-    List<DeudaGasto> findByGastoGrupoId(@Param("grupoId") Long grupoId);
 
 }

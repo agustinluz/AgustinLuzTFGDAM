@@ -4,7 +4,8 @@ import { dashboardService } from '@/service/DashboardService'
 import type {
   UsuarioGrupoDTO,
   EventoDTO,
-  GrupoDTO
+  GrupoDTO,
+  UsuarioStatsDTO
 } from '@/service/DashboardService'
 
 interface DashboardState {
@@ -12,6 +13,7 @@ interface DashboardState {
   grupo: GrupoDTO | null
   participantes: UsuarioGrupoDTO[]
   eventos: EventoDTO[]
+  userStats: UsuarioStatsDTO | null
   loading: boolean
   error: string | null
 }
@@ -22,6 +24,7 @@ export const useDashboardStore = defineStore('dashboard', {
     grupo: null,
     participantes: [],
     eventos: [],
+     userStats: [],
     loading: false,
     error: null
   }),
@@ -31,14 +34,16 @@ export const useDashboardStore = defineStore('dashboard', {
       this.loading = true
       this.error = null
       try {
-        const [grupo, evs, parts] = await Promise.all([
+        const [grupo, evs, parts, stats] = await Promise.all([
           dashboardService.getGrupo(grupoId),
           dashboardService.getEventos(grupoId),
-          dashboardService.getParticipantes(grupoId, usuarioId)
+          dashboardService.getParticipantes(grupoId, usuarioId),
+          dashboardService.getUsuarioStats(grupoId, usuarioId)   // <-- nuevo endpoint
         ])
         this.grupo = grupo
         this.eventos = evs
         this.participantes = parts
+        this.userStats = stats
       } catch (e: any) {
         this.error = e.message || 'Error al cargar datos'
       } finally {

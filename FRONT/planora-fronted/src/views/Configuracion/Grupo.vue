@@ -51,7 +51,7 @@
             @delete-group="handleDeleteGroup"
           />
 
-          <UserStatsModal :visible="showUserStats" :stats="statsUsuarios" @close="showUserStats = false" />
+          <UserStatsModal :abierto="showUserStats" :stats="statsUsuarios" @close="showUserStats = false" />
         </div>
       </ion-content>
     </ion-page>

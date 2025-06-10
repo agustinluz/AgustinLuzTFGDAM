@@ -1,5 +1,5 @@
 <template>
-  <ion-modal v-model:visible="close" backdrop-dismiss="false">
+  <ion-modal :is-open="abierto" backdrop-dismiss="close">
     <ion-header>
       <ion-toolbar color="primary" class="toolbar">
         <ion-title class="title">Estadísticas de usuarios</ion-title>
@@ -43,7 +43,7 @@ import type { UsuarioStatsDTO } from '@/service/DashboardService'
 
 // Props
 const props = defineProps<{
-  visible: boolean
+  abierto: boolean
   stats: UsuarioStatsDTO[]
 }>()
 

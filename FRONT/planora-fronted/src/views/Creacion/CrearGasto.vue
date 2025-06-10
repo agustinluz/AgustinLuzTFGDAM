@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useIonRouter, IonPage, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonSpinner, IonToast } from '@ionic/vue';
 import FormularioBasico from '@/views/Components/CreacionGasto/FormularioBasico.vue';
@@ -124,19 +124,29 @@ const cancelar = () => router.push(`/dashboard/${grupoId}`);
 
 // Carga datos
 const cargarDatos = async () => {
-  cargando.value=true;
-  try{
+  cargando.value = true;
+  try {
+    // Ahora existe obtenerGrupo()
     [ grupo.value, usuarios.value, eventos.value ] = await Promise.all([
       GastoService.obtenerGrupo(grupoId),
       GastoService.obtenerUsuarios(grupoId),
       GastoService.obtenerEventos(grupoId)
     ]);
-    const usr = JSON.parse(localStorage.getItem('usuario')||'{}');
-    if(usr.id){ formulario.pagadoPorId=usr.id; formulario.participantesIds=[usr.id]; }
-  }catch(e){ mostrarMensaje('Error carga','danger'); }
-  finally{ cargando.value=false; }
-};
-
+    // Preseleccionar al usuario actual si está en localStorage
+    const usr = JSON.parse(localStorage.getItem('usuario') || '{}');
+    if (usr.id) {
+      formulario.pagadoPorId = usr.id;
+      formulario.participantesIds = [usr.id];
+    }
+  } catch (e) {
+    // Log completo en consola
+    console.error('Error cargando datos de creación de gasto:', e);
+    // Mostrar mensaje concreto
+    mostrarMensaje(`Error cargando datos: ${e.message || 'Revisa consola'}`, 'danger');
+  } finally {
+    cargando.value = false;
+  }
+ };
 onMounted(cargarDatos);
 </script>
 

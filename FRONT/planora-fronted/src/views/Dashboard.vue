@@ -44,12 +44,12 @@
             @view-event="openEvent"
           />
           <ion-button
-            v-if="!store.loading"
+            v-if="!store.loading && daySelected"
             fill="clear"
             class="view-all"
-            @click="goToAllEvents"
+            @click="createEventOnDay"
           >
-            Ver todos →
+            Crear evento
           </ion-button>
           <ion-skeleton-text
             v-else
@@ -71,7 +71,7 @@
       </section>
 
       <!-- 4. Botón flotante de añadir evento -->
-      <ion-fab vertical="bottom" horizontal="end">
+      <ion-fab vertical="fixed" horizontal="end">
         <ion-fab-button color="primary" @click="createEvent">
           <ion-icon :icon="add" />
         </ion-fab-button>
@@ -92,7 +92,7 @@
       <!-- 6. Modal de estadísticas de usuarios -->
       <UserStatsModal
         :visible="showStatsModal"
-        :stats="store.userStats"
+        :stats="store.userStats!"
         @close="showStatsModal = false"
       />
     </ion-content>
@@ -121,7 +121,7 @@ import { add }        from 'ionicons/icons'
 
 const store = useDashboardStore()
 const {
-  currentDate, headerDays, calendarDays,
+  currentDate, selectedDate,headerDays, calendarDays,
   eventDates, eventsForSelectedDay,
   previousMonth, nextMonth, selectDay
 } = useCalendar()
@@ -143,6 +143,9 @@ const upcomingEventos = computed(() =>
     return dt >= 0 && dt < 7 * 24 * 60 * 60 * 1000
   })
 )
+const daySelected = computed(() =>
+  selectedDate.value.toDateString() !== new Date().toDateString()
+)
 
 onMounted(() => {
   const user = JSON.parse(localStorage.getItem('usuario')!)
@@ -160,7 +163,7 @@ function handleDelete(id: number) {
   closeModal()
 }
 function handleEdit(e: EventoDTO) {
-  router.push({ name: 'event-edit', params: { id: e.id } })
+  router.push({ path: `/dashboard/${grupoId}/eventos`, query: { editar: e.id } })
 }
 
 // Navegación
@@ -173,10 +176,13 @@ function goToLogout() {
 function createEvent()  {
   router.push(`/dashboard/${grupoId}/crear`)
 }
-function goToAllEvents(){ router.push({ name: 'event-list', params: { grupoId } }) }
 
-// Mostrar modal de stats
-function toggleStats() { showStatsModal.value = !showStatsModal.value }
+function createEventOnDay(){
+  const date = selectedDate.value.toISOString()
+  router.push({ path: `/dashboard/${grupoId}/crear/evento`, query: { fecha: date } })
+}
+
+
 </script>
 
 <style scoped lang="scss">

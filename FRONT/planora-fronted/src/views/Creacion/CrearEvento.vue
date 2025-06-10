@@ -250,6 +250,11 @@ onMounted(async () => {
     }
     
     usuario.value = JSON.parse(usuarioString)
+
+     const preFecha = route.query.fecha
+    if (preFecha) {
+      fecha.value = preFecha
+    }
     
     if (!grupoId.value) {
       throw new Error('Grupo no especificado')

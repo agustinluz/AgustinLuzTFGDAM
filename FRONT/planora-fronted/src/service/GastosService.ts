@@ -5,8 +5,15 @@ interface Usuario { id: number; nombre: string; }
 interface DeudaGasto { deudorId: number; deudorNombre: string; monto: number; saldado: boolean; }
 interface GastoResumen { id: number; titulo: string; monto: number; eventoId: number | null; deudas: DeudaGasto[]; partesIguales: boolean; usuarios: Usuario[]; }
 interface GastoDetalle extends GastoResumen { fechaCreacion: string; evento?: Evento; pagadoPor: Usuario; }
+interface Grupo { id: number; nombre: string; }
 
 export default {
+
+   async obtenerGrupo(grupoId: number): Promise<Grupo> {
+    // axios.baseURL debería ser '/api'
+    const response = await api.get<Grupo>(`/grupos/${grupoId}`);
+    return response.data;
+  },
   async obtenerGastos(grupoId: number): Promise<GastoResumen[]> {
     const response = await api.get(`/gasto/${grupoId}/gastos`);
     return response.data as GastoResumen[];

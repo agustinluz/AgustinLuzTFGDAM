@@ -86,4 +86,22 @@ export class EventosService {
       throw new Error('Error al obtener el evento')
     }
   }
+   static async marcarAsistencia(eventoId: number, asistio: boolean, token: string): Promise<void> {
+    try {
+      await api.post(`/eventos/${eventoId}/asistencia?asistio=${asistio}`, {}, getAuthHeader(token))
+    } catch (error) {
+      console.error('Error al registrar asistencia:', error)
+      throw new Error('Error al registrar asistencia')
+    }
+  }
+
+  static async obtenerEstadisticas(eventoId: number): Promise<any> {
+    try {
+      const response = await api.get(`/eventos/${eventoId}/asistencia/estadisticas`)
+      return response.data
+    } catch (error) {
+      console.error('Error al obtener estadisticas:', error)
+      throw new Error('Error al obtener estadisticas')
+    }
+  }
 }

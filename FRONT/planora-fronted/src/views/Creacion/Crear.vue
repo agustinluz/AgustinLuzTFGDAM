@@ -129,7 +129,7 @@ onMounted(async () => {
   } catch (error) {
     console.error('Error al obtener grupo:', error)
     // Navegar de vuelta si hay error
-    router.replace('/dashboard')
+    router.push('/grupo')
   } finally {
     isLoading.value = false
   }

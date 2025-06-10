@@ -121,6 +121,12 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/invitaciones',
     component: () => import('../views/InvitacionesPage.vue')
+  },
+  {
+    path: '/evento/:eventoId/asistir',
+    name: 'asistir-evento',
+    component: () => import('../views/Detalles/Evento/AsistirEvento.vue'),
+    props: true
   }
 
 
