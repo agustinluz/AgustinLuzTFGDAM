@@ -4,7 +4,7 @@
       :grupo="grupo"
       :cantidad="gastos.length"
       :total="formatMonto(totalGastos)"
-      @volver="irADashboard"
+      :grupoId="grupoId"
       @abrirOpciones="mostrarOpciones = true"
     />
 
@@ -98,10 +98,6 @@ const {
   marcarSaldado,
   eliminarGasto
 } = useGastos(grupoId)
-
-const irADashboard = () => {
-  router.push(`/dashboard/${grupoId}`)
-}
 
 const añadirGasto = () => {
   router.push(`/dashboard/${grupoId}/crear/gasto`)

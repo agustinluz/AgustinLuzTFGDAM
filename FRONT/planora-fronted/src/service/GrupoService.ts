@@ -58,7 +58,7 @@ const getAdminHeaders = () => {
   return headers;
 };
 
-// Función para validar ID
+/// Función para validar ID
 const validateId = (id: number): boolean => {
   return !isNaN(id) && id > 0;
 };
@@ -79,12 +79,12 @@ export const groupService = {
   },
 
   // Obtener grupos de un usuario
-  async getUserGroups(userId: number) {
-    if (!validateId(userId)) {
-      throw new Error(`ID de usuario inválido: ${userId}`);
+  async getUserGroups(usuarioId: number) {
+    if (!validateId(usuarioId)) {
+      throw new Error(`ID de usuario inválido: ${usuarioId}`);
     }
-    
-    const response = await api.get(`/grupos/usuario/${userId}`, {
+
+    const response = await api.get(`/grupos/usuario/${usuarioId}`, {
       headers: getAuthHeaders()
     });
     return response;
@@ -111,12 +111,12 @@ export const groupService = {
   },
 
   // Eliminar participante del grupo (solo admin)
-  async removeParticipant(groupId: number, userId: number) {
-    if (!validateId(groupId) || !validateId(userId)) {
-      throw new Error(`IDs inválidos - Grupo: ${groupId}, Usuario: ${userId}`);
+  async removeParticipant(groupId: number, usuarioId: number) {
+    if (!validateId(groupId) || !validateId(usuarioId)) {
+      throw new Error(`IDs inválidos - Grupo: ${groupId}, Usuario: ${usuarioId}`);
     }
-    
-    const response = await api.delete(`/grupos/${groupId}/usuarios/${userId}`, {
+
+    const response = await api.delete(`/grupos/${groupId}/usuarios/${usuarioId}`, {
       headers: getAdminHeaders()
     });
     return response;
@@ -161,12 +161,12 @@ export const groupService = {
   },
 
   // Registrar usuario en grupo (crear usuario si no existe)
-  async registerUserInGroup(groupId: number, userData: any) {
+  async registerUserInGroup(groupId: number, datosUsuario: any) {
     if (!validateId(groupId)) {
       throw new Error(`ID de grupo inválido: ${groupId}`);
     }
     
-    const response = await api.post(`/grupos/${groupId}/usuarios`, userData, {
+    const response = await api.post(`/grupos/${groupId}/usuarios`, datosUsuario, {
       headers: getAuthHeaders()
     });
     return response;
@@ -185,24 +185,24 @@ export const groupService = {
   },
 
   // Invitar usuario existente al grupo
-  async inviteExistingUser(groupId: number, userEmail: string) {
-    if (!validateId(groupId) || !userEmail || userEmail.trim() === '') {
-      throw new Error(`Parámetros inválidos - Grupo: ${groupId}, Email: ${userEmail}`);
+  async inviteExistingUser(groupId: number, emailUsuario: string) {
+    if (!validateId(groupId) || !emailUsuario || emailUsuario.trim() === '') {
+      throw new Error(`Parámetros inválidos - Grupo: ${groupId}, Email: ${emailUsuario}`);
     }
     
-    const response = await api.post(`/grupos/${groupId}/invitar?emailUsuario=${encodeURIComponent(userEmail)}`, {}, {
+    const response = await api.post(`/grupos/${groupId}/invitar?emailUsuario=${encodeURIComponent(emailUsuario)}`, {}, {
       headers: getAdminHeaders()
     });
     return response;
   },
 
   // Cambiar rol de usuario
-  async changeUserRole(groupId: number, userId: number, newRole: string) {
-    if (!validateId(groupId) || !validateId(userId) || !newRole) {
-      throw new Error(`Parámetros inválidos - Grupo: ${groupId}, Usuario: ${userId}, Rol: ${newRole}`);
+  async changeUserRole(groupId: number, usuarioId: number, newRole: string) {
+    if (!validateId(groupId) || !validateId(usuarioId) || !newRole) {
+      throw new Error(`Parámetros inválidos - Grupo: ${groupId}, Usuario: ${usuarioId}, Rol: ${newRole}`);
     }
     
-    const response = await api.put(`/grupos/${groupId}/usuarios/${userId}/rol?nuevoRol=${newRole}`, {}, {
+    const response = await api.put(`/grupos/${groupId}/usuarios/${usuarioId}/rol?nuevoRol=${newRole}`, {}, {
       headers: getAdminHeaders()
     });
     return response;
@@ -233,9 +233,9 @@ export const groupService = {
   },
 
   // Obtener información de un participante específico
-  async getParticipantInfo(groupId: number, userId: number) {
-    if (!validateId(groupId) || !validateId(userId)) {
-      throw new Error(`IDs inválidos - Grupo: ${groupId}, Usuario: ${userId}`);
+  async getParticipantInfo(groupId: number, usuarioId: number) {
+    if (!validateId(groupId) || !validateId(usuarioId)) {
+      throw new Error(`IDs inválidos - Grupo: ${groupId}, Usuario: ${usuarioId}`);
     }
     
     const usuario = localStorage.getItem('usuario');
@@ -255,7 +255,7 @@ export const groupService = {
     if (token) headers['Authorization'] = `Bearer ${token}`;
     if (solicitanteId) headers['solicitanteId'] = solicitanteId;
     
-    const response = await api.get(`/grupos/${groupId}/usuarios/${userId}`, {
+    const response = await api.get(`/grupos/${groupId}/usuarios/${usuarioId}`, {
       headers
     });
     return response;

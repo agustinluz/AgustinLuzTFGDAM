@@ -53,7 +53,7 @@
 
             <!-- Acciones del participante (solo para admins) -->
             <ion-button 
-              v-if="isAdmin && !participant.esAdmin && participant.id !== currentUserId"
+              v-if="isAdmin && !participant.esAdmin && participant.id !== idUsuarioActual"
               fill="clear" 
               slot="end"
               @click="showParticipantActions(participant)"
@@ -150,7 +150,7 @@ import {
   IonButton, IonIcon, IonItem, IonItemGroup, IonItemDivider,
   IonLabel, IonAvatar, IonChip, IonModal, IonHeader, IonToolbar,
   IonTitle, IonButtons, IonContent, IonInput, IonSpinner,
-  IonActionSheet, alertController, toastController
+  IonActionSheet, alertController, toastController, IonCardSubtitle
 } from '@ionic/vue'
 import {
   peopleOutline, personAddOutline, ellipsisVerticalOutline,
@@ -164,7 +164,7 @@ interface Props {
   participants: any[]
   isAdmin: boolean
   grupoId: number
-  currentUserId?: number
+  idUsuarioActual?: number
 }
 
 const props = defineProps<Props>()

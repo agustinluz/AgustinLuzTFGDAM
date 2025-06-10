@@ -81,8 +81,8 @@
         v-if="selectedEvent"
         :visible="!!selectedEvent"
         :event="selectedEvent"
-        :userRole="store.usuario?.role ?? 'member'"
-        :userId="store.usuario?.id ?? ''"
+        :rolUsuario="store.usuario?.role ?? 'member'"
+        :idUsuario="store.usuario?.id ?? ''"
         @close="closeModal"
         @delete-event="handleDelete"
         @edit-event="handleEdit"
@@ -90,8 +90,8 @@
 
       <!-- 6. Modal de estadísticas de usuarios -->
       <UserStatsModal
-        :visible="showStatsModal"
-        :stats="store.userStats!"
+        :abierto="showStatsModal"
+        :stats="store.userStats"
         @close="showStatsModal = false"
       />
     </ion-content>
@@ -151,11 +151,10 @@ const eventsToShow = computed(() =>
 )
 
 onMounted(() => {
-  const user = JSON.parse(localStorage.getItem('usuario')!)
-  store.usuario = user
-  store.fetchAll(grupoId, user.id)
+  const usuarioGuardado = JSON.parse(localStorage.getItem('usuario')!)
+  store.usuario = usuarioGuardado
+  store.fetchAll(grupoId, usuarioGuardado.id)
 })
-
 // Handlers de eventos
 async function openEvent(e: EventoDTO) {
   selectedEvent.value = await store.getEventoDetalle(String(e.id))

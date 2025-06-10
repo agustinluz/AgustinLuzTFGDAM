@@ -52,15 +52,15 @@ export default defineComponent({
   props: {
     event: { type: Object as PropType<EventoDTO | null>, default: null },
     visible: { type: Boolean, required: true },
-    userRole: { type: String as PropType<'admin'|'member'>, required: true },
-    userId: { type: [String,Number] as PropType<string|number>, required: true }
+    rolUsuario: { type: String as PropType<'admin'|'member'>, required: true },
+    idUsuario: { type: [String,Number] as PropType<string|number>, required: true }
   },
   emits: ['close','delete-event','edit-event'],
   setup(props, { emit }) {
     const router = useRouter()
     const canEdit = computed(() => {
       if (!props.event) return false
-      return props.userRole === 'admin' || props.event.creadorId === Number(props.userId)
+       return props.rolUsuario === 'admin' || props.event.creadorId === Number(props.idUsuario)
     })
      const isUpcoming = computed(() => {
       if (!props.event) return false

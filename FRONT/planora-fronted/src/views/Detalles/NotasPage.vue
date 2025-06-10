@@ -123,8 +123,8 @@ onMounted(async () => {
   } catch (e) {
     eventos.value = []
   }
-  const userData = localStorage.getItem('usuario')
-  if (userData) usuarioActual.value = JSON.parse(userData)
+  const datosUsuario  = localStorage.getItem('usuario')
+  if (datosUsuario ) usuarioActual.value = JSON.parse(datosUsuario )
 })
 
 

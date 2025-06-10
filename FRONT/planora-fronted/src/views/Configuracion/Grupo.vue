@@ -89,7 +89,7 @@
   const isAdmin = computed(() => {
     const usuarioAlmacenado = localStorage.getItem('usuario');
     const localId = usuarioAlmacenado ? JSON.parse(usuarioAlmacenado).id : null;
-    const id = authStore.currentUser?.id || localId;
+    const id = authStore.usuarioActual?.id || localId;
     return participants.value.some(p =>
       (p.usuarioId ?? p.id) === id && (p.rol?.toLowerCase() === 'admin' || p.esAdmin)
     );
@@ -216,8 +216,21 @@
   }
 
   const handleShowUserStats = async () => {
-    statsUsuarios.value = await dashboardService.getUsuarioStats(String(grupoId.value), String(authStore.currentUser?.id ?? ''))
-    showUserStats.value = true
+const userId =
+  authStore.usuarioActual?.id ||
+  JSON.parse(localStorage.getItem('currentUser') || '{}')?.id;
+
+if (!userId) {
+  showToast('No se pudo determinar el usuario actual', 'danger');
+  return;
+}
+
+
+statsUsuarios.value = await dashboardService.getUsuarioStats(
+  String(grupoId.value),
+  String(userId)
+);
+showUserStats.value = true;
   }
 
   const handleUpdateGroup = async (updateData: any) => {

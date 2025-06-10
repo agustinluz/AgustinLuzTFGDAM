@@ -156,7 +156,7 @@ import {
   IonIcon, IonButton, IonButtons, IonModal, IonHeader,
   IonToolbar, IonTitle, IonContent, IonList,
   IonRadioGroup, IonRadio, IonAvatar,
-  alertController, toastController
+  alertController, toastController,IonCardSubtitle
 } from '@ionic/vue'
 import {
   settingsOutline, personAddOutline, trashOutline, exitOutline,

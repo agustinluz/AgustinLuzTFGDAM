@@ -35,9 +35,11 @@
                 <ion-label position="stacked">Foto de perfil</ion-label>
                 <input type="file" accept="image/*" @change="onFileChange" />
               </ion-item>
-              <ion-item v-if="formData.fotoPerfil">
-                <img :src="formData.fotoPerfil" class="preview" />
-              </ion-item>
+              <div v-if="formData.fotoPerfil" class="avatar-preview">
+                <ion-avatar>
+                  <img :src="formData.fotoPerfil" alt="Previsualización" />
+                </ion-avatar>
+              </div>
 
               <!-- Separador -->
               <div class="password-section">
@@ -132,7 +134,8 @@ import {
   IonSpinner,
   IonSkeletonText,
   toastController,
-  alertController
+  alertController,
+  IonAvatar,
 } from '@ionic/vue'
 import { eyeOutline, eyeOffOutline } from 'ionicons/icons'
 
@@ -419,10 +422,9 @@ ion-item {
 ion-card {
   margin: 0;
 }
-
-.preview {
-  max-width: 120px;
-  border-radius: 8px;
+.avatar-preview {
+  display: flex;
+  justify-content: center;
   margin-top: 8px;
 }
 </style>
