@@ -15,76 +15,96 @@
       </template>
     </PageHeader>
 
-    <ion-content class="dashboard">
+    <ion-content>
       <!-- 1. Estadísticas -->
-      <section class="section stats">
-        <StatsGrid
-          v-if="!store.loading"
-          :membersCount="store.participantes.length"
-          :upcomingCount="upcomingEventos.length"
-        />
-        <ion-skeleton-text
-          v-else
-          animated
-          style="width: 70%; height: 2rem; margin: 1rem auto"
-        />
-      </section>
-
-      <!-- 2. Calendario + Próximos eventos -->
-      <section class="section calendar-events">
-        <CompactCalendar
-          v-if="!store.loading"
-          :headerDays="headerDays"
-          :currentMonthYear="currentMonthYear"
-          :calendarDays="calendarDays"
-          :eventDates="eventDates"
-          :pastEventDates="pastEventDates"
-          @prev-month="previousMonth"
-          @next-month="nextMonth"
-          @select-day="selectDay"
-        />
-        <div class="events-panel">
-          <EventsList
+      <ion-card class="dashboard-section">
+        <ion-card-header>
+          <ion-card-title>Estadísticas del Grupo</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <StatsGrid
             v-if="!store.loading"
-            :events="eventsToShow"
-            :limit="4"
-            @view-event="openEvent"
+            :membersCount="store.participantes.length"
+            :upcomingCount="upcomingEventos.length"
           />
-          <ion-button
-            v-if="!store.loading && daySelected"
-            fill="clear"
-            class="view-all"
-            @click="createEventOnDay"
-          >
-            Crear evento
-          </ion-button>
           <ion-skeleton-text
             v-else
             animated
-            style="width: 90%; height: 1.5rem; margin: 0.5rem auto"
+            style="width: 70%; height: 2rem; margin: 1rem auto"
           />
-        </div>
-      </section>
+        </ion-card-content>
+      </ion-card>
 
-      <!-- 3. Participantes + Acciones rápidas -->
-      <section class="section participants-actions">
-        <div v-if="!store.loading">
-          <ParticipantGrid :participants="store.participantes" />
-          <QuickActions />
-        </div>
-        <div v-else class="loading-placeholder">
-          <ion-skeleton-text animated style="width: 100%; height: 4rem" />
-        </div>
-      </section>
+      <!-- 2. Calendario y eventos -->
+      <ion-card class="dashboard-section">
+        <ion-card-header>
+          <ion-card-title>Calendario y Eventos</ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="calendar-grid">
+          <CompactCalendar
+            v-if="!store.loading"
+            :headerDays="headerDays"
+            :currentMonthYear="currentMonthYear"
+            :calendarDays="calendarDays"
+            :eventDates="eventDates"
+            :pastEventDates="pastEventDates"
+            @prev-month="previousMonth"
+            @next-month="nextMonth"
+            @select-day="selectDay"
+          />
+          <div class="events-panel">
+            <EventsList
+              v-if="!store.loading"
+              :events="eventsToShow"
+              :limit="4"
+              @view-event="openEvent"
+            />
+            <ion-button
+              v-if="!store.loading && daySelected"
+              fill="outline"
+              expand="block"
+              @click="createEventOnDay"
+            >
+              Crear evento este día
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
 
-      <!-- 4. Botón flotante de añadir evento -->
+      <!-- 3. Participantes y acciones -->
+      <ion-card class="dashboard-section">
+        <ion-card-header>
+          <ion-card-title>Participantes y Acciones</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div v-if="!store.loading">
+            <ParticipantGrid :participants="store.participantes" />
+            <QuickActions />
+          </div>
+          <div v-else class="loading-placeholder">
+            <ion-skeleton-text animated style="width: 100%; height: 4rem" />
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Botón flotante con opciones -->
       <ion-fab vertical="bottom" horizontal="end">
-        <ion-fab-button color="primary" @click="createEvent">
+        <ion-fab-button color="primary">
           <ion-icon :icon="add" />
         </ion-fab-button>
+        <ion-fab-list side="top">
+          <ion-fab-button @click="createEvent">
+            <ion-icon :icon="add" />
+            <span class="fab-label">Evento</span>
+          </ion-fab-button>
+          <ion-fab-button @click="createGasto">
+            <ion-icon :icon="add" />
+            <span class="fab-label">Gasto</span>
+          </ion-fab-button>
+        </ion-fab-list>
       </ion-fab>
 
-      <!-- 5. Modal de detalles de evento -->
+      <!-- Modales -->
       <EventModal
         v-if="selectedEvent"
         :visible="!!selectedEvent"
@@ -95,8 +115,6 @@
         @delete-event="handleDelete"
         @edit-event="handleEdit"
       />
-
-      <!-- 6. Modal de estadísticas de usuarios -->
       <UserStatsModal
         :abierto="showStatsModal"
         :stats="store.userStats"
@@ -123,6 +141,7 @@ import QuickActions     from '@/views/Components/Dashboard/QuickAction.vue'
 import EventModal       from '@/views/Components/Dashboard/EventModal.vue'
 import UserStatsModal   from '@/views/Components/Dashboard/UserStatsModal.vue'
 
+// Ionic
 import {
   IonPage,
   IonContent,
@@ -130,24 +149,27 @@ import {
   IonIcon,
   IonSkeletonText,
   IonFab,
-  IonFabButton
+  IonFabButton,
+  IonFabList,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent
 } from '@ionic/vue'
-import { add, settingsOutline, logOutOutline, chevronBack } from 'ionicons/icons'
 
+import { add, settingsOutline, logOutOutline } from 'ionicons/icons'
 
 const store = useDashboardStore()
 const {
-  currentDate, selectedDate,headerDays, calendarDays,
+  currentDate, selectedDate, headerDays, calendarDays,
   eventDates, eventsForSelectedDay, pastEventDates,
   previousMonth, nextMonth, selectDay
 } = useCalendar()
 
 const router = useRouter()
 const grupoId = localStorage.getItem('grupoActivoId')!
-
-// Estado local
-const selectedEvent   = ref<EventoDTO | null>(null)
-const showStatsModal  = ref(false)
+const selectedEvent = ref<EventoDTO | null>(null)
+const showStatsModal = ref(false)
 
 const currentMonthYear = computed(() =>
   currentDate.value.toLocaleString('default', { month: 'long', year: 'numeric' })
@@ -160,11 +182,8 @@ const upcomingEventos = computed(() =>
   })
 )
 const daySelected = computed(() => !!selectedDate.value)
-const selectedDayHasEvents = computed(() => eventsForSelectedDay.value.length > 0)
 const eventsToShow = computed(() =>
-  daySelected.value
-    ? eventsForSelectedDay.value
-    : upcomingEventos.value
+  daySelected.value ? eventsForSelectedDay.value : upcomingEventos.value
 )
 
 onMounted(() => {
@@ -172,9 +191,10 @@ onMounted(() => {
   store.usuario = usuarioGuardado
   store.fetchAll(grupoId, usuarioGuardado.id)
 })
-// Handlers de eventos
-async function openEvent(e: EventoDTO) {
-  selectedEvent.value = await store.getEventoDetalle(String(e.id))
+
+// Acciones
+function openEvent(e: EventoDTO) {
+  store.getEventoDetalle(String(e.id)).then(ev => selectedEvent.value = ev)
 }
 function closeModal() { selectedEvent.value = null }
 function handleDelete(id: number) {
@@ -184,68 +204,58 @@ function handleDelete(id: number) {
 function handleEdit(e: EventoDTO) {
   router.push({ path: `/dashboard/${grupoId}/eventos`, query: { editar: e.id } })
 }
-
-// Navegación
-function goToConfig()    { router.push({ name: 'configuracionGrupo', params: { grupoId } }) }
-function goToGroupList() { router.push('/grupo') }
+function goToConfig() {
+  router.push({ name: 'configuracionGrupo', params: { grupoId } })
+}
 function goToLogout() {
   localStorage.clear()
   router.push('/login')
 }
-function createEvent()  {
-  router.push(`/dashboard/${grupoId}/crear`)
+function createEvent() {
+  router.push(`/dashboard/${grupoId}/crear/evento`)
 }
-
-function createEventOnDay(){
+function createGasto() {
+  router.push(`/dashboard/${grupoId}/crear/gasto`)
+}
+function createEventOnDay() {
   const date = selectedDate.value.toISOString()
   router.push({ path: `/dashboard/${grupoId}/crear/evento`, query: { fecha: date } })
 }
-
-
 </script>
 
 <style scoped lang="scss">
 .dashboard {
   background: var(--ion-color-background);
 
-  .section {
-    padding: calc(var(--spacing-unit) * 2);
-    & + .section { margin-top: calc(var(--spacing-unit) * 2); }
+  .dashboard-section {
+    margin-bottom: 1.5rem;
   }
 
-  .stats {
-    display: flex;
-    justify-content: center;
-  }
-
-  .calendar-events {
+  .calendar-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: calc(var(--spacing-unit) * 2);
-    @media (max-width: 768px) { grid-template-columns: 1fr; }
+    gap: 1.5rem;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
 
     .events-panel {
       display: flex;
       flex-direction: column;
-      .view-all {
-        align-self: flex-end;
-        margin-top: var(--spacing-unit);
-        font-size: var(--font-size-sm);
-      }
+      gap: 0.75rem;
     }
-  }
-
-  .participants-actions {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: calc(var(--spacing-unit) * 2);
-    @media (max-width: 768px) { grid-template-columns: 1fr; }
   }
 
   .loading-placeholder {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-unit);
+    gap: 1rem;
+  }
+
+  .fab-label {
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
   }
 
   ion-fab-button {
