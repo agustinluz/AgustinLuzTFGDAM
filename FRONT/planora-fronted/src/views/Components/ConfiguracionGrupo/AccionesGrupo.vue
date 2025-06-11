@@ -28,20 +28,6 @@
             </ion-label>
             <ion-icon :icon="chevronForwardOutline" slot="end" color="medium"></ion-icon>
           </ion-item>
-
-          <!-- Eliminar grupo -->
-          <ion-item 
-            button 
-            @click="confirmDeleteGroup"
-            class="action-item danger"
-          >
-            <ion-icon :icon="trashOutline" slot="start" color="danger"></ion-icon>
-            <ion-label>
-              <h3>Eliminar Grupo</h3>
-              <p>Eliminar permanentemente el grupo</p>
-            </ion-label>
-            <ion-icon :icon="chevronForwardOutline" slot="end" color="medium"></ion-icon>
-          </ion-item>
         </ion-item-group>
       </div>
 
@@ -159,7 +145,7 @@ import {
   alertController, toastController,IonCardSubtitle
 } from '@ionic/vue'
 import {
-  settingsOutline, personAddOutline, trashOutline, exitOutline,
+  settingsOutline, personAddOutline, exitOutline,
   chevronForwardOutline, closeOutline, warningOutline
 } from 'ionicons/icons'
 
@@ -178,7 +164,6 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   transferAdmin: [newAdminId: number]
   leaveGroup: []
-  deleteGroup: []
 }>()
 
 // State
@@ -234,24 +219,6 @@ const confirmLeaveGroup = async () => {
   await alert.present()
 }
 
-const confirmDeleteGroup = async () => {
-  const alert = await alertController.create({
-    header: 'Eliminar Grupo',
-    message: '¿Estás seguro de que quieres eliminar este grupo? Esta acción eliminará permanentemente el grupo y toda su información. No se puede deshacer.',
-    buttons: [
-      { text: 'Cancelar', role: 'cancel' },
-      {
-        text: 'Eliminar',
-        role: 'destructive',
-        handler: () => {
-          emit('deleteGroup')
-        }
-      }
-    ]
-  })
-
-  await alert.present()
-}
 
 const executeTransferAdmin = async () => {
   if (!selectedNewAdmin.value) {

@@ -41,7 +41,7 @@
             :participants="participants"
             @transfer-admin="handleTransferAdmin"
             @leave-group="handleLeaveGroup"
-            @delete-group="handleDeleteGroup"
+            
           />
 
           <UserStatsModal :abierto="showUserStats" :stats="statsUsuarios" @close="showUserStats = false" />
@@ -291,35 +291,12 @@ const handleShowUserStats = async () => {
           handler: async () => {
             try {
               await groupService.leaveGroup(grupoId.value)
+              localStorage.removeItem('grupoActivoId')
               showToast('Has salido del grupo', 'success')
-              router.push('/grupo')
+              router.replace('/grupo')
             } catch (error) {
               console.error('Error al salir del grupo:', error)
               showToast('Error al salir del grupo', 'danger')
-            }
-          }
-        }
-      ]
-    })
-    await alert.present()
-  }
-
-  const handleDeleteGroup = async () => {
-    const alert = await alertController.create({
-      header: 'Eliminar Grupo',
-      message: '¿Estás seguro de eliminar el grupo? Esta acción no se puede deshacer.',
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Eliminar',
-          handler: async () => {
-            try {
-              await groupService.deleteGroup(grupoId.value)
-              showToast('Grupo eliminado', 'success')
-              router.push('/grupo')
-            } catch (error) {
-              console.error('Error al eliminar grupo:', error)
-              showToast('Error al eliminar grupo', 'danger')
             }
           }
         }

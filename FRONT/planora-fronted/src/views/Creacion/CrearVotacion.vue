@@ -4,7 +4,7 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button></ion-back-button>
+          <ion-back-button :default-href="'/dashboard/:grupoId/dashboard'" color="light" ></ion-back-button>
         </ion-buttons>
         <ion-title>Nueva votación</ion-title>
         <ion-buttons slot="end">

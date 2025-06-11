@@ -2,11 +2,11 @@
   <ion-header>
     <ion-toolbar class="page-header" color="primary">
       <ion-buttons slot="start" v-if="showBack">
-        <ion-back-button :default-href="backHref" @click="$emit('back')" />
+        <ion-back-button :default-href="backHref" @click="$emit('back')" color="light" />
       </ion-buttons>
       <ion-title>{{ title }}</ion-title>
       <ion-buttons slot="end">
-        <slot name="end" />
+        
       </ion-buttons>
     </ion-toolbar>
   </ion-header>

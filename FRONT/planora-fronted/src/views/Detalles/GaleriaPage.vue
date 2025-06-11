@@ -267,7 +267,8 @@ import {
   IonLabel,
   IonChip,
   alertController,
-  toastController
+  toastController,
+  IonBackButton
 } from '@ionic/vue'
 import {
   addOutline,

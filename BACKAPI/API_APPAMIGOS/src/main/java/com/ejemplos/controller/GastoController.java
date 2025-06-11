@@ -274,11 +274,15 @@ public class GastoController {
     }
 
     @GetMapping("/{gastoId}/deudas")
-    public ResponseEntity<List<DeudaGastoDTO>> obtenerDeudasGasto(@PathVariable Long gastoId) {
-        List<DeudaGasto> deudas = deudaGastoService.obtenerDeudasPorGasto(gastoId);
-        List<DeudaGastoDTO> deudasDTO = deudaGastoDTOConverter.toDTOList(deudas);
-        return ResponseEntity.ok(deudasDTO);	
-    }
+public ResponseEntity<List<DeudaGastoDTO>> obtenerDeudasGasto(@PathVariable Long gastoId) {
+    List<DeudaGasto> deudas = deudaGastoService.obtenerDeudasPorGasto(gastoId)
+                             .stream()
+                             .distinct() // elimina duplicados si hubiera
+                             .collect(Collectors.toList());
+    List<DeudaGastoDTO> deudasDTO = deudaGastoDTOConverter.toDTOList(deudas);
+    return ResponseEntity.ok(deudasDTO);
+}
+
     
     @GetMapping("/grupos/{grupoId}/resumen")
     public ResponseEntity<List<ResumenDeudaDTO>> obtenerResumenDeGrupo(@PathVariable Long grupoId) {

@@ -215,6 +215,10 @@ public class GastoService {
         }
     }
     
+    public long contarPagadosPorUsuarioYGrupo(Long usuarioId, Long grupoId) {
+        return gastoRepository.countByGrupoIdAndPagadoPorId(grupoId, usuarioId);
+    }
+    
     /**
      * Verifica si existe un gasto con el ID especificado
      * @param id ID del gasto a verificar

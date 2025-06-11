@@ -32,6 +32,7 @@ public interface ImagenRepository extends JpaRepository<Imagen, Long> {
     List<Imagen> findByGrupoIdAndEventoId(Long grupoId, Long eventoId);
     List<Imagen> findByGrupoIdAndUsuarioId(Long grupoId, Long usuarioId);
     List<Imagen> findByEventoIdAndUsuarioId(Long eventoId, Long usuarioId);
+    long countByGrupoIdAndUsuarioId(Long grupoId, Long usuarioId);
     
     // Consultas personalizadas con @Query si necesitas algo más específico
     @Query("SELECT i FROM Imagen i WHERE i.grupo.id = :grupoId AND i.tamaño < :maxSize ORDER BY i.fechaCreacion DESC")

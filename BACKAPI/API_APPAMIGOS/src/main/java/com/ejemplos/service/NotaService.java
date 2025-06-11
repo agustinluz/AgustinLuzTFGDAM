@@ -106,4 +106,7 @@ public class NotaService {
     public long contarPorUsuario(Long usuarioId) {
         return obtenerPorUsuario(usuarioId).size();
     }
+    public long contarPorGrupoYUsuario(Long grupoId, Long usuarioId) {
+        return notaRepository.countByGrupoIdAndUsuarioId(grupoId, usuarioId);
+    }
 }

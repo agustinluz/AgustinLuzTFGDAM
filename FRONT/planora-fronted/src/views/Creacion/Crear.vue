@@ -4,7 +4,7 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button @click="handleGoBack"></ion-back-button>
+          <ion-back-button @click="handleGoBack" color="light"></ion-back-button>
         </ion-buttons>
         <ion-title>Crear nuevo elemento</ion-title>
       </ion-toolbar>

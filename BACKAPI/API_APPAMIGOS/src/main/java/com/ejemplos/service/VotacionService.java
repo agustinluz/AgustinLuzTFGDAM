@@ -95,4 +95,8 @@ public class VotacionService {
     public long contarActivasPorGrupoId(Long grupoId) {
         return votacionRepository.countByGrupoIdAndEstado(grupoId, Votacion.EstadoVotacion.ACTIVA);
     }
+    
+    public long contarPorGrupoYUsuario(Long grupoId, Long usuarioId) {
+        return votacionRepository.countByGrupoIdAndCreadorId(grupoId, usuarioId);
+    }
 }

@@ -25,7 +25,7 @@ export function useGastos(grupoId: number) {
     gastos.value.filter(g => g.deudas.some(d => !d.saldado)).length
   );
 
-   const gastosSaldados = computed(() =>
+  const gastosSaldados = computed(() =>
     gastos.value.filter(g => g.deudas.every(d => d.saldado)).length
   );
 
@@ -50,6 +50,23 @@ export function useGastos(grupoId: number) {
     }
   };
 
+  const actualizarGastoEnLista = async (gastoId: number) => {
+    try {
+      const detalleActualizado = await GastoService.obtenerGastoPorId(gastoId);
+      const index = gastos.value.findIndex(g => g.id === gastoId);
+      if (index !== -1) {
+        gastos.value[index] = {
+          ...detalleActualizado,
+          deudas: detalleActualizado.deudas,
+          partesIguales: detalleActualizado.partesIguales,
+          usuarios: detalleActualizado.usuarios
+        };
+      }
+    } catch (e) {
+      console.error('Error actualizando gasto individual', e);
+    }
+  };
+
   const seleccionarGasto = async (resumen: { id: number }) => {
     try {
       const detalle = await GastoService.obtenerGastoPorId(resumen.id);
@@ -63,7 +80,7 @@ export function useGastos(grupoId: number) {
   const marcarSaldado = async (gastoId: number, participanteId: number, metodo = 'efectivo', notas = '') => {
     try {
       await GastoService.marcarSaldado(gastoId, participanteId, { metodoPago: metodo, notas });
-      await cargarGastos();
+      await actualizarGastoEnLista(gastoId);
     } catch (e) {
       console.error('Error marcando saldado', e);
     }
@@ -73,7 +90,7 @@ export function useGastos(grupoId: number) {
     try {
       await GastoService.eliminarGasto(id);
       gastoSeleccionado.value = null;
-      await cargarGastos();
+      gastos.value = gastos.value.filter(g => g.id !== id);
     } catch (e) {
       console.error('Error eliminando gasto', e);
     }

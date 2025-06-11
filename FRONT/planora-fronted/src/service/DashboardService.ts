@@ -35,6 +35,11 @@ export interface UsuarioStatsDTO {
   rol: string
   eventosCreados: number
   eventosAsistidos: number
+  notasCreadas: number
+  gastosPagados: number
+  votacionesCreadas: number
+  votosEmitidos: number
+  imagenesSubidas: number
 }
 
 export const dashboardService = {

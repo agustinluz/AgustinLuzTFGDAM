@@ -2,9 +2,9 @@
   <ion-page>
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-buttons slot="start">
-          <ion-back-button @click="volver" />
-        </ion-buttons>
+      <ion-buttons slot="start">
+        <ion-back-button :default-href="`/dashboard/${grupoId}`" color="light" />
+      </ion-buttons>
         <ion-title>Resumen de Deudas</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -45,7 +45,7 @@
 <script setup>
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
-  IonList, IonItem, IonLabel, IonText, IonBackButton, IonButtons
+  IonList, IonItem, IonLabel, IonText, IonBackButton, IonButtons, 
 } from '@ionic/vue'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'

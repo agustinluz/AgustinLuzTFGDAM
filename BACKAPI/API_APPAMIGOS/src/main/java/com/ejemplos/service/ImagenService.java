@@ -221,6 +221,10 @@ public class ImagenService {
         return imagenRepository.countByGrupoId(grupoId);
     }
     
+    public long contarImagenesPorGrupoYUsuario(Long grupoId, Long usuarioId) {
+        return imagenRepository.countByGrupoIdAndUsuarioId(grupoId, usuarioId);
+    }
+    
     /**
      * Obtener las últimas N imágenes de un grupo
      */

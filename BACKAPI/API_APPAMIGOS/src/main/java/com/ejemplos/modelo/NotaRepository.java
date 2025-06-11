@@ -34,6 +34,8 @@ public interface NotaRepository extends JpaRepository<Nota, Long> {
 
     // Buscar notas por grupo y evento
     List<Nota> findByGrupoIdAndEventoId(Long grupoId, Long eventoId);
+    
+    long countByGrupoIdAndUsuarioId(Long grupoId, Long usuarioId);
 
     // Buscar notas por grupo y evento ordenadas
     List<Nota> findByGrupoIdAndEventoIdOrderByIdDesc(Long grupoId, Long eventoId);
