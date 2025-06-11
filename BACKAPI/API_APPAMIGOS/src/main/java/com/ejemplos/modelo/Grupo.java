@@ -1,6 +1,7 @@
 package com.ejemplos.modelo;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -33,7 +34,7 @@ public class Grupo implements Serializable {
     private String imagenPerfil;
    
     @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UsuarioGrupo> usuarioGrupos;
+    private List<UsuarioGrupo> usuarioGrupos = new ArrayList<>();
     
     @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Evento> eventos;
