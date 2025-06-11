@@ -19,6 +19,7 @@
 <script setup lang="ts">
 import { defineProps, computed } from 'vue'
 import { people, calendar } from 'ionicons/icons'
+import { IonGrid, IonRow, IonCol, IonCard, IonCardContent, IonIcon } from '@ionic/vue'
 const props = defineProps<{ membersCount: number; upcomingCount: number }>()
 const stats = computed(() => [
   { icon: people,   value: props.membersCount, label: 'Miembros' },

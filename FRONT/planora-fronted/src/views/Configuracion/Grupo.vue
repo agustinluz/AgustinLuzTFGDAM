@@ -1,13 +1,6 @@
   <template>
     <ion-page>
-      <ion-header>
-        <ion-toolbar>
-          <ion-buttons slot="start">
-            <ion-back-button default-href="/grupo"></ion-back-button>
-          </ion-buttons>
-          <ion-title>Configuración del Grupo</ion-title>
-        </ion-toolbar>
-      </ion-header>
+      <PageHeader title="Configuración del Grupo" showBack backHref="/grupo" />
 
       <ion-content>
         <div v-if="loading" class="loading-container">
@@ -48,7 +41,7 @@
             :participants="participants"
             @transfer-admin="handleTransferAdmin"
             @leave-group="handleLeaveGroup"
-            @delete-group="handleDeleteGroup"
+            
           />
 
           <UserStatsModal :abierto="showUserStats" :stats="statsUsuarios" @close="showUserStats = false" />
@@ -60,10 +53,11 @@
   <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
-  import { 
-    IonPage, IonHeader, IonToolbar, IonTitle, IonContent, 
-    IonButtons, IonBackButton, IonSpinner, alertController, toastController 
+import {
+    IonPage, IonContent,
+    IonSpinner, alertController, toastController
   } from '@ionic/vue';
+  import PageHeader from '@/components/PageHeader.vue'
 
   import { useAuthStore } from '@/service/auth'
   import { groupService } from '@/service/GrupoService'
@@ -87,10 +81,13 @@
   const statsUsuarios = ref<UsuarioStatsDTO[]>([])
 
   const isAdmin = computed(() => {
-  const usuarioAlmacenado = localStorage.getItem('usuario');
-  const localId = usuarioAlmacenado ? JSON.parse(usuarioAlmacenado).id : null;
-  return grupo.value.adminId === (authStore.currentUser?.id || localId);
-});
+    const usuarioAlmacenado = localStorage.getItem('usuario');
+    const localId = usuarioAlmacenado ? JSON.parse(usuarioAlmacenado).id : null;
+    const id = authStore.usuarioActual?.id || localId;
+    return participants.value.some(p =>
+      (p.usuarioId ?? p.id) === id && (p.rol?.toLowerCase() === 'admin' || p.esAdmin)
+    );
+  });
 
   onMounted(() => {
     authStore.initializeFromStorage()
@@ -212,8 +209,25 @@
     }
   }
 
-  const handleShowUserStats = async () => {
-    statsUsuarios.value = await dashboardService.getUsuarioStats(String(grupoId.value), String(authStore.currentUser?.id ?? ''))
+const handleShowUserStats = async () => {
+    const storedUser =
+      JSON.parse(
+        localStorage.getItem('usuario') ||
+          localStorage.getItem('currentUser') ||
+          '{}'
+      ) || {}
+
+    const userId = authStore.usuarioActual?.id || storedUser.id
+
+    if (!userId) {
+      showToast('No se pudo determinar el usuario actual', 'danger')
+      return
+    }
+
+    statsUsuarios.value = await dashboardService.getUsuarioStats(
+      String(grupoId.value),
+      String(userId)
+    )
     showUserStats.value = true
   }
 
@@ -277,35 +291,12 @@
           handler: async () => {
             try {
               await groupService.leaveGroup(grupoId.value)
+              localStorage.removeItem('grupoActivoId')
               showToast('Has salido del grupo', 'success')
-              router.push('/grupo')
+              router.replace('/grupo')
             } catch (error) {
               console.error('Error al salir del grupo:', error)
               showToast('Error al salir del grupo', 'danger')
-            }
-          }
-        }
-      ]
-    })
-    await alert.present()
-  }
-
-  const handleDeleteGroup = async () => {
-    const alert = await alertController.create({
-      header: 'Eliminar Grupo',
-      message: '¿Estás seguro de eliminar el grupo? Esta acción no se puede deshacer.',
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Eliminar',
-          handler: async () => {
-            try {
-              await groupService.deleteGroup(grupoId.value)
-              showToast('Grupo eliminado', 'success')
-              router.push('/grupo')
-            } catch (error) {
-              console.error('Error al eliminar grupo:', error)
-              showToast('Error al eliminar grupo', 'danger')
             }
           }
         }

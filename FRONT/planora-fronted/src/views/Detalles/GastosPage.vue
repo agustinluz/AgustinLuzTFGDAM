@@ -4,7 +4,7 @@
       :grupo="grupo"
       :cantidad="gastos.length"
       :total="formatMonto(totalGastos)"
-      @volver="irADashboard"
+      :grupoId="grupoId"
       @abrirOpciones="mostrarOpciones = true"
     />
 
@@ -24,6 +24,7 @@
         <GastosSegment
           :total="gastos.length"
           :pendientes="gastosPendientes"
+          :saldados="gastosSaldados"
           :valorInicial="filtro"
           @filtrar="filtro = $event"
         />
@@ -66,6 +67,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGastos } from '@/Composable/useGasto'
+import { IonPage, IonContent, IonSpinner, IonActionSheet } from '@ionic/vue'
+
 
 import GastosHeader from './Gastos/GastosHeader.vue'
 import GastosStats from './Gastos/GastosStats.vue'
@@ -90,16 +93,13 @@ const {
   filtro,
   totalGastos,
   gastosPendientes,
+  gastosSaldados,
   gastosFiltrados,
   cargarGastos,
   seleccionarGasto,
   marcarSaldado,
   eliminarGasto
 } = useGastos(grupoId)
-
-const irADashboard = () => {
-  router.push(`/dashboard/${grupoId}`)
-}
 
 const añadirGasto = () => {
   router.push(`/dashboard/${grupoId}/crear/gasto`)
@@ -140,11 +140,11 @@ const editarGasto = (id) => {
   router.push(`/dashboard/${grupoId}/gastos/${id}/editar`)
 }
 
-const mensajeVacio = computed(() =>
-  filtro.value === 'pendientes'
-    ? 'No hay gastos pendientes'
-    : 'No hay gastos registrados'
-)
+const mensajeVacio = computed(() => {
+  if (filtro.value === 'pendientes') return 'No hay gastos pendientes'
+  if (filtro.value === 'saldados') return 'No hay gastos saldados'
+  return 'No hay gastos registrados'
+})
 
 const opcionesMenu = [
   { text: 'Resumen completo', handler: () => router.push(`/grupo/${grupoId}/resumen`) },

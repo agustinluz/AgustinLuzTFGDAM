@@ -18,10 +18,15 @@ import com.ejemplos.modelo.Invitacion;
 import com.ejemplos.modelo.Usuario;
 import com.ejemplos.modelo.UsuarioGrupo;
 import com.ejemplos.service.AsistenciaEventoService;
+import com.ejemplos.service.GastoService;
 import com.ejemplos.service.GrupoService;
+import com.ejemplos.service.ImagenService;
 import com.ejemplos.service.InvitacionService;
+import com.ejemplos.service.NotaService;
 import com.ejemplos.service.UsuarioGrupoService;
 import com.ejemplos.service.UsuarioService;
+import com.ejemplos.service.VotacionService;
+import com.ejemplos.service.VotoService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,6 +59,23 @@ public class GrupoController {
 	@Autowired
     private InvitacionService invitacionService;
 	
+	
+	@Autowired
+    private GastoService gastoService;
+
+    @Autowired
+    private NotaService notaService;
+
+    @Autowired
+    private VotacionService votacionService;
+
+    @Autowired
+    private VotoService votoService;
+
+    @Autowired
+    private ImagenService imagenService;
+    
+    
 	@GetMapping("/buscar-usuario")
     public ResponseEntity<UsuarioDTO> buscarUsuarioPorEmail(@RequestParam String email) {
             return usuarioService.obtenerPorEmail(email)
@@ -314,21 +336,26 @@ public class GrupoController {
 
 	// Salir del grupo
 	@DeleteMapping("/{grupoId}/salir")
-	public ResponseEntity<Void> salirDelGrupo(@PathVariable Long grupoId, @RequestHeader("usuarioId") Long usuarioId) {
+    public ResponseEntity<Void> salirDelGrupo(@PathVariable Long grupoId, @RequestHeader("usuarioId") Long usuarioId) {
 
-		UsuarioGrupo ug = usuarioGrupoService.obtenerPorUsuarioIdYGrupoId(usuarioId, grupoId).orElse(null);
-		if (ug == null) {
-			return ResponseEntity.notFound().build();
-		}
+            UsuarioGrupo ug = usuarioGrupoService.obtenerPorUsuarioIdYGrupoId(usuarioId, grupoId).orElse(null);
+            if (ug == null) {
+                    return ResponseEntity.notFound().build();
+            }
 
-		// No permitir que el admin salga sin transferir
-		if ("admin".equalsIgnoreCase(ug.getRol())) {
-			return ResponseEntity.badRequest().build();
-		}
+            if ("admin".equalsIgnoreCase(ug.getRol())) {
+                    int admins = usuarioGrupoService.contarAdminsPorGrupo(grupoId);
+                    if (admins <= 1) {
+                            return ResponseEntity.badRequest().build();
+                    }
+            }
 
-		usuarioGrupoService.eliminarUsuarioDeGrupo(usuarioId, grupoId);
-		return ResponseEntity.ok().build();
-	}
+            usuarioGrupoService.eliminarUsuarioDeGrupo(usuarioId, grupoId);
+            if (usuarioGrupoService.contarParticipantesPorGrupo(grupoId) == 0) {
+                grupoService.eliminar(grupoId);
+        }
+            return ResponseEntity.ok().build();
+    }
 
 	// Obtener información de un participante específico
 	@GetMapping("/{grupoId}/usuarios/{usuarioId}")
@@ -434,6 +461,21 @@ public class GrupoController {
 
                     long asistencias = asistenciaEventoService.contarAsistenciasPorUsuarioYGrupo(u.getId(), id);
                     userStats.put("eventosAsistidos", asistencias);
+                    
+                    long notas = notaService.contarPorGrupoYUsuario(id, u.getId());
+                    userStats.put("notasCreadas", notas);
+
+                    long gastos = gastoService.contarPagadosPorUsuarioYGrupo(u.getId(), id);
+                    userStats.put("gastosPagados", gastos);
+
+                    long votaciones = votacionService.contarPorGrupoYUsuario(id, u.getId());
+                    userStats.put("votacionesCreadas", votaciones);
+
+                    long votos = votoService.contarVotosPorUsuarioYGrupo(u.getId(), id);
+                    userStats.put("votosEmitidos", votos);
+
+                    long imagenes = imagenService.contarImagenesPorGrupoYUsuario(id, u.getId());
+                    userStats.put("imagenesSubidas", imagenes);
 
                     resultado.add(userStats);
             }

@@ -16,4 +16,6 @@ public interface VotacionRepository extends JpaRepository<Votacion, Long> {
     long countByGrupoId(Long grupoId);
     
     long countByGrupoIdAndEstado(Long grupoId, Votacion.EstadoVotacion estado);
+    
+    long countByGrupoIdAndCreadorId(Long grupoId, Long creadorId);
 }

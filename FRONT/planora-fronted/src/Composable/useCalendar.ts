@@ -48,6 +48,13 @@ export function useCalendar() {
     store.eventos.map(e => new Date(e.fecha).toDateString())
   )
 
+  const pastEventDates = computed(() =>
+    store.eventos
+      .filter(e => new Date(e.fecha).getTime() < Date.now())
+      .map(e => new Date(e.fecha).toDateString())
+  )
+
+
   const eventsForSelectedDay = computed(() =>
     store.eventos.filter(e =>
       new Date(e.fecha).toDateString() ===
@@ -77,6 +84,7 @@ export function useCalendar() {
     headerDays,
     calendarDays,
     eventDates,
+    pastEventDates,
     eventsForSelectedDay,
     previousMonth,
     nextMonth,

@@ -17,6 +17,7 @@
           :key="u.usuarioId"
           lines="none"
           class="item"
+          @click="toggle(u.usuarioId)"
         >
           <ion-label class="label">
             <h2 class="name">{{ u.nombreUsuario }}</h2>
@@ -24,6 +25,13 @@
               📝 Creados: <strong>{{ u.eventosCreados }}</strong> | 
               🎟️ Asistidos: <strong>{{ u.eventosAsistidos }}</strong>
             </p>
+            <div v-if="expandedId === u.usuarioId" class="extra">
+              <p>📋 Notas: <strong>{{ u.notasCreadas }}</strong></p>
+              <p>💰 Gastos pagados: <strong>{{ u.gastosPagados }}</strong></p>
+              <p>🗳️ Votaciones creadas: <strong>{{ u.votacionesCreadas }}</strong></p>
+              <p>✅ Votos emitidos: <strong>{{ u.votosEmitidos }}</strong></p>
+              <p>📷 Imágenes subidas: <strong>{{ u.imagenesSubidas }}</strong></p>
+            </div>
           </ion-label>
         </ion-item>
       </ion-list>
@@ -32,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits, ref } from 'vue'
 import {
   IonModal, IonHeader, IonToolbar, IonTitle,
   IonButtons, IonButton, IonIcon, IonContent,
@@ -51,6 +59,10 @@ const props = defineProps<{
 const emit = defineEmits(['close'] as const)
 function close() {
   emit('close')
+}
+const expandedId = ref<number | null>(null)
+function toggle(id: number) {
+  expandedId.value = expandedId.value === id ? null : id
 }
 </script>
 
@@ -80,5 +92,10 @@ function close() {
   margin: 4px 0 0;
   font-size: var(--font-size-sm);
   color: var(--ion-color-medium);
+}
+.extra {
+  margin-top: 8px;
+  font-size: var(--font-size-sm);
+  line-height: 1.3;
 }
 </style>

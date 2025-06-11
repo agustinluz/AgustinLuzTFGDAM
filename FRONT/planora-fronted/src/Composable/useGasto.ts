@@ -9,7 +9,7 @@ interface GastoResumen { id: number; titulo: string; monto: number; eventoId: nu
 interface Evento { id: number; titulo: string; }
 interface GastoDetalle extends GastoResumen { fechaCreacion: string; evento?: Evento; pagadoPor: Usuario; }
 
-enum Filtro { TODOS = 'todos', PENDIENTES = 'pendientes' }
+enum Filtro { TODOS = 'todos', PENDIENTES = 'pendientes', SALDADOS = 'saldados' }
 
 export function useGastos(grupoId: number) {
   const gastos = ref<GastoResumen[]>([]);
@@ -25,10 +25,16 @@ export function useGastos(grupoId: number) {
     gastos.value.filter(g => g.deudas.some(d => !d.saldado)).length
   );
 
+  const gastosSaldados = computed(() =>
+    gastos.value.filter(g => g.deudas.every(d => d.saldado)).length
+  );
+
   const gastosFiltrados = computed(() =>
     filtro.value === Filtro.PENDIENTES
       ? gastos.value.filter(g => g.deudas.some(d => !d.saldado))
-      : gastos.value
+      : filtro.value === Filtro.SALDADOS
+        ? gastos.value.filter(g => g.deudas.every(d => d.saldado))
+        : gastos.value
   );
 
   const cargarGastos = async () => {
@@ -41,6 +47,23 @@ export function useGastos(grupoId: number) {
       gastos.value = [];
     } finally {
       cargando.value = false;
+    }
+  };
+
+  const actualizarGastoEnLista = async (gastoId: number) => {
+    try {
+      const detalleActualizado = await GastoService.obtenerGastoPorId(gastoId);
+      const index = gastos.value.findIndex(g => g.id === gastoId);
+      if (index !== -1) {
+        gastos.value[index] = {
+          ...detalleActualizado,
+          deudas: detalleActualizado.deudas,
+          partesIguales: detalleActualizado.partesIguales,
+          usuarios: detalleActualizado.usuarios
+        };
+      }
+    } catch (e) {
+      console.error('Error actualizando gasto individual', e);
     }
   };
 
@@ -57,7 +80,7 @@ export function useGastos(grupoId: number) {
   const marcarSaldado = async (gastoId: number, participanteId: number, metodo = 'efectivo', notas = '') => {
     try {
       await GastoService.marcarSaldado(gastoId, participanteId, { metodoPago: metodo, notas });
-      await cargarGastos();
+      await actualizarGastoEnLista(gastoId);
     } catch (e) {
       console.error('Error marcando saldado', e);
     }
@@ -67,7 +90,7 @@ export function useGastos(grupoId: number) {
     try {
       await GastoService.eliminarGasto(id);
       gastoSeleccionado.value = null;
-      await cargarGastos();
+      gastos.value = gastos.value.filter(g => g.id !== id);
     } catch (e) {
       console.error('Error eliminando gasto', e);
     }
@@ -82,6 +105,7 @@ export function useGastos(grupoId: number) {
     filtro,
     totalGastos,
     gastosPendientes,
+    gastosSaldados,
     gastosFiltrados,
     cargarGastos,
     seleccionarGasto,

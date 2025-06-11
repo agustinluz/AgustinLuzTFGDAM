@@ -1,7 +1,7 @@
-import { ref, computed } from 'vue'
+import { ref, computed, type Ref } from 'vue'
 import { NotasService, type Nota, type NotaCrear } from '@/service/NotaService'
 
-export function useNotas(grupoId: number) {
+export function useNotas(grupoId: number, eventoIdRef?: Ref<number | null> | number | null) {
   const notas = ref<Nota[]>([])
   const cargando = ref(false)
   const guardando = ref(false)
@@ -22,8 +22,11 @@ export function useNotas(grupoId: number) {
       cargando.value = true
       const token = localStorage.getItem('token')
     if (!token) throw new Error('Token no encontrado')
-
-      notas.value = await NotasService.obtenerNotasPorGrupo(grupoId,token)
+        let evId: number | null = null
+        if (eventoIdRef !== null && eventoIdRef !== undefined) {
+          evId = typeof eventoIdRef === 'object' ? eventoIdRef.value : eventoIdRef
+        }
+        notas.value = await NotasService.obtenerNotasPorGrupo(grupoId, token, evId)
     } catch (error) {
       console.error('Error al cargar notas:', error)
       throw error
@@ -39,7 +42,7 @@ export function useNotas(grupoId: number) {
       const token = localStorage.getItem('token')
     if (!token) throw new Error('Token no encontrado')
 
-      await NotasService.actualizarNota(notaId, nota,token)
+      await NotasService.actualizarNota(notaId, nota, token)
       await cargarNotas()
     } catch (error) {
       console.error('Error al actualizar nota:', error)

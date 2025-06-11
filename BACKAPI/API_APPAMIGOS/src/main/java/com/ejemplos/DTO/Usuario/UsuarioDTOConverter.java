@@ -17,6 +17,7 @@ public class UsuarioDTOConverter {
         dto.setId(usuario.getId());
         dto.setNombre(usuario.getNombre());
         dto.setEmail(usuario.getEmail());
+        dto.setFotoPerfil(usuario.getFotoPerfil());
         
         // Si el usuario tiene grupos asociados, agregar los IDs
         if (usuario.getUsuarioGrupos() != null) {
@@ -39,6 +40,7 @@ public class UsuarioDTOConverter {
         dto.setId(usuarioGrupo.getUsuario().getId());
         dto.setNombre(usuarioGrupo.getUsuario().getNombre());
         dto.setEmail(usuarioGrupo.getUsuario().getEmail());
+        dto.setFotoPerfil(usuarioGrupo.getUsuario().getFotoPerfil());
         dto.setGrupoId(usuarioGrupo.getGrupo().getId());
         // El rol se puede obtener del UsuarioGrupoDTO si es necesario
         
@@ -66,6 +68,7 @@ public class UsuarioDTOConverter {
         usuario.setId(dto.getId());
         usuario.setNombre(dto.getNombre());
         usuario.setEmail(dto.getEmail());
+        usuario.setFotoPerfil(dto.getFotoPerfil());
         
         return usuario;
     }

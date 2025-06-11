@@ -49,4 +49,8 @@ public class VotoService {
     public Optional<Voto> buscarVotoPorUsuarioYVotacion(Long usuarioId, Long votacionId) {
         return votoRepository.findByUsuarioIdAndVotacionId(usuarioId, votacionId);
     }
+    
+    public long contarVotosPorUsuarioYGrupo(Long usuarioId, Long grupoId) {
+        return votoRepository.countByUsuarioIdAndGrupoId(usuarioId, grupoId);
+    }
 }

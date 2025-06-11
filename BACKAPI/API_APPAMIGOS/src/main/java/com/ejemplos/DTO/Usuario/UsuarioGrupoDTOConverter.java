@@ -21,6 +21,7 @@ public class UsuarioGrupoDTOConverter {
         // Información adicional del usuario
         dto.setNombreUsuario(usuarioGrupo.getUsuario().getNombre());
         dto.setEmailUsuario(usuarioGrupo.getUsuario().getEmail());
+        dto.setFotoPerfil(usuarioGrupo.getUsuario().getFotoPerfil());
         
         // Información adicional del grupo
         dto.setNombreGrupo(usuarioGrupo.getGrupo().getNombre());

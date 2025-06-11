@@ -1,6 +1,7 @@
 package com.ejemplos.modelo;
 
 import java.io.Serializable;
+
 import java.util.Date;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -15,9 +16,9 @@ import jakarta.persistence.TemporalType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToMany;
+
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -48,4 +49,10 @@ public class Nota implements Serializable {
     @ManyToOne
     @JoinColumn(name = "creada_por")
     private Usuario usuario;
+    
+ // Evento asociado de forma opcional
+    @ManyToOne
+    @JoinColumn(name = "evento_id")
+    private Evento evento;
+
 }

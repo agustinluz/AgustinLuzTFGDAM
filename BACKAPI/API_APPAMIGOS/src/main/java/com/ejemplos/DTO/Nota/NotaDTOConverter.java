@@ -19,7 +19,9 @@ public class NotaDTOConverter {
             dto.setGrupoId(nota.getGrupo().getId());
             dto.setGrupoNombre(nota.getGrupo().getNombre());
         }
-        
+        if (nota.getEvento() != null) {
+            dto.setEventoId(nota.getEvento().getId());
+        }
         if (nota.getUsuario() != null) {
             dto.setCreadaPorId(nota.getUsuario().getId());
             dto.setCreadaPorNombre(nota.getUsuario().getNombre());

@@ -8,8 +8,8 @@
       <!-- Avatar del grupo -->
       <div class="group-avatar-section">
         <ion-avatar class="group-avatar">
-           <img
-            :src="grupo.imagenPerfil || '/assets/default-group.png'"
+            <img
+            :src="editData.imagenPerfil || grupo.imagenPerfil || '/assets/default-group.png'"
             :alt="grupo.nombre"
           />
         </ion-avatar>

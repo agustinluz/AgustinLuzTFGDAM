@@ -230,47 +230,50 @@ public class DeudaGastoService {
     }
     
     private void crearDeudasPartesIguales(Gasto gasto) {
-        Usuario pagador = gasto.getPagadoPor();
-        BigDecimal montoPorPersona = calcularMontoPorPersona(gasto.getMonto(), gasto.getUsuarios().size());
-        
-        log.debug("Creando deudas en partes iguales - Monto por persona: {}", montoPorPersona);
-        
-        for (Usuario participante : gasto.getUsuarios()) {
-            if (!Objects.equals(participante.getId(), pagador.getId())) {
-                DeudaGasto deuda = construirDeuda(gasto, participante, pagador, montoPorPersona);
-                deudaGastoRepository.save(deuda);
-                
-                log.debug("Deuda creada - Deudor: {}, Monto: {}", 
-                        participante.getNombre(), montoPorPersona);
-            }
+    Usuario pagador = gasto.getPagadoPor();
+    BigDecimal montoPorPersona = calcularMontoPorPersona(gasto.getMonto(), gasto.getUsuarios().size());
+
+    for (Usuario participante : gasto.getUsuarios()) {
+        if (!Objects.equals(participante.getId(), pagador.getId())) {
+
+            // ✅ Verifica si ya existe deuda para este gasto y deudor
+            boolean yaExiste = deudaGastoRepository.findByGastoId(gasto.getId()).stream()
+                .anyMatch(d -> Objects.equals(d.getDeudor().getId(), participante.getId()));
+
+            if (yaExiste) continue;
+
+            DeudaGasto deuda = construirDeuda(gasto, participante, pagador, montoPorPersona);
+            deudaGastoRepository.save(deuda);
         }
     }
+}
+
+
     
     private void crearDeudasPersonalizadas(Gasto gasto) {
-        Usuario pagador = gasto.getPagadoPor();
-        Map<Long, BigDecimal> cantidades = gasto.getCantidadesPersonalizadas();
-        
-        if (CollectionUtils.isEmpty(cantidades)) {
-            log.warn("Gasto con cantidades personalizadas pero sin datos - ID: {}", gasto.getId());
-            return;
-        }
-        
-        log.debug("Creando deudas personalizadas para {} participantes", cantidades.size());
-        
-        for (Usuario participante : gasto.getUsuarios()) {
-            Long participanteId = participante.getId();
-            BigDecimal monto = cantidades.get(participanteId);
-            
-            if (esDeudaValida(participanteId, pagador.getId(), monto)) {
-                BigDecimal montoRedondeado = monto.setScale(PRECISION_DECIMAL, MODO_REDONDEO);
-                DeudaGasto deuda = construirDeuda(gasto, participante, pagador, montoRedondeado);
-                deudaGastoRepository.save(deuda);
-                
-                log.debug("Deuda personalizada creada - Deudor: {}, Monto: {}", 
-                        participante.getNombre(), montoRedondeado);
-            }
+    Usuario pagador = gasto.getPagadoPor();
+    Map<Long, BigDecimal> cantidades = gasto.getCantidadesPersonalizadas();
+
+    if (CollectionUtils.isEmpty(cantidades)) return;
+
+    for (Usuario participante : gasto.getUsuarios()) {
+        Long participanteId = participante.getId();
+        BigDecimal monto = cantidades.get(participanteId);
+
+        if (esDeudaValida(participanteId, pagador.getId(), monto)) {
+
+            // ✅ Verifica si ya existe deuda para este gasto y deudor
+            boolean yaExiste = deudaGastoRepository.findByGastoId(gasto.getId()).stream()
+                .anyMatch(d -> Objects.equals(d.getDeudor().getId(), participanteId));
+
+            if (yaExiste) continue;
+
+            DeudaGasto deuda = construirDeuda(gasto, participante, pagador, monto.setScale(PRECISION_DECIMAL, MODO_REDONDEO));
+            deudaGastoRepository.save(deuda);
         }
     }
+}
+
     
     private boolean esDeudaValida(Long participanteId, Long pagadorId, BigDecimal monto) {
         return !Objects.equals(participanteId, pagadorId) && 
@@ -310,18 +313,16 @@ public class DeudaGastoService {
     }
     
     private void eliminarDeudasExistentes(Long gastoId) {
-        List<DeudaGasto> deudasExistentes = deudaGastoRepository.findByGastoId(gastoId);
-        
-        if (!CollectionUtils.isEmpty(deudasExistentes)) {
-            deudaGastoRepository.deleteAll(deudasExistentes);
-            log.debug("Eliminadas {} deudas existentes para gasto ID: {}", 
-                    deudasExistentes.size(), gastoId);
-        }
+    List<DeudaGasto> deudasExistentes = deudaGastoRepository.findByGastoId(gastoId);
+    if (!deudasExistentes.isEmpty()) {
+        deudaGastoRepository.deleteAll(deudasExistentes); // OK
     }
+}
+
     
     public List<ResumenDeudaDTO> generarResumenPorGrupo(Long grupoId) {
-        // Ahora usa el método correcto
-        List<DeudaGasto> deudas = deudaGastoRepository.findByGasto_Grupo_Id(grupoId);
+        // Solo consideramos las deudas pendientes para evitar duplicados
+        List<DeudaGasto> deudas = deudaGastoRepository.findDeudasPendientesByGrupoId(grupoId);
         Map<Long, ResumenDeudaDTO> resumenMap = new HashMap<>();
 
         for (DeudaGasto deuda : deudas) {
@@ -329,27 +330,28 @@ public class DeudaGastoService {
             Long acreedorId = deuda.getAcreedor().getId();
             double monto    = deuda.getMonto().doubleValue();
 
-            // Para el deudor restamos
-            resumenMap
-              .computeIfAbsent(deudorId, id ->
-                new ResumenDeudaDTO(id,
-                                    deuda.getDeudor().getNombre(),
-                                    deuda.getDeudor().getEmail(),
-                                    0.0))
-              .setBalance(resumenMap.get(deudorId).getBalance() - monto);
+            // Acumular en "debe" para el deudor
+            ResumenDeudaDTO rDeudor = resumenMap.computeIfAbsent(deudorId, id ->
+                    new ResumenDeudaDTO(id,
+                                        deuda.getDeudor().getNombre(),
+                                        deuda.getDeudor().getEmail(),
+                                        0.0,
+                                        0.0));
+            rDeudor.setDebe(rDeudor.getDebe() + monto);
 
-            // Para el acreedor sumamos
-            resumenMap
-              .computeIfAbsent(acreedorId, id ->
-                new ResumenDeudaDTO(id,
-                                    deuda.getAcreedor().getNombre(),
-                                    deuda.getAcreedor().getEmail(),
-                                    0.0))
-              .setBalance(resumenMap.get(acreedorId).getBalance() + monto);
+            // Acumular en "leDeben" para el acreedor
+            ResumenDeudaDTO rAcreedor = resumenMap.computeIfAbsent(acreedorId, id ->
+                    new ResumenDeudaDTO(id,
+                                        deuda.getAcreedor().getNombre(),
+                                        deuda.getAcreedor().getEmail(),
+                                        0.0,
+                                        0.0));
+            rAcreedor.setLeDeben(rAcreedor.getLeDeben() + monto);
         }
 
         return new ArrayList<>(resumenMap.values());
     }
+
 
 
     

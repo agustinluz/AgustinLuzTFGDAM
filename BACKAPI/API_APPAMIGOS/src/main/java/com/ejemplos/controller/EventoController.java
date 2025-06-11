@@ -107,6 +107,22 @@ public class EventoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    @GetMapping("/{eventoId}/asistentes")
+    public ResponseEntity<?> obtenerAsistentes(@PathVariable Long eventoId) {
+        try {
+            var lista = eventoAsistenteService.obtenerPorEvento(eventoId);
+            java.util.List<com.ejemplos.DTO.Evento.EventoAsistenteDTO> dtos = lista.stream().map(ea -> {
+                var dto = new com.ejemplos.DTO.Evento.EventoAsistenteDTO();
+                dto.setUsuarioId(ea.getUsuario().getId());
+                dto.setNombre(ea.getUsuario().getNombre());
+                dto.setAsistio(ea.isAsistio());
+                return dto;
+            }).toList();
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
     @GetMapping("/{eventoId}/asistencia/estadisticas")
     public ResponseEntity<?> obtenerEstadisticas(@PathVariable Long eventoId) {

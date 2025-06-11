@@ -1,4 +1,6 @@
-// DTOs y servicio de Dashboard
+// dashboardService.ts
+import api from './api'
+
 export interface GrupoDTO {
   id: number
   nombre: string
@@ -24,6 +26,7 @@ export interface UsuarioGrupoDTO {
   rol: 'admin' | 'member'
   nombreUsuario: string
   emailUsuario: string
+  fotoPerfil?: string
 }
 
 export interface UsuarioStatsDTO {
@@ -32,48 +35,68 @@ export interface UsuarioStatsDTO {
   rol: string
   eventosCreados: number
   eventosAsistidos: number
+  notasCreadas: number
+  gastosPagados: number
+  votacionesCreadas: number
+  votosEmitidos: number
+  imagenesSubidas: number
 }
-
-const API = import.meta.env.VITE_API_URL
 
 export const dashboardService = {
   async getGrupo(grupoId: string): Promise<GrupoDTO> {
-    const res = await fetch(`${API}/grupos/${grupoId}`)
-    if (!res.ok) throw new Error('Error al cargar el grupo')
-    return res.json()
+    try {
+      const res = await api.get<GrupoDTO>(`/grupos/${grupoId}`)
+      return res.data
+    } catch (err) {
+      throw new Error('Error al cargar el grupo')
+    }
   },
 
   async getEventos(grupoId: string): Promise<EventoDTO[]> {
-    const res = await fetch(`${API}/eventos/${grupoId}/eventos`)
-    if (!res.ok) throw new Error('Error al cargar eventos')
-    return res.json()
+    try {
+      const res = await api.get<EventoDTO[]>(`/eventos/${grupoId}/eventos`)
+      return res.data
+    } catch (err) {
+      throw new Error('Error al cargar eventos')
+    }
   },
 
   async getParticipantes(grupoId: string, usuarioId: string): Promise<UsuarioGrupoDTO[]> {
-    const res = await fetch(`${API}/grupos/${grupoId}/usuarios`, {
-      headers: {  usuarioId }
-    })
-    if (!res.ok) throw new Error('Error al cargar participantes')
-    return res.json()
+    try {
+      const res = await api.get<UsuarioGrupoDTO[]>(`/grupos/${grupoId}/usuarios`, {
+        headers: { usuarioId }
+      })
+      return res.data
+    } catch (err) {
+      throw new Error('Error al cargar participantes')
+    }
   },
 
   async getEventoDetalle(eventoId: string): Promise<EventoDTO> {
-    const res = await fetch(`${API}/eventos/${eventoId}`)
-    if (!res.ok) throw new Error('Error al cargar detalle de evento')
-    return res.json()
+    try {
+      const res = await api.get<EventoDTO>(`/eventos/${eventoId}`)
+      return res.data
+    } catch (err) {
+      throw new Error('Error al cargar detalle de evento')
+    }
   },
 
-async getUsuarioStats(grupoId: string, usuarioId: string): Promise<UsuarioStatsDTO[]> {
-    const res = await fetch(`${API}/grupos/${grupoId}/estadisticas/usuarios`, {
-      headers: { usuarioId }
-    })
-    if (!res.ok) throw new Error('Error al cargar estadisticas')
-    return res.json()
+  async getUsuarioStats(grupoId: string, usuarioId: string): Promise<UsuarioStatsDTO[]> {
+    try {
+      const res = await api.get<UsuarioStatsDTO[]>(`/grupos/${grupoId}/estadisticas/usuarios`, {
+        headers: { usuarioId }
+      })
+      return res.data
+    } catch (err) {
+      throw new Error('Error al cargar estadísticas')
+    }
   },
 
   async deleteEvento(eventoId: string): Promise<void> {
-    const res = await fetch(`${API}/eventos/${eventoId}`, { method: 'DELETE' })
-    if (!res.ok) throw new Error('Error al eliminar evento')
+    try {
+      await api.delete(`/eventos/${eventoId}`)
+    } catch (err) {
+      throw new Error('Error al eliminar evento')
+    }
   }
-
 }

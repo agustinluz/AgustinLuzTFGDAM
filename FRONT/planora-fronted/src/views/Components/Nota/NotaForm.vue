@@ -29,6 +29,16 @@
       />
     </ion-item>
 
+    <ion-item>
+      <ion-label position="stacked">Evento (opcional)</ion-label>
+      <ion-select v-model="formData.eventoId" interface="popover" placeholder="Sin evento">
+        <ion-select-option :value="null">Sin evento</ion-select-option>
+        <ion-select-option v-for="ev in eventos" :key="ev.id" :value="ev.id">
+          {{ ev.titulo }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
     <ion-button
       expand="block"
       class="ion-margin-top"
@@ -44,21 +54,25 @@
 </template>
 
 <script setup>
-import { IonItem, IonInput, IonTextarea, IonButton, IonSpinner } from '@ionic/vue'
+import { IonItem, IonInput, IonTextarea, IonButton, IonSpinner, 
+  IonSelect, IonSelectOption, IonLabel } from '@ionic/vue'
 import { computed, watch, reactive } from 'vue'
 
 const props = defineProps({
   titulo: String,
   contenido: String,
   cargando: Boolean,
-  modo: String // 'crear' | 'editar'
+  modo: String, // 'crear' | 'editar'
+  eventos: Array,
+  eventoId: { type: Number, default: null }
 })
 
-const emit = defineEmits(['guardar', 'update:titulo', 'update:contenido'])
+const emit = defineEmits(['guardar', 'update:titulo', 'update:contenido', 'update:eventoId'])
 
 const formData = reactive({
   titulo: props.titulo || '',
-  contenido: props.contenido || ''
+  contenido: props.contenido || '',
+  eventoId: props.eventoId ?? null
 })
 
 // Sincroniza con el padre
@@ -72,10 +86,13 @@ const puedeGuardar = computed(() => {
   return formData.titulo.trim().length > 0 && formData.contenido.trim().length > 0
 })
 
-
+watch(() => props.eventoId, (val) => {
+  formData.eventoId = val
+})
 const emitCambioYGuardar = () => {
   emit('update:titulo', formData.titulo)
   emit('update:contenido', formData.contenido)
+  emit('update:eventoId', formData.eventoId)
   emit('guardar')
 }
 

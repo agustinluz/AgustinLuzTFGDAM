@@ -3,7 +3,7 @@
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
-          <ion-back-button default-href="javascript:void(0)" @click="volver" />
+          <ion-back-button  @click="volver" />
         </ion-buttons>
         <ion-title>Detalle de Deudas</ion-title>
       </ion-toolbar>

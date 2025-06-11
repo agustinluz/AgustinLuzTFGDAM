@@ -53,8 +53,8 @@
             <div class="info-item">
               <ion-icon :icon="cashOutline" color="success" />
               <div>
-                <strong>Total pagado:</strong>
-                <p>{{ formatMonto(gasto.monto) }}</p>
+                <strong>Falta por pagar:</strong>
+                <p>{{ formatMonto(totalPorPagar) }}</p>
               </div>
             </div>
 
@@ -278,6 +278,10 @@ const agrupados = computed(() => {
   return resultado
 })
 
+const totalPorPagar = computed(() =>
+  agrupados.value.reduce((sum, p) =>
+    !p.saldado ? sum + Number(p.total) : sum, 0)
+)
 // ==== Helpers de formato ====
 const formatMonto = (m: number | string): string =>
   new Intl.NumberFormat('es-ES', {

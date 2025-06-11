@@ -23,14 +23,14 @@ interface RegisterCredentials {
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    currentUser: null as User | null,
+    usuarioActual: null as User | null,
     token: localStorage.getItem('token') || null,
     isAuthenticated: false
   }),
 
   getters: {
     isLoggedIn: (state) => state.isAuthenticated && !!state.token,
-    userGroups: (state) => state.currentUser?.grupoIds || []
+    gruposUsuario: (state) => state.usuarioActual?.grupoIds || []
   },
 
   actions: {
@@ -41,13 +41,13 @@ export const useAuthStore = defineStore('auth', {
         const { token, usuario } = response.data
 
         this.token = token
-        this.currentUser = usuario
+        this.usuarioActual = usuario
         this.isAuthenticated = true
 
         localStorage.setItem('token', token)
         localStorage.setItem('currentUser', JSON.stringify(usuario))
 
-        return { success: true, user: usuario }
+        return { success: true, usuario }
       } catch (error: any) {
         console.error('Error en login:', error)
         return { 
@@ -61,7 +61,7 @@ export const useAuthStore = defineStore('auth', {
     async register(credentials: RegisterCredentials) {
       try {
         const response = await axios.post(`${API_BASE_URL}/registro`, credentials)
-        return { success: true, user: response.data }
+        return { success: true, usuario: response.data }
       } catch (error: any) {
         console.error('Error en registro:', error)
         return { 
@@ -73,7 +73,7 @@ export const useAuthStore = defineStore('auth', {
 
     // Logout
     logout() {
-      this.currentUser = null
+      this.usuarioActual = null
       this.token = null
       this.isAuthenticated = false
       
@@ -84,12 +84,12 @@ export const useAuthStore = defineStore('auth', {
     // Inicializar desde localStorage
     initializeFromStorage() {
       const token = localStorage.getItem('token')
-      const userData = localStorage.getItem('currentUser')
+      const datosUsuario = localStorage.getItem('currentUser')
 
-      if (token && userData) {
+      if (token && datosUsuario) {
         try {
           this.token = token
-          this.currentUser = JSON.parse(userData)
+          this.usuarioActual = JSON.parse(datosUsuario)
           this.isAuthenticated = true
         } catch (error) {
           console.error('Error al parsear datos de usuario:', error)

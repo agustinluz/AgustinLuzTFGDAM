@@ -104,4 +104,14 @@ export class EventosService {
       throw new Error('Error al obtener estadisticas')
     }
   }
+
+  static async obtenerAsistentes(eventoId: number): Promise<any[]> {
+    try {
+      const response = await api.get(`/eventos/${eventoId}/asistentes`)
+      return response.data as any[]
+    } catch (error) {
+      console.error('Error al obtener asistentes:', error)
+      throw new Error('Error al obtener asistentes')
+    }
+  }
 }

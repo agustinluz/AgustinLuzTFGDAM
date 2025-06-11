@@ -13,7 +13,7 @@ interface DashboardState {
   grupo: GrupoDTO | null
   participantes: UsuarioGrupoDTO[]
   eventos: EventoDTO[]
-  userStats: UsuarioStatsDTO | null
+  userStats: UsuarioStatsDTO[]
   loading: boolean
   error: string | null
 }

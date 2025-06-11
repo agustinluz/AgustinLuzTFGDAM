@@ -12,6 +12,7 @@ public class NotaDTO {
     private Long grupoId;
     private String grupoNombre;
     private Long creadaPorId;
+    private Long eventoId;
     private String creadaPorNombre;
     private Date fechaCreacion;
 }

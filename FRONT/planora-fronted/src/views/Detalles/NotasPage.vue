@@ -22,13 +22,21 @@
 
       <div v-else>
         <ion-searchbar v-model="busqueda" placeholder="Buscar notas..." class="ion-margin-bottom" />
+        <ion-item class="ion-margin-bottom">
+          <ion-label position="stacked">Filtrar por evento</ion-label>
+          <ion-select v-model="eventoId" interface="popover" placeholder="Todos">
+            <ion-select-option :value="null">Todos los eventos</ion-select-option>
+            <ion-select-option v-for="ev in eventos" :key="ev.id" :value="ev.id">
+              {{ ev.titulo }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
 
         <ion-list v-if="notasFiltradas.length">
           <NotaCard
             v-for="nota in notasFiltradas"
             :key="nota.id"
             :nota="nota"
-            :esProietario="esProietario(nota)"
             @editar="editarNota"
             @eliminar="confirmarEliminar"
             @ver="verNotaCompleta"
@@ -72,12 +80,13 @@
 <script setup>
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, IonBackButton,
-  IonList, IonText, IonSpinner, IonSearchbar, IonIcon, IonAlert
+  IonList, IonText, IonSpinner, IonSearchbar, IonIcon, IonAlert, IonSelect, IonSelectOption, IonItem, IonLabel
 } from '@ionic/vue'
 import { addOutline } from 'ionicons/icons'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotas } from './Nota/Composable/UseNotas'
+import { EventosService } from '@/service/EventoService'
 import NotaCard from './Nota/NotaCard.vue'
 import NotaDetalle from './Nota/NotaDetalle.vue'
 import NotaEmptyState from './Nota/NotaEmptyState.vue'
@@ -86,11 +95,18 @@ const route = useRoute()
 const router = useRouter()
 const grupoId = Number(route.params.id)
 
+const eventoId = ref<null>(null)
+const eventos = ref([])
+
 const usuarioActual = ref(null)
 const notaSeleccionada = ref(null)
 const mostrarModalVer = ref(false)
 const mostrarAlertaEliminar = ref(false)
 const notaPendienteEliminar = ref(null)
+
+watch(eventoId, async () => {
+  await cargarNotas()
+})
 
 const {
   notasFiltradas,
@@ -98,17 +114,19 @@ const {
   cargando,
   cargarNotas,
   eliminarNota
-} = useNotas(grupoId)
+} = useNotas(grupoId, eventoId)
 
-onMounted(() => {
-  cargarNotas()
-  const userData = localStorage.getItem('usuario')
-  if (userData) usuarioActual.value = JSON.parse(userData)
+onMounted(async () => {
+  await cargarNotas()
+  try {
+    eventos.value = await EventosService.obtenerEventosGrupo(grupoId)
+  } catch (e) {
+    eventos.value = []
+  }
+  const datosUsuario  = localStorage.getItem('usuario')
+  if (datosUsuario ) usuarioActual.value = JSON.parse(datosUsuario )
 })
 
-const esProietario = (nota) => {
-  return usuarioActual.value && nota.creadaPorId === usuarioActual.value.id
-}
 
 const irACrearNota = () => {
   router.push(`/dashboard/${grupoId}/notas/crear`)

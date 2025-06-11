@@ -2,7 +2,7 @@
   <ion-header :translucent="true" class="ion-no-border">
     <ion-toolbar color="primary">
       <ion-buttons slot="start">
-        <ion-back-button @click.prevent="$emit('volver')" color="light" />
+        <ion-back-button :default-href="`/dashboard/${grupoId}`" color="light" />
       </ion-buttons>
       <ion-title>
         <div class="title-container">
@@ -21,10 +21,10 @@
 
 <script setup>
 import { IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton, IonIcon } from '@ionic/vue';
-import { defineProps, defineEmits } from 'vue';
+import { defineProps } from 'vue';
 import { ellipsisVertical } from 'ionicons/icons';
-defineProps(['grupo', 'cantidad', 'total']);
-defineEmits(['volver', 'abrirOpciones']);
+defineProps(['grupo', 'cantidad', 'total','grupoId']);
+defineEmits([ 'abrirOpciones']);
 </script>
 
 <style scoped>
