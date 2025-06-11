@@ -35,18 +35,18 @@ public class Grupo implements Serializable {
     @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UsuarioGrupo> usuarioGrupos;
     
-    @OneToMany(mappedBy = "grupo")
+    @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Evento> eventos;
-    
-    @OneToMany(mappedBy = "grupo")
+
+    @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Gasto> gastos;
-    
-    @OneToMany(mappedBy = "grupo")
+
+    @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Nota> notas;
-    
-    @OneToMany(mappedBy = "grupo")
+
+    @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Votacion> votaciones;
-    
-    @OneToMany(mappedBy = "grupo")
+
+    @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Imagen> imagenes;
 }

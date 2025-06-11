@@ -67,6 +67,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGastos } from '@/Composable/useGasto'
+import { IonPage, IonContent, IonSpinner, IonActionSheet } from '@ionic/vue'
+
 
 import GastosHeader from './Gastos/GastosHeader.vue'
 import GastosStats from './Gastos/GastosStats.vue'

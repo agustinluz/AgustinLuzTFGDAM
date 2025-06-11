@@ -30,6 +30,7 @@
 
 <script setup>
 import { walletOutline, receiptOutline, timeOutline } from 'ionicons/icons';
+import { IonCard, IonCardContent, IonIcon } from '@ionic/vue';
 defineProps(['total', 'cantidad', 'pendientes']);
 </script>
 

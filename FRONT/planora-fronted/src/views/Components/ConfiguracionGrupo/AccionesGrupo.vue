@@ -186,24 +186,34 @@ const showTransferAdminModal = ref(false)
 const selectedNewAdmin = ref<number | null>(null)
 
 // Computed
-const eligibleParticipants = computed(() => {
-  return props.participants.filter(participant => !participant.esAdmin)
-})
+const normalizedParticipants = computed(() =>
+  props.participants.map(p => ({
+    id: p.id ?? p.usuarioId,
+    nombre: p.nombre ?? p.nombreUsuario,
+    email: p.email ?? p.emailUsuario,
+    esAdmin: p.esAdmin ?? (p.rol ? p.rol.toLowerCase() === 'admin' : false),
+    fechaUnion: p.fechaUnion
+  }))
+)
 
+const eligibleParticipants = computed(() =>
+  normalizedParticipants.value.filter(p => !p.esAdmin)
+)
+
+const hasAnotherAdmin = computed(() =>
+  normalizedParticipants.value.filter(p => p.esAdmin).length > 1
+)
+// Methods
 // Methods
 const confirmLeaveGroup = async () => {
   let message = '¿Estás seguro de que quieres salir del grupo?'
-  
-  if (props.isAdmin) {
-    message = 'Como administrador, debes transferir la administración antes de poder salir del grupo.'
-  }
+  let buttons
 
-  const alert = await alertController.create({
-    header: props.isAdmin ? 'No puedes salir' : 'Salir del Grupo',
-    message: message,
-    buttons: props.isAdmin ? [
-      { text: 'Entendido', role: 'cancel' }
-    ] : [
+  if (props.isAdmin && !hasAnotherAdmin.value) {
+    message = 'Como único administrador, debes transferir la administración antes de poder salir del grupo.'
+    buttons = [{ text: 'Entendido', role: 'cancel' }]
+  } else {
+    buttons = [
       { text: 'Cancelar', role: 'cancel' },
       {
         text: 'Salir',
@@ -213,6 +223,12 @@ const confirmLeaveGroup = async () => {
         }
       }
     ]
+  }
+
+  const alert = await alertController.create({
+    header: 'Salir del Grupo',
+    message,
+    buttons
   })
 
   await alert.present()
@@ -243,7 +259,7 @@ const executeTransferAdmin = async () => {
     return
   }
 
-  const selectedParticipant = props.participants.find(
+  const selectedParticipant = normalizedParticipants.value.find(
     p => p.id === selectedNewAdmin.value
   )
 

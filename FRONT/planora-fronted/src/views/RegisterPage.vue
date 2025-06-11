@@ -1,5 +1,6 @@
 <template>
   <ion-page>
+    <PageHeader title="REGISTRO" />
     <ion-content :fullscreen="true" class="ion-padding register-page">
       <div class="register-background">
         <div class="register-card">
@@ -69,6 +70,7 @@ import {
   IonIcon,
   useIonRouter
 } from '@ionic/vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { ref } from 'vue'
 
 const nombre = ref('')

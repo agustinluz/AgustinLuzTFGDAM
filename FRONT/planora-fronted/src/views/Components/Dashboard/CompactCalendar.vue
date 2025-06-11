@@ -38,6 +38,7 @@
 
 <script setup lang="ts">
 import { defineProps } from 'vue'
+import { IonCard, IonCardHeader, IonCardContent, IonButton, IonIcon } from '@ionic/vue'
 import { chevronBack, chevronForward } from 'ionicons/icons'
 import type { CalendarDay } from '@/Composable/useCalendar'
 

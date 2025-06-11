@@ -28,6 +28,7 @@
 <script setup lang="ts">
 import { defineProps, defineEmits } from 'vue'
 import { chevronForward, calendarOutline } from 'ionicons/icons'
+import { IonList, IonItem, IonBadge, IonLabel, IonIcon, IonText } from '@ionic/vue'
 import { formatDateES } from '@/utils/date'
 import { truncate } from '@/utils/string'
 import type { EventoDTO } from '@/service/DashboardService'

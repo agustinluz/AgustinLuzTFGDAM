@@ -33,7 +33,7 @@ import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
   IonItem, IonList, IonLabel, IonBackButton, IonButtons, IonText
 } from '@ionic/vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/service/api'
 
@@ -45,8 +45,7 @@ const usuarioId = route.params.usuarioId
 const usuarioNombre = route.query.nombre
 
 const deudas = ref([])
-
-onMounted(async () => {
+const cargarDeudas = async () => {
   try {
     const { data: gastos } = await api.get(`/gasto/${grupoId}/gastos`)
     const todasDeudas = []
@@ -57,18 +56,31 @@ onMounted(async () => {
       todasDeudas.push(...filtradas)
     }
 
-    deudas.value = todasDeudas
+    const unique = Array.from(new Map(todasDeudas.map(d => [d.id, d])).values())
+    deudas.value = unique
   } catch (e) {
     console.error('Error cargando deudas del usuario', e)
   }
-})
+}
 
-const formatMonto = monto =>
-  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(parseFloat(monto) || 0)
+onMounted(cargarDeudas)
+
+watch(
+  () => [route.params.grupoId, route.params.usuarioId],
+  () => {
+    cargarDeudas()
+  }
+)
+const formatMonto = (monto) => {
+  return new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'EUR'
+  }).format(parseFloat(monto) || 0)
+};
 
 const volver = () => {
-  router.push({ name: 'ResumenGrupo', params: { grupoId } })
-}
+  router.push({ name: 'ResumenGrupo', params: { grupoId } });
+};
 </script>
 
 <style scoped>

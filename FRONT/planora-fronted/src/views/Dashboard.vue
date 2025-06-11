@@ -1,11 +1,19 @@
 <template>
   <ion-page>
-    <AppHeader
+    <PageHeader
       :title="store.grupo?.nombre || 'Dashboard'"
-      @back="goToGroupList"
-      @config="goToConfig"
-      @logout="goToLogout"
-    />
+      showBack
+      backHref="/grupo"
+    >
+      <template #end>
+        <ion-button fill="clear" @click="goToConfig" aria-label="Configuración">
+          <ion-icon :icon="settingsOutline" />
+        </ion-button>
+        <ion-button fill="clear" @click="goToLogout" aria-label="Cerrar sesión">
+          <ion-icon :icon="logOutOutline" />
+        </ion-button>
+      </template>
+    </PageHeader>
 
     <ion-content class="dashboard">
       <!-- 1. Estadísticas -->
@@ -70,7 +78,7 @@
       </section>
 
       <!-- 4. Botón flotante de añadir evento -->
-      <ion-fab vertical="fixed" horizontal="end">
+      <ion-fab vertical="bottom" horizontal="end">
         <ion-fab-button color="primary" @click="createEvent">
           <ion-icon :icon="add" />
         </ion-fab-button>
@@ -106,7 +114,7 @@ import { useCalendar } from '@/Composable/useCalendar'
 import type { EventoDTO } from '@/service/DashboardService'
 
 // Componentes
-import AppHeader        from '@/views/Components/Dashboard/AppHeader.vue'
+import PageHeader       from '@/components/PageHeader.vue'
 import StatsGrid        from '@/views/Components/Dashboard/StatsGrid.vue'
 import CompactCalendar  from '@/views/Components/Dashboard/CompactCalendar.vue'
 import EventsList       from '@/views/Components/Dashboard/EventList.vue'
@@ -115,8 +123,17 @@ import QuickActions     from '@/views/Components/Dashboard/QuickAction.vue'
 import EventModal       from '@/views/Components/Dashboard/EventModal.vue'
 import UserStatsModal   from '@/views/Components/Dashboard/UserStatsModal.vue'
 
-import { IonContent } from '@ionic/vue'
-import { add }        from 'ionicons/icons'
+import {
+  IonPage,
+  IonContent,
+  IonButton,
+  IonIcon,
+  IonSkeletonText,
+  IonFab,
+  IonFabButton
+} from '@ionic/vue'
+import { add, settingsOutline, logOutOutline, chevronBack } from 'ionicons/icons'
+
 
 const store = useDashboardStore()
 const {

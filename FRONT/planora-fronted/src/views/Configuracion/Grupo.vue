@@ -1,13 +1,6 @@
   <template>
     <ion-page>
-      <ion-header>
-        <ion-toolbar>
-          <ion-buttons slot="start">
-            <ion-back-button default-href="/grupo"></ion-back-button>
-          </ion-buttons>
-          <ion-title>Configuración del Grupo</ion-title>
-        </ion-toolbar>
-      </ion-header>
+      <PageHeader title="Configuración del Grupo" showBack backHref="/grupo" />
 
       <ion-content>
         <div v-if="loading" class="loading-container">
@@ -60,10 +53,11 @@
   <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
-  import { 
-    IonPage, IonHeader, IonToolbar, IonTitle, IonContent, 
-    IonButtons, IonBackButton, IonSpinner, alertController, toastController 
+import {
+    IonPage, IonContent,
+    IonSpinner, alertController, toastController
   } from '@ionic/vue';
+  import PageHeader from '@/components/PageHeader.vue'
 
   import { useAuthStore } from '@/service/auth'
   import { groupService } from '@/service/GrupoService'
@@ -215,22 +209,26 @@
     }
   }
 
-  const handleShowUserStats = async () => {
-const userId =
-  authStore.usuarioActual?.id ||
-  JSON.parse(localStorage.getItem('currentUser') || '{}')?.id;
+const handleShowUserStats = async () => {
+    const storedUser =
+      JSON.parse(
+        localStorage.getItem('usuario') ||
+          localStorage.getItem('currentUser') ||
+          '{}'
+      ) || {}
 
-if (!userId) {
-  showToast('No se pudo determinar el usuario actual', 'danger');
-  return;
-}
+    const userId = authStore.usuarioActual?.id || storedUser.id
 
+    if (!userId) {
+      showToast('No se pudo determinar el usuario actual', 'danger')
+      return
+    }
 
-statsUsuarios.value = await dashboardService.getUsuarioStats(
-  String(grupoId.value),
-  String(userId)
-);
-showUserStats.value = true;
+    statsUsuarios.value = await dashboardService.getUsuarioStats(
+      String(grupoId.value),
+      String(userId)
+    )
+    showUserStats.value = true
   }
 
   const handleUpdateGroup = async (updateData: any) => {

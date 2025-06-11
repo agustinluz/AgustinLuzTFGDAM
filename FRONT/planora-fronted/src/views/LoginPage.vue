@@ -1,5 +1,6 @@
 <template>
   <ion-page>
+    <PageHeader title="Iniciar Sesión" />
     <ion-content :fullscreen="true" class="ion-padding login-page">
       <div class="login-background">
         <div class="login-card">
@@ -56,6 +57,7 @@ import {
   IonIcon,
   useIonRouter
 } from '@ionic/vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { ref } from 'vue'
 
 const email = ref('')

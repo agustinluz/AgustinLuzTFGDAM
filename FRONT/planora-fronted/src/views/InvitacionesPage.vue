@@ -1,13 +1,6 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-back-button default-href="/grupo" />
-        </ion-buttons>
-        <ion-title>Invitaciones</ion-title>
-      </ion-toolbar>
-    </ion-header>
+     <PageHeader title="Invitaciones" showBack backHref="/grupo" />
 
     <ion-content class="ion-padding">
       <ion-list v-if="invitaciones.length">
@@ -30,7 +23,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton, IonList, IonItem, IonLabel, IonButton } from '@ionic/vue'
+import { IonPage, IonContent, IonList, IonItem, IonLabel, IonButton } from '@ionic/vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { invitacionService, type Invitacion } from '@/service/InvitacionService'
 
 const router = useRouter()
