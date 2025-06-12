@@ -272,7 +272,15 @@ export const groupService = {
     });
     return response;
   },
+// Obtener grupo a partir de un código de invitación
+  async getGroupByInviteCode(code: string) {
+    if (!code || code.trim() === '') {
+      throw new Error('Código de invitación vacío');
+    }
 
+    const response = await api.get(`/auth/invitacion/${code}`);
+    return response;
+  },
   // Obtener estadísticas del grupo
   async getGroupStats(id: number) {
     if (!validateId(id)) {

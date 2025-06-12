@@ -2,7 +2,7 @@
     <ion-card
         class="evento-card"
         button
-        :router-link="`/evento/${evento.id}/asistir?grupoId=${evento.grupoId}`"
+        @click="irAsistencia"
     >
         <ion-card-header class="evento-header">
             <div class="evento-header-left">
@@ -69,6 +69,7 @@ import {
     IonChip,
     IonLabel
 } from '@ionic/vue'
+import { useRouter } from 'vue-router'
 import type { Evento } from '@/service/EventoService'
 
 interface Props {
@@ -80,8 +81,14 @@ interface Emits {
     (e: 'eliminar', evento: Evento): void
 }
 
-defineProps<Props>()
-defineEmits<Emits>()
+const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
+
+const router = useRouter()
+const irAsistencia = () => {
+    router.push({ name: 'asistir-evento', params: { eventoId: props.evento.id, grupoId: props.evento.grupoId } })
+}
+
 
 const formatFecha = (fecha: string) => {
     const opciones: Intl.DateTimeFormatOptions = {

@@ -324,6 +324,7 @@ import {
   addOutline, imagesOutline, eyeOutline, trashOutline, closeOutline,
   cloudUploadOutline, peopleOutline, personOutline, statsChartOutline
 } from 'ionicons/icons';
+import { useRouter } from 'vue-router';
 import { ref, onMounted, reactive, computed } from 'vue';
 import axios from 'axios';
 import { imageService } from '@/service/imagenService';
@@ -362,6 +363,7 @@ const modoSeleccion = ref(false);
 // Obtener datos de localStorage
 const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
 const grupoId = localStorage.getItem('grupoActivoId');
+const router = useRouter();
 
 const contexto = reactive({
   grupoId: parseInt(grupoId || '0'),
@@ -722,6 +724,11 @@ const showToast = async (message: string, color: 'success' | 'warning' | 'danger
 
 // Lifecycle hooks
 onMounted(async () => {
+  if (!contexto.grupoId || !contexto.usuarioId) {
+    showToast('Error: No se encontraron datos del grupo o usuario', 'danger');
+    router.replace('/grupo');
+    return;
+  }
   await cargarDatosGrupo();
   await cargarEventos();
   await aplicarFiltro();

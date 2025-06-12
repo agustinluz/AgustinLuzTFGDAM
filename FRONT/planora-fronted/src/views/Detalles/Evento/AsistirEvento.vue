@@ -3,7 +3,7 @@
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
-          <ion-back-button :default-href="`/grupo`" />
+          <ion-back-button :default-href="`/dashboard/${grupoId}/eventos`" />
         </ion-buttons>
         <ion-title>Asistencia</ion-title>
       </ion-toolbar>

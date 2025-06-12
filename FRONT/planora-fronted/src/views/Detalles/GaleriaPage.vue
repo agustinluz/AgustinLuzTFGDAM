@@ -562,6 +562,7 @@ onMounted(async () => {
   // Verificar que tenemos los datos necesarios
   if (!contexto.grupoId || !contexto.usuarioId) {
     mostrarToast('Error: No se encontraron datos del grupo o usuario', 'danger')
+    router.replace('/grupo')
     return
   }
   

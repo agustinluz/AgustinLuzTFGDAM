@@ -3,7 +3,7 @@
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
-          <ion-menu-button :auto-hide="false" />
+          <ion-menu-button auto-hide="false" />
         </ion-buttons>
         <ion-title>Mis Grupos</ion-title>
         <ion-buttons slot="end">
@@ -77,7 +77,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, IonIcon,
-  IonFab, IonFabButton, IonLoading, IonMenuButton
+  IonFab, IonFabButton, IonLoading,
 } from '@ionic/vue'
 import { mailOutline, person, logOutOutline, add } from 'ionicons/icons'
 import { toastController } from '@ionic/vue'
