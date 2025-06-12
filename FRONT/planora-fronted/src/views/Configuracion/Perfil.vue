@@ -1,6 +1,6 @@
 <template>
   <ion-page>
-    <PageHeader title="Editar Perfil" showBack backHref="/grupo" />
+    <PageHeader title="Editar Perfil" :showMenu="false" />
 
     <ion-content :fullscreen="true" class="profile-content">
       <div class="profile-container">

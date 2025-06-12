@@ -2,6 +2,9 @@
   <ion-page>
     <ion-header>
       <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+          <ion-menu-button :auto-hide="false" />
+        </ion-buttons>
         <ion-title>Mis Grupos</ion-title>
         <ion-buttons slot="end">
           <ion-button fill="clear" @click="() => router.push('/perfil')">
@@ -74,7 +77,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, IonIcon,
-  IonFab, IonFabButton, IonLoading
+  IonFab, IonFabButton, IonLoading, IonMenuButton
 } from '@ionic/vue'
 import { mailOutline, person, logOutOutline, add } from 'ionicons/icons'
 import { toastController } from '@ionic/vue'

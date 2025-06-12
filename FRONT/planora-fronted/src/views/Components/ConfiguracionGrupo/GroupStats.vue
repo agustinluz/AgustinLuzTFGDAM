@@ -144,22 +144,10 @@ defineEmits(['refresh', 'show-users'])
   flex: 1;
 }
 
-.stat-number {
-  font-size: 20px;
-  font-weight: bold;
-  color: var(--ion-color-dark);
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: var(--ion-color-medium);
-  margin-top: 2px;
-}
-
-.additional-info {
-  border-top: 1px solid var(--ion-color-light);
-  padding-top: 16px;
-  margin-top: 16px;
+@media (max-width: 480px) {
+  .stat-item {
+    flex-direction: column;
+    text-align: center;
+  }
 }
 </style>

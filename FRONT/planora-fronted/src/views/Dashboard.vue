@@ -1,10 +1,7 @@
 <template>
   <ion-page>
     <PageHeader
-      :title="store.grupo?.nombre || 'Dashboard'"
-      showBack
-      backHref="/grupo"
-    >
+      :title="store.grupo?.nombre || 'Dashboard'" :showMenu="false">
       <template #end>
         <ion-button fill="clear" @click="goToConfig" aria-label="Configuración">
           <ion-icon :icon="settingsOutline" />
@@ -79,7 +76,7 @@
         <ion-card-content>
           <div v-if="!store.loading">
             <ParticipantGrid :participants="store.participantes" />
-            <QuickActions />
+            <QuickActions />  
           </div>
           <div v-else class="loading-placeholder">
             <ion-skeleton-text animated style="width: 100%; height: 4rem" />
@@ -87,22 +84,19 @@
         </ion-card-content>
       </ion-card>
 
-      <!-- Botón flotante con opciones -->
+      <!-- Botón flotante con drawer de acciones -->
       <ion-fab vertical="bottom" horizontal="end">
-        <ion-fab-button color="primary">
+        <ion-fab-button color="primary" @click="showFabSheet = true">
           <ion-icon :icon="add" />
         </ion-fab-button>
-        <ion-fab-list side="top">
-          <ion-fab-button @click="createEvent">
-            <ion-icon :icon="add" />
-            <span class="fab-label">Evento</span>
-          </ion-fab-button>
-          <ion-fab-button @click="createGasto">
-            <ion-icon :icon="add" />
-            <span class="fab-label">Gasto</span>
-          </ion-fab-button>
-        </ion-fab-list>
       </ion-fab>
+      <ion-action-sheet
+        :is-open="showFabSheet"
+        header="Crear"
+        :buttons="fabButtons"
+        @did-dismiss="showFabSheet = false"
+      />
+      
 
       <!-- Modales -->
       <EventModal
@@ -150,14 +144,14 @@ import {
   IonSkeletonText,
   IonFab,
   IonFabButton,
-  IonFabList,
+  IonActionSheet,
   IonCard,
   IonCardHeader,
   IonCardTitle,
   IonCardContent
 } from '@ionic/vue'
 
-import { add, settingsOutline, logOutOutline } from 'ionicons/icons'
+import { add, settingsOutline, logOutOutline,  calendarOutline, cash } from 'ionicons/icons'
 
 const store = useDashboardStore()
 const {
@@ -170,6 +164,7 @@ const router = useRouter()
 const grupoId = localStorage.getItem('grupoActivoId')!
 const selectedEvent = ref<EventoDTO | null>(null)
 const showStatsModal = ref(false)
+const showFabSheet = ref(false)
 
 const currentMonthYear = computed(() =>
   currentDate.value.toLocaleString('default', { month: 'long', year: 'numeric' })
@@ -221,6 +216,22 @@ function createEventOnDay() {
   const date = selectedDate.value.toISOString()
   router.push({ path: `/dashboard/${grupoId}/crear/evento`, query: { fecha: date } })
 }
+const fabButtons = [
+  {
+    text: 'Crear Evento',
+    icon: calendarOutline,
+    handler: () => createEvent()
+  },
+  {
+    text: 'Crear Gasto',
+    icon: cash,
+    handler: () => createGasto()
+  },
+  {
+    text: 'Cancelar',
+    role: 'cancel'
+  }
+]
 </script>
 
 <style scoped lang="scss">

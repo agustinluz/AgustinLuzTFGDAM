@@ -1,8 +1,9 @@
 <template>
   <ion-header>
     <ion-toolbar class="page-header" color="primary">
-      <ion-buttons slot="start" v-if="showBack">
-        <ion-back-button :default-href="backHref" @click="$emit('back')" color="light" />
+      <ion-buttons slot="start">
+        <ion-menu-button v-if="showMenu" auto-hide="false" />
+        <ion-back-button v-else-if="showBack" :default-href="backHref" @click="$emit('back')" color="light" />
       </ion-buttons>
       <ion-title>{{ title }}</ion-title>
       <ion-buttons slot="end">
@@ -19,12 +20,14 @@ import {
   IonToolbar,
   IonTitle,
   IonButtons,
-  IonBackButton
+  IonBackButton,
+  IonMenuButton
 } from '@ionic/vue'
 
 interface Props {
   title: string
   showBack?: boolean
+  showMenu: false,
   backHref?: string
 }
 

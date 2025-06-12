@@ -1,6 +1,6 @@
   <template>
     <ion-page>
-      <PageHeader title="Configuración del Grupo" showBack backHref="/grupo" />
+      <PageHeader title="Configuración del Grupo" :showMenu="false" />
 
       <ion-content>
         <div v-if="loading" class="loading-container">
