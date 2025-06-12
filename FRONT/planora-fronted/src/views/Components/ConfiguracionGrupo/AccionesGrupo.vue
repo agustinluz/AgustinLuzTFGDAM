@@ -190,35 +190,39 @@ const hasAnotherAdmin = computed(() =>
 )
 // Methods
 // Methods
+const totalParticipantes = computed(() => normalizedParticipants.value.length)
 const confirmLeaveGroup = async () => {
-  let message = '¿Estás seguro de que quieres salir del grupo?'
-  let buttons
+  const eresAdmin = props.isAdmin
+  const hayOtroAdmin = hasAnotherAdmin.value
+  const masDeUnParticipante = totalParticipantes.value > 1
 
-  if (props.isAdmin && !hasAnotherAdmin.value) {
-    message = 'Como único administrador, debes transferir la administración antes de poder salir del grupo.'
+  let message: string
+  let buttons: any[]
+
+  // Si eres admin, hay más de un participante y no hay otro admin -> bloquea
+  if (eresAdmin && masDeUnParticipante && !hayOtroAdmin) {
+    message = 'Como único administrador entre varios, debes transferir la administración antes de salir.'
     buttons = [{ text: 'Entendido', role: 'cancel' }]
   } else {
+    // En cualquier otro caso (no admin, o admin único y único participante, o hay otro admin)
+    message = '¿Estás seguro de que quieres salir del grupo?'
     buttons = [
       { text: 'Cancelar', role: 'cancel' },
       {
         text: 'Salir',
         role: 'destructive',
-        handler: () => {
-          emit('leaveGroup')
-        }
+        handler: () => emit('leaveGroup')
       }
     ]
   }
 
   const alert = await alertController.create({
-    header: 'Salir del Grupo',
+    header: 'Salir del grupo',
     message,
     buttons
   })
-
   await alert.present()
 }
-
 
 const executeTransferAdmin = async () => {
   if (!selectedNewAdmin.value) {

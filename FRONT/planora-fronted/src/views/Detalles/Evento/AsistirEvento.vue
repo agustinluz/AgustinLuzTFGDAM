@@ -17,7 +17,7 @@
         <h2>{{ evento.titulo }}</h2>
         <p>{{ formatFecha(evento.fecha) }}</p>
         <p v-if="evento.descripcion">{{ evento.descripcion }}</p>
-         <ion-button fill="clear" size="small" @click="modalOpen = true">
+         <ion-button fill="clear" size="small">
           🎉 {{ asistentesConfirmados.length }}
         </ion-button>
         <ion-button
@@ -29,6 +29,9 @@
         >
           Confirmar asistencia
         </ion-button>
+
+        
+        
         <ion-button
           v-else
           expand="block"
@@ -38,42 +41,41 @@
         >
           Cambiar asistencia
         </ion-button>
+         <ion-segment v-model="segment" class="list-segment">
+          <ion-segment-button value="asistentes">
+            <ion-label>Asistentes</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="noasistentes">
+            <ion-label>No asistentes</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+        <ion-list v-if="segment==='asistentes'">
+          <ion-item v-for="a in asistentesConfirmados" :key="a.usuarioId">
+            <ion-avatar slot="start">
+              <img :src="avatarUrl(a.usuarioId)" />
+            </ion-avatar>
+            <ion-label>{{ a.nombre }}</ion-label>
+          </ion-item>
+        </ion-list>
+        <ion-list v-else>
+          <ion-item v-for="a in asistentesRechazados" :key="a.usuarioId">
+            <ion-avatar slot="start">
+              <img :src="avatarUrl(a.usuarioId)" />
+            </ion-avatar>
+            <ion-label>{{ a.nombre }}</ion-label>
+          </ion-item>
+        </ion-list>
+        <ion-button
+          expand="block"
+          :router-link="`/dashboard/${grupoId}/eventos`"
+          class="volver-btn"
+          color="medium"
+        >
+          Ver más eventos
+        </ion-button>
         
       </div>
       <ion-toast :is-open="mostrarToast" :message="mensajeToast" :color="toastColor" @did-dismiss="mostrarToast=false" />
-       <ion-modal :is-open="modalOpen" @will-dismiss="modalOpen=false">
-        <ion-header>
-          <ion-toolbar>
-            <ion-title>Asistentes</ion-title>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content class="ion-padding">
-          <ion-segment v-model="segment">
-            <ion-segment-button value="asistentes">
-              <ion-label>Asistentes</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="noasistentes">
-              <ion-label>No asistentes</ion-label>
-            </ion-segment-button>
-          </ion-segment>
-          <ion-list v-if="segment==='asistentes'">
-            <ion-item v-for="a in asistentesConfirmados" :key="a.usuarioId">
-              <ion-avatar slot="start">
-                <img :src="avatarUrl(a.usuarioId)" />
-              </ion-avatar>
-              <ion-label>{{ a.nombre }}</ion-label>
-            </ion-item>
-          </ion-list>
-          <ion-list v-else>
-            <ion-item v-for="a in asistentesRechazados" :key="a.usuarioId">
-              <ion-avatar slot="start">
-                <img :src="avatarUrl(a.usuarioId)" />
-              </ion-avatar>
-              <ion-label>{{ a.nombre }}</ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-content>
-      </ion-modal>
     </ion-content>
   </ion-page>
 </template>
@@ -82,7 +84,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useIonRouter, IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, 
   IonBackButton, IonSpinner, IonButton, 
-  IonToast, IonModal, IonSegment, IonSegmentButton, 
+  IonToast, IonSegment, IonSegmentButton, 
   IonLabel, IonList, IonItem, IonAvatar } from '@ionic/vue'
 import { useRoute } from 'vue-router'
 import { EventosService } from '@/service/EventoService'
@@ -155,4 +157,6 @@ function avatarUrl(id: number) {
 <style scoped>
 .loading { display: flex; justify-content: center; margin-top: 2rem; }
 .content { display: flex; flex-direction: column; gap: 1rem; }
+.list-segment { margin-top: 1rem; }
+.volver-btn { margin-top: 1.5rem; }
 </style>

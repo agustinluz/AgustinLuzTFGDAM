@@ -189,7 +189,7 @@ onMounted(() => {
 
 // Acciones
 function openEvent(e: EventoDTO) {
-  store.getEventoDetalle(String(e.id)).then(ev => selectedEvent.value = ev)
+  router.push({ name: 'asistir-evento', params: { eventoId: e.id, grupoId } })
 }
 function closeModal() { selectedEvent.value = null }
 function handleDelete(id: number) {

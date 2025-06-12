@@ -152,7 +152,6 @@
                   </div>
                 </div>
                 <ion-card-content>
-                  <ion-card-subtitle class="image-name">{{ imagen.nombre }}</ion-card-subtitle>
                   <div class="image-meta">
                     <ion-chip v-if="imagen.eventoId" size="small" color="tertiary" outline>
                       {{ getEventoTitulo(imagen.eventoId) }}
@@ -703,10 +702,6 @@ onMounted(async () => {
 .imagen-col {
   display: flex;
   justify-content: center;
-}
-.image-name {
-  font-weight: 600;
-  margin-bottom: 8px;
 }
 
 .image-meta {

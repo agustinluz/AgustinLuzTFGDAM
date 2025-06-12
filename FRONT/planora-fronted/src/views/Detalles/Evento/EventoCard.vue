@@ -1,5 +1,9 @@
 <template>
-    <ion-card class="evento-card">
+    <ion-card
+        class="evento-card"
+        button
+        :router-link="`/evento/${evento.id}/asistir?grupoId=${evento.grupoId}`"
+    >
         <ion-card-header class="evento-header">
             <div class="evento-header-left">
                 <ion-icon :name="esFechaFutura(evento.fecha) ? 'calendar-outline' : 'calendar'"
@@ -20,10 +24,10 @@
                     {{ formatFecha(evento.fecha) }}
                 </div>
                 <div class="action-buttons">
-                    <ion-button fill="clear" size="small" @click="$emit('editar', evento)" color="success">
+                    <ion-button fill="clear" size="small" @click.stop="$emit('editar', evento)" color="success">
                         <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
                     </ion-button>
-                    <ion-button fill="clear" size="small" @click="$emit('eliminar', evento)" color="danger">
+                    <ion-button fill="clear" size="small" @click.stop="$emit('eliminar', evento)" color="danger">
                         <ion-icon slot="icon-only" name="trash-bin-outline"></ion-icon>
                     </ion-button>
 

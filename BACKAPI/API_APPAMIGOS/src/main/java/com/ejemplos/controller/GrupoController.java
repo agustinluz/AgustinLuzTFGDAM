@@ -336,26 +336,41 @@ public class GrupoController {
 
 	// Salir del grupo
 	@DeleteMapping("/{grupoId}/salir")
-    public ResponseEntity<Void> salirDelGrupo(@PathVariable Long grupoId, @RequestHeader("usuarioId") Long usuarioId) {
+	public ResponseEntity<Void> salirDelGrupo(
+	        @PathVariable Long grupoId,
+	        @RequestHeader("usuarioId") Long usuarioId) {
 
-            UsuarioGrupo ug = usuarioGrupoService.obtenerPorUsuarioIdYGrupoId(usuarioId, grupoId).orElse(null);
-            if (ug == null) {
-                    return ResponseEntity.notFound().build();
-            }
+	    // Buscamos la relación usuario–grupo
+	    UsuarioGrupo ug = usuarioGrupoService
+	        .obtenerPorUsuarioIdYGrupoId(usuarioId, grupoId)
+	        .orElse(null);
+	    if (ug == null) {
+	        return ResponseEntity.notFound().build();
+	    }
 
-            if ("admin".equalsIgnoreCase(ug.getRol())) {
-                    int admins = usuarioGrupoService.contarAdminsPorGrupo(grupoId);
-                    if (admins <= 1) {
-                            return ResponseEntity.badRequest().build();
-                    }
-            }
+	    // Solo si eres admin Y hay más de un participante Y solo hay 1 admin, bloqueamos
+	    if ("admin".equalsIgnoreCase(ug.getRol())) {
+	        int totalParticipantes = usuarioGrupoService.contarParticipantesPorGrupo(grupoId);
+	        int totalAdmins       = usuarioGrupoService.contarAdminsPorGrupo(grupoId);
 
-            usuarioGrupoService.eliminarUsuarioDeGrupo(usuarioId, grupoId);
-            if (usuarioGrupoService.contarParticipantesPorGrupo(grupoId) == 0) {
-                grupoService.eliminar(grupoId);
-        }
-            return ResponseEntity.ok().build();
-    }
+	        if (totalParticipantes > 1 && totalAdmins == 1) {
+	            // Eres el único admin pero hay otros miembros: no puedes irte sin ceder rol
+	            return ResponseEntity
+	                    .badRequest()
+	                    .build();
+	        }
+	    }
+
+	    // Procedemos a eliminar al usuario del grupo
+	    usuarioGrupoService.eliminarUsuarioDeGrupo(usuarioId, grupoId);
+
+	    // Si ya no queda nadie, borramos también el grupo
+	    if (usuarioGrupoService.contarParticipantesPorGrupo(grupoId) == 0) {
+	        grupoService.eliminar(grupoId);
+	    }
+
+	    return ResponseEntity.ok().build();
+	}
 
 	// Obtener información de un participante específico
 	@GetMapping("/{grupoId}/usuarios/{usuarioId}")
