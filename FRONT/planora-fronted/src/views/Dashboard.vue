@@ -1,7 +1,7 @@
 <template>
   <ion-page>
     <PageHeader
-      :title="store.grupo?.nombre || 'Dashboard'" :showMenu="false">
+      :title="store.grupo?.nombre || 'Dashboard'" :showMenu="true">
       <template #end>
         <ion-button fill="clear" @click="goToConfig" aria-label="Configuración">
           <ion-icon :icon="settingsOutline" />

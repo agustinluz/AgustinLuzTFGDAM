@@ -1,6 +1,6 @@
   <template>
     <ion-page>
-      <PageHeader title="Configuración del Grupo" :showMenu="false" />
+      <PageHeader title="Configuración del Grupo" :showMenu="true" />
 
       <ion-content>
         <div v-if="loading" class="loading-container">

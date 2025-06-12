@@ -3,7 +3,7 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button :default-href="`/dashboard/${grupoId}`"></ion-back-button>
+          <ion-back-button :default-href="`/dashboard/${grupoId}`" color="light"></ion-back-button>
         </ion-buttons>
         <ion-title>Votaciones del Grupo</ion-title>
         <ion-buttons slot="end">

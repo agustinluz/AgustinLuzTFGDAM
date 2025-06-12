@@ -1,6 +1,6 @@
 <template>
   <ion-page>
-     <PageHeader title="Invitaciones" :showMenu="false"  />
+     <PageHeader title="Invitaciones" :showMenu="true"  />
 
     <ion-content class="ion-padding">
       <ion-list v-if="invitaciones.length">

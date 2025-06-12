@@ -1,6 +1,6 @@
 <template>
   <ion-page>
-    <PageHeader title="Editar Perfil" :showMenu="false" />
+    <PageHeader title="Editar Perfil" :showMenu="true" />
 
     <ion-content :fullscreen="true" class="profile-content">
       <div class="profile-container">
