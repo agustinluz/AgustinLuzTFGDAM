@@ -18,8 +18,8 @@
         </ion-label>
         <div slot="end" class="gasto-end">
           <h3>{{ formatMonto(gasto.monto) }}</h3>
-          <ion-chip size="small" :color="gasto.pendiente ? 'warning' : 'success'">
-            {{ gasto.pendiente ? 'Pendiente' : 'Saldado' }}
+          <ion-chip size="small" :color="esPendiente(gasto) ? 'warning' : 'success'">
+            {{ esPendiente(gasto) ? 'Pendiente' : 'Saldado' }}
           </ion-chip>
         </div>
       </ion-item>
@@ -34,6 +34,8 @@ import { receiptOutline, home, restaurant, car, ticket } from 'ionicons/icons'
 
 const props = defineProps(['gastos'])
 defineEmits(['verDetalles'])
+
+const esPendiente = gasto => gasto.deudas?.some(d => !d.saldado)
 
 const getIcon = gasto => {
   const t = gasto.titulo?.toLowerCase() || ''

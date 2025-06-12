@@ -1,6 +1,6 @@
 <template>
   <ion-page>
-    <PageHeader title="Iniciar Sesión" />
+    <PageHeader title="Iniciar Sesión" :showMenu="false"  />
     <ion-content :fullscreen="true" class="ion-padding login-page">
       <div class="login-background">
         <div class="login-card">

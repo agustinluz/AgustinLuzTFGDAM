@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router';
 import { createPinia } from 'pinia'
 import { IonicVue } from '@ionic/vue';
+import { useAuthStore } from './service/auth';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -40,6 +41,9 @@ const app = createApp(App)
   .use(router);
 
 app.use(pinia);
+// Cargar autenticación desde el almacenamiento local al iniciar la aplicación
+const authStore = useAuthStore();
+authStore.initializeFromStorage();
 
 router.isReady().then(() => {
   app.mount('#app');

@@ -83,10 +83,12 @@
               <!-- Opciones de votación -->
               <div class="opciones-container" v-if="votacion.opciones">
                 <h4>Opciones:</h4>
-                <ion-chip 
-                  v-for="opcion in votacion.opciones" 
-                  :key="opcion" 
-                  outline>
+                <ion-chip
+                  v-for="opcion in votacion.opciones"
+                  :key="opcion"
+                  :color="votacion.yaVote && opcion === votacion.miVoto ? 'primary' : 'medium'"
+                  :outline="!(votacion.yaVote && opcion === votacion.miVoto)"
+                >
                   {{ opcion }}
                 </ion-chip>
               </div>

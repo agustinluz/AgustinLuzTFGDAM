@@ -14,6 +14,16 @@
         @ion-input="onSearch"
       />
     </ion-item>
+    <ion-list v-if="suggestions.length" class="suggestions-list">
+      <ion-item
+        v-for="s in suggestions"
+        :key="s.place_id"
+        button
+        @click="selectSuggestion(s)"
+      >
+        <ion-label>{{ s.display_name }}</ion-label>
+      </ion-item>
+    </ion-list>
     <ion-item button @click="openMap" v-if="modelUbicacion">
       <ion-label>
         <h3>Ver en el mapa</h3>
@@ -69,7 +79,8 @@ import {
   IonButtons,
   IonButton,
   IonContent,
-  IonSearchbar
+  IonSearchbar,
+  IonList
 } from '@ionic/vue'
 import { ref, computed, nextTick } from 'vue'
 
@@ -83,6 +94,8 @@ const showMap = ref(false)
 const searchQuery = ref('')
 const mapRef = ref<any>(null)
 const markerRef = ref<any>(null)
+const suggestions = ref<any[]>([])
+let searchTimeout: any = null
 
 const modelUbicacion = computed({
   get: () => props.ubicacion,
@@ -96,17 +109,26 @@ const coords = computed({
 const openMap = async () => {
   showMap.value = true
   await nextTick()
+  suggestions.value = []
   initMap()
 }
 const closeMap = () => { showMap.value = false }
-const confirmLocation = () => { if (coords.value) closeMap() }
+const confirmLocation = () => {
+  if (coords.value) closeMap()
+}
 
 const onSearch = (event: any) => {
   const query = event.target.value
-  if (query.length < 3) return
-  geocode(query)
+  if (searchTimeout) clearTimeout(searchTimeout)
+  if (!query || query.length < 3) {
+    suggestions.value = []
+    return
+  }
+  searchTimeout = setTimeout(async () => {
+    const results = await geocode(query, 5)
+    suggestions.value = results || []
+  }, 300)
 }
-
 const searchOnMap = async (event: any) => {
   const query = event.target.value
   if (query.length < 3) return
@@ -122,16 +144,22 @@ const searchOnMap = async (event: any) => {
   }
 }
 
-async function geocode(query: string) {
+const selectSuggestion = (s: any) => {
+  modelUbicacion.value = s.display_name
+  const c = { lat: parseFloat(s.lat), lng: parseFloat(s.lon) }
+  coords.value = c
+  suggestions.value = []
+}
+
+async function geocode(query: string, limit = 1) {
   try {
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=${limit}`)
     return await res.json()
   } catch (e) {
     console.error('Error en geocoding:', e)
     return null
   }
 }
-
 function initMap() {
   if (typeof L === 'undefined') {
     const link = document.createElement('link')
@@ -189,4 +217,5 @@ async function reverseGeocode(lat: number, lng: number) {
 .mapa { flex: 1; min-height: 400px; z-index: 1; }
 .map-search { padding: 1rem; background: var(--ion-color-light); }
 .map-actions { padding: 1rem; background: var(--ion-color-light); }
+.suggestions-list { max-height: 200px; overflow-y: auto; margin-top: 0.5rem; }
 </style>

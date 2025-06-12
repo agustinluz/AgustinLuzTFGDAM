@@ -143,6 +143,8 @@ router.beforeEach((to, from, next) => {
 
   if (!publicPages.includes(to.path) && !token) {
     next('/login')
+ } else if (token && (to.path === '/login' || to.path === '/')) {
+    next('/grupo') 
   } else {
     next()
   }

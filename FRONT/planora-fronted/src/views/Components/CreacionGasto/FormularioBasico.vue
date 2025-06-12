@@ -11,6 +11,8 @@
     <ion-card-content>
       <ion-item class="modern-item">
         <ion-input
+        label="Título del gasto"
+          label-placement="stacked"
           v-model="formulario.titulo"
           placeholder="Título del gasto"
           fill="outline"
@@ -22,6 +24,8 @@
 
       <ion-item class="modern-item ion-margin-top">
         <ion-input
+        label="Monto"
+          label-placement="stacked"
           v-model="formulario.monto"
           placeholder="0.00"
           type="number"

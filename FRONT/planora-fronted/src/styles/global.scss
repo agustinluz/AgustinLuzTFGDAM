@@ -93,3 +93,96 @@ ion-title {
   font-weight: 600;
   text-align: center;
 }
+
+/* ---- Estilos genéricos para la creación de gastos ---- */
+.modern-card {
+  @include card-base;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: var(--ion-color-surface);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.header-icon {
+  color: var(--ion-color-primary);
+  font-size: 1.2rem;
+}
+
+.modern-item {
+  --background: var(--ion-color-light);
+  --border-radius: var(--border-radius);
+}
+
+.participants-section {
+  margin-top: 1rem;
+}
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--ion-color-medium);
+  font-size: 0.9rem;
+}
+.participants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+}
+.participant-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--ion-color-light-shade, #ddd);
+  background: var(--ion-color-light);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.participant-card.selected {
+  background: var(--ion-color-primary-tint);
+}
+.participant-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ion-color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.amount-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+}
+
+.summary-item {
+  margin-bottom: 0.25rem;
+}
+
+.action-buttons {
+  margin-top: 1rem;
+}
+
+.primary-button {
+  --background: var(--ion-color-primary);
+  --color: #fff;
+}
+
+.currency-symbol {
+  color: var(--ion-color-medium);
+  margin-left: 0.5rem;
+}

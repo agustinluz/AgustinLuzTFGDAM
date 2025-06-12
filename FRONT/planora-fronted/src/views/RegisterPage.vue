@@ -1,6 +1,6 @@
 <template>
   <ion-page>
-    <PageHeader title="REGISTRO" />
+    <PageHeader title="REGISTRO" :showMenu="false"  />
     <ion-content :fullscreen="true" class="ion-padding register-page">
       <div class="register-background">
         <div class="register-card">
