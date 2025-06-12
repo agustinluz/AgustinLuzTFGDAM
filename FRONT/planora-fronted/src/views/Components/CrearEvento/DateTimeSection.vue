@@ -27,6 +27,7 @@
           presentation="date-time"
           :min="minDate"
           locale="es-ES"
+          :first-day-of-week="1"
         />
         <div class="calendar-actions">
           <ion-button expand="block" @click="confirmDate" :disabled="!modelFecha">

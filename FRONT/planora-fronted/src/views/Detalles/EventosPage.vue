@@ -7,7 +7,7 @@
         </ion-buttons>
         <ion-title>📅 Eventos del Grupo</ion-title>
         <ion-buttons slot="end">
-          <ion-button @click="abrirModalCrear">
+          <ion-button @click="irCrearEvento">
             <ion-icon name="add-outline"></ion-icon>
           </ion-button>
         </ion-buttons>
@@ -46,7 +46,7 @@
         <ion-icon name="calendar-outline" class="empty-icon"></ion-icon>
         <h3>{{ eventos.length === 0 ? 'No hay eventos' : 'No se encontraron eventos' }}</h3>
         <p>{{ eventos.length === 0 ? 'Este grupo aún no tiene eventos registrados.' : 'Intenta cambiar los filtros de búsqueda.' }}</p>
-        <ion-button v-if="eventos.length === 0" @click="abrirModalCrear" fill="outline">
+        <ion-button v-if="eventos.length === 0" @click="irCrearEvento" fill="outline">
           <ion-icon name="add-outline" slot="start"></ion-icon>
           Crear primer evento
         </ion-button>
@@ -87,7 +87,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   IonPage,
   IonHeader,
@@ -116,6 +116,7 @@ import { useEventos } from './Evento/Composable/UseEventos'
 import type { Evento, EventoCrear } from '@/service/EventoService'
 
 const route = useRoute()
+const router = useRouter()
 const grupoId = parseInt(route.params.id as string)
 const token = localStorage.getItem('token') || ''
 const {
@@ -148,10 +149,11 @@ const alertEliminar = ref({
 })
 
 // Métodos del modal
-const abrirModalCrear = () => {
-  eventoEditando.value = null
-  modalAbierto.value = true
+// Crear nuevo evento navegando a la página correspondiente
+const irCrearEvento = () => {
+  router.push(`/dashboard/${grupoId}/crear/evento`)
 }
+
 
 const editarEvento = (evento: Evento) => {
   eventoEditando.value = evento

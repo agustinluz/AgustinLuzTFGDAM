@@ -3,7 +3,7 @@
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
-          <ion-back-button :default-href="`/dashboard/${grupoId}/eventos`" />
+          <ion-back-button :default-href="`/grupo`" />
         </ion-buttons>
         <ion-title>Asistencia</ion-title>
       </ion-toolbar>
@@ -65,14 +65,7 @@
             <ion-label>{{ a.nombre }}</ion-label>
           </ion-item>
         </ion-list>
-        <ion-button
-          expand="block"
-          :router-link="`/dashboard/${grupoId}/eventos`"
-          class="volver-btn"
-          color="medium"
-        >
-          Ver más eventos
-        </ion-button>
+        
         
       </div>
       <ion-toast :is-open="mostrarToast" :message="mensajeToast" :color="toastColor" @did-dismiss="mostrarToast=false" />
