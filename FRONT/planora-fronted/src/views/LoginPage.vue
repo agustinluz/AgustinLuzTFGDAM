@@ -39,7 +39,9 @@
           <ion-button expand="block" fill="clear" class="register-button" @click="goToRegister">
             ¿No tienes cuenta? <strong>Regístrate</strong>
           </ion-button>
-
+<ion-button expand="block" fill="clear" class="forgot-button" @click="goToReset">
+            ¿Olvidaste tu contraseña? <strong>Restablécela</strong>
+          </ion-button>
           <ion-text color="danger" v-if="error" class="error-text">{{ error }}</ion-text>
         </div>
       </div>
@@ -93,6 +95,9 @@ const login = async () => {
 
 const goToRegister = () => {
   router.push('/registro')
+}
+const goToReset = () => {
+  router.push('/restablecer')
 }
 </script>
 
@@ -150,6 +155,11 @@ const goToRegister = () => {
   margin-top: 12px;
   color: #3880ff;
   font-size: 15px;
+}
+.forgot-button {
+  margin-top: 8px;
+  color: #3880ff;
+  font-size: 14px;
 }
 
 .error-text {

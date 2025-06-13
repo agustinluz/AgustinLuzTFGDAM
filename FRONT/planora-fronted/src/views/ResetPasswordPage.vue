@@ -1,30 +1,19 @@
 <template>
   <ion-page>
-    <PageHeader title="REGISTRO" :showMenu="false"  />
-    <ion-content :fullscreen="true" class="ion-padding register-page">
-      <div class="register-background">
-        <div class="register-card">
+    <PageHeader title="Restablecer Contraseña" :showMenu="false" />
+    <ion-content :fullscreen="true" class="ion-padding reset-page">
+      <div class="reset-background">
+        <div class="reset-card">
           <img src="../assets/logoPlanora.png" alt="Logo" class="logo" />
-          <h1 class="title">Crea tu cuenta</h1>
-          <p class="subtitle">Únete a tu grupo y empieza a organizar</p>
-
-          <ion-input
-            v-model="nombre"
-            label="Nombre"
-            label-placement="floating"
-            fill="outline"
-            placeholder="Tu nombre"
-            class="input"
-          >
-            <ion-icon name="person-outline" slot="start"></ion-icon>
-          </ion-input>
+          <h1 class="title">Recuperar acceso</h1>
+          <p class="subtitle">Ingresa tu email y una nueva contraseña</p>
 
           <ion-input
             v-model="email"
             label="Email"
             label-placement="floating"
-            fill="outline"
             type="email"
+            fill="outline"
             placeholder="tu@email.com"
             class="input"
           >
@@ -33,27 +22,26 @@
 
           <ion-input
             v-model="password"
-            label="Contraseña"
+            label="Nueva contraseña"
             label-placement="floating"
-            fill="outline"
             type="password"
+            fill="outline"
             placeholder="••••••"
             class="input"
           >
             <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
           </ion-input>
 
-          <ion-button expand="block" class="register-button" @click="registrar">
-            Registrarse
+          <ion-button expand="block" class="reset-button" @click="reset">
+            Restablecer contraseña
           </ion-button>
 
           <ion-button expand="block" fill="clear" class="login-link" @click="goToLogin">
-            ¿Ya tienes cuenta? Inicia sesión
+            Volver al inicio de sesión
           </ion-button>
 
-          <ion-text color="danger" v-if="error" class="error-text">
-            {{ error }}
-          </ion-text>
+          <ion-text color="danger" v-if="error" class="error-text">{{ error }}</ion-text>
+          <ion-text color="success" v-if="mensaje" class="success-text">{{ mensaje }}</ion-text>
         </div>
       </div>
     </ion-content>
@@ -71,15 +59,14 @@ import {
   useIonRouter,
   toastController
 } from '@ionic/vue'
-import PageHeader from '@/components/PageHeader.vue'
+import PageHeader from '../components/PageHeader.vue'
 import { ref } from 'vue'
 
-const nombre = ref('')
 const email = ref('')
 const password = ref('')
 const error = ref('')
+const mensaje = ref('')
 const router = useIonRouter()
-
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
 
 const showToast = async (msg: string, color: 'success' | 'danger' | 'warning' = 'danger') => {
@@ -92,34 +79,30 @@ const showToast = async (msg: string, color: 'success' | 'danger' | 'warning' = 
   await toast.present()
 }
 
-const registrar = async () => {
+const reset = async () => {
   error.value = ''
+  mensaje.value = ''
   if (!passwordRegex.test(password.value)) {
     await showToast('La contraseña debe tener al menos 8 caracteres, una mayúscula y un número', 'warning')
     return
   }
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/registro`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/reset-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre: nombre.value, email: email.value, password: password.value })
+      body: JSON.stringify({ email: email.value, password: password.value })
     })
 
     if (!response.ok) {
       const data = await response.json()
-      await showToast(data.error || 'Error al registrar', 'danger')
-      throw new Error(data.error || 'Error al registrar')
+      await showToast(data.error || 'Error al restablecer', 'danger')
+      throw new Error(data.error || 'Error al restablecer')
     }
-
-    const data = await response.json()
-    localStorage.setItem('usuario', JSON.stringify(data))
-    router.push('/grupo')
+    mensaje.value = 'Contraseña actualizada'
+    await showToast('Contraseña actualizada', 'success')
+    router.push('/login')
   } catch (err) {
-    if (err instanceof Error) {
-      error.value = err.message
-    } else {
-      error.value = String(err)
-    }
+    error.value = err.message
   }
 }
 
@@ -129,11 +112,11 @@ const goToLogin = () => {
 </script>
 
 <style scoped>
-.register-page {
+.reset-page {
   --background: transparent;
 }
 
-.register-background {
+.reset-background {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -141,7 +124,7 @@ const goToLogin = () => {
   background: linear-gradient(145deg, #f2f6fc, #e3ebf5);
 }
 
-.register-card {
+.reset-card {
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
@@ -172,19 +155,19 @@ const goToLogin = () => {
   margin-top: 16px;
 }
 
-.register-button {
+.reset-button {
   margin-top: 24px;
   --background: #3880ff;
   --border-radius: 8px;
 }
 
 .login-link {
-  margin-top: 8px;
-  font-size: 14px;
-  text-transform: none;
+  margin-top: 12px;
+  color: #3880ff;
+  font-size: 15px;
 }
 
-.error-text {
+.error-text, .success-text {
   display: block;
   margin-top: 16px;
   font-weight: 500;

@@ -91,28 +91,26 @@ public class UsuarioController {
                 usuario.setEmail(updateDTO.getEmail());
             }
 
-            // Actualizar nombre si se proporciona
-            if (updateDTO.getNombre() != null && !updateDTO.getNombre().trim().isEmpty()) {
-                usuario.setNombre(updateDTO.getNombre().trim());
-            }
-            if (updateDTO.getFotoPerfil() != null) {
-                usuario.setFotoPerfil(updateDTO.getFotoPerfil());
-            }
-
-            // Actualizar contraseña si se proporciona
+         // Actualizar contraseña si se proporciona
             if (updateDTO.getPassword() != null && !updateDTO.getPassword().trim().isEmpty()) {
                 // Verificar contraseña actual antes de cambiarla
-                if (updateDTO.getCurrentPassword() == null || 
+                if (updateDTO.getCurrentPassword() == null ||
                     !passwordEncoder.matches(updateDTO.getCurrentPassword(), usuario.getPassword())) {
                     return ResponseEntity.badRequest()
                         .body(new ErrorResponse("La contraseña actual no es correcta"));
                 }
-                
-                // Validar que la nueva contraseña tenga al menos 6 caracteres
-                if (updateDTO.getPassword().length() < 6) {
+
+                // Validar que la nueva contraseña tenga complejidad adecuada
+                if (!updateDTO.getPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$")) {
                     return ResponseEntity.badRequest()
-                        .body(new ErrorResponse("La nueva contraseña debe tener al menos 6 caracteres"));
+                        .body(new ErrorResponse("La nueva contraseña debe tener al menos 8 caracteres, una mayúscula y un número"));
                 }
+
+                if (passwordEncoder.matches(updateDTO.getPassword(), usuario.getPassword())) {
+                    return ResponseEntity.badRequest()
+                        .body(new ErrorResponse("La nueva contraseña no puede ser igual a la anterior"));
+                }
+
 
                 // Guardar la nueva contraseña cifrada
                 usuario.setPassword(passwordEncoder.encode(updateDTO.getPassword()));

@@ -19,6 +19,10 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/RegisterPage.vue')
   },
   {
+    path: '/restablecer',
+    component: () => import('../views/ResetPasswordPage.vue')
+  },
+  {
     path: '/dashboard/:id',
     name: 'dashboard',
     component: () => import('../views/Dashboard.vue'),
@@ -139,7 +143,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  const publicPages = ['/login', '/registro']
+  const publicPages = ['/login', '/registro','/restablecer']
 
   if (!publicPages.includes(to.path) && !token) {
     next('/login')

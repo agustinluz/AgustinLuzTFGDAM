@@ -215,6 +215,7 @@ const formData = reactive({
 const confirmPassword = ref('')
 const loading = ref(false)
 const showImageModal = ref(false)
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
 
 // Control de visibilidad de contraseñas
 const showCurrentPassword = ref(false)
@@ -330,8 +331,13 @@ const validarFormulario = () => {
       return false
     }
 
-    if (formData.password.length < 6) {
-      mostrarError('La contraseña debe tener al menos 6 caracteres')
+    if (!passwordRegex.test(formData.password)) {
+      mostrarError('La contraseña debe tener al menos 8 caracteres, una mayúscula y un número')
+      return false
+    }
+
+    if (formData.password === formData.currentPassword) {
+      mostrarAvisoAbajo('La nueva contraseña no puede ser igual a la anterior')
       return false
     }
 
@@ -410,7 +416,11 @@ const actualizarPerfil = async () => {
 
       try {
         const errorData = JSON.parse(errorText)
-        mostrarError(errorData.mensaje || 'Error al actualizar el perfil')
+         if (errorData.mensaje && errorData.mensaje.includes('anterior')) {
+          mostrarAvisoAbajo(errorData.mensaje)
+        } else {
+          mostrarError(errorData.mensaje || 'Error al actualizar el perfil')
+        }
       } catch {
         mostrarError('Error al actualizar el perfil')
       }
@@ -460,6 +470,16 @@ const mostrarError = async (mensaje) => {
     duration: 4000,
     position: 'top',
     color: 'danger'
+  })
+  await toast.present()
+}
+
+const mostrarAvisoAbajo = async (mensaje) => {
+  const toast = await toastController.create({
+    message: mensaje,
+    duration: 3000,
+    position: 'bottom',
+    color: 'warning'
   })
   await toast.present()
 }

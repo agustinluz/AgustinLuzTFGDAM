@@ -225,6 +225,16 @@
             <IonIcon v-else :icon="cloudUploadOutline" slot="start" />
             {{ estado.subiendo ? 'Subiendo...' : 'Subir imagen' }}
           </IonButton>
+          <IonButton
+            @click="cancelarSubida"
+            expand="block"
+            color="medium"
+            class="ion-margin-top"
+            :disabled="estado.subiendo"
+          >
+            <IonIcon :icon="closeOutline" slot="start" />
+            Cancelar
+          </IonButton>
         </div>
       </IonContent>
     </IonModal>
@@ -428,6 +438,10 @@ const cargarEventos = async () => {
   } finally {
     estado.cargandoEventos = false;
   }
+};
+const cancelarSubida = () => {
+  cerrarModalSubida();
+  router.push(`/dashboard/${contexto.grupoId}/galeria`);
 };
 
 const aplicarFiltro = async () => {
