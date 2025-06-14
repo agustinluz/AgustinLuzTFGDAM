@@ -84,7 +84,7 @@
       </ion-card>
 
       <!-- Botón flotante con drawer de acciones -->
-      <ion-fab vertical="bottom" horizontal="end">
+      <ion-fab vertical="bottom" horizontal="end" slot="fixed">
         <ion-fab-button color="primary" @click="showFabSheet = true">
           <ion-icon :icon="add" />
         </ion-fab-button>

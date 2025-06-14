@@ -364,12 +364,13 @@ const formularioValido = computed(() => {
 
 const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_URL}${endpoint}`
+  const { body, ...rest } = options
   const config = {
     headers: {
       'Content-Type': 'application/json',
-      ...options.headers
+      ...rest.headers
     },
-    ...options
+    ...rest
   }
 
   const response = await api({ url, ...config })

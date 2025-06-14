@@ -59,7 +59,7 @@ const routes: Array<RouteRecordRaw> = [
     props: true
   },
   {
-  path: '/dashboard/:grupoId/notas/crear',
+  path: '/dashboard/:grupoId/crear/nota',
   name: 'CrearNota',
   component: () => import('@/views/Creacion/CrearEditarNotaPage.vue')
 },

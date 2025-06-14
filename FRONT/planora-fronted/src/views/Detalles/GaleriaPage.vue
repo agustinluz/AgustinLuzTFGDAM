@@ -116,14 +116,30 @@
             >
               <ion-card class="imagen-card">
                 <div class="imagen-container">
+                  <!-- Skeleton loader mientras carga la imagen -->
+                  <div v-if="imagen.cargando" class="imagen-skeleton">
+                    <ion-spinner name="crescent"></ion-spinner>
+                  </div>
+                  
+                  <!-- Imagen de error si falla la carga -->
+                  <div v-else-if="imagen.error" class="imagen-error">
+                    <ion-icon :icon="imagesOutline" size="large" color="medium"></ion-icon>
+                    <p>Error al cargar</p>
+                  </div>
+                  
+                  <!-- Imagen normal -->
                   <img 
-                    ::src="imagen.preview"
+                    v-else
+                    :src="imagen.preview"
                     :alt="imagen.nombre"
-                    @error="manejarErrorImagen"
-                    @load="onImageLoad"
+                    @error="() => manejarErrorImagen(imagen)"
+                    @load="() => onImageLoad(imagen)"
                     class="imagen-preview"
+                    :class="{ 'imagen-visible': imagen.preview && !imagen.cargando }"
                   />
-                  <div class="imagen-overlay">
+                  
+                  <!-- Overlay con botones -->
+                  <div v-if="!imagen.cargando && !imagen.error" class="imagen-overlay">
                     <ion-button 
                       fill="clear" 
                       size="small" 
@@ -294,7 +310,6 @@ const imagenCompletaSeleccionada = ref<any>(null)
 const modalVistaAbierto = ref(false)
 const cargandoImagenCompleta = ref(false)
 
-
 // Obtener datos de localStorage
 const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
 
@@ -344,6 +359,7 @@ const api = {
     return await EventosService.obtenerEventosGrupo(grupoId)
   }
 }
+
 // Métodos principales
 const cargarDatosGrupo = async () => {
   try {
@@ -375,19 +391,47 @@ const cargarImagenes = async () => {
     if (filtros.eventoId) {
       imagenesData = imagenesData.filter((img: any) => img.eventoId === filtros.eventoId)
     }
-    const conPreviews = await Promise.all(
-      imagenesData.map(async (img: any) => {
+
+    // Inicializar estado de carga para cada imagen
+    const imagenesConEstado = imagenesData.map((img: any) => ({
+      ...img,
+      preview: '',
+      cargando: true,
+      error: false
+    }))
+
+    imagenes.value = imagenesConEstado
+
+    // Cargar previews de forma asíncrona
+    await Promise.all(
+      imagenesConEstado.map(async (img: any, index: number) => {
         try {
           const datos = await imageService.getImageData(img.id)
-          img.preview = `data:${img.tipoContenido};base64,${datos}`
-        } catch {
-          img.preview = ''
+          if (datos) {
+            // Actualizar la imagen específica en el array
+            imagenes.value[index] = {
+              ...imagenes.value[index],
+              preview: `data:${img.tipoContenido};base64,${datos}`,
+              cargando: false,
+              error: false
+            }
+          } else {
+            imagenes.value[index] = {
+              ...imagenes.value[index],
+              cargando: false,
+              error: true
+            }
+          }
+        } catch (error) {
+          console.error(`Error al cargar preview de imagen ${img.id}:`, error)
+          imagenes.value[index] = {
+            ...imagenes.value[index],
+            cargando: false,
+            error: true
+          }
         }
-        return img
       })
     )
-
-    imagenes.value = conPreviews
 
   } catch (error) {
     console.error('Error al cargar imágenes:', error)
@@ -526,14 +570,22 @@ const formatearTamaño = (bytes?: number): string => {
   return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i]
 }
 
-const onImageLoad = (event: Event) => {
-  const img = event.target as HTMLImageElement
-  img.style.opacity = '1'
+const onImageLoad = (imagen: any) => {
+  // La imagen se ha cargado correctamente
+  console.log(`Imagen ${imagen.id} cargada correctamente`)
 }
 
-const manejarErrorImagen = (event: Event) => {
-  const img = event.target as HTMLImageElement
-  img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIxIDNIMy4yVjIxSDIxVjNaIiBzdHJva2U9IiM5OTk5OTkiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0iI0YzRjRGNiIvPgo8cGF0aCBkPSJNOSA5QzkuNTUyMjggOSAxMCA4LjU1MjI4IDEwIDhDMTAgNy40NDc3MiA5LjU1MjI4IDcgOSA3QzguNDQ3NzIgNyA4IDcuNDQ3NzIgOCA4QzggOC41NTIyOCA4LjQ0NzcyIDkgOSA5WiIgZmlsbD0iIzk5OTk5OSIvPgo8cGF0aCBkPSJNMjEgMTVMMTYgMTBMMTMgMTNMOCAxMEwzIDE1VjIxSDIxVjE1WiIgZmlsbD0iIzk5OTk5OSIvPgo8L3N2Zz4K'
+const manejarErrorImagen = (imagen: any) => {
+  console.error(`Error al cargar imagen ${imagen.id}`)
+  // Marcar como error
+  const index = imagenes.value.findIndex(img => img.id === imagen.id)
+  if (index !== -1) {
+    imagenes.value[index] = {
+      ...imagenes.value[index],
+      error: true,
+      cargando: false
+    }
+  }
 }
 
 const mostrarToast = async (mensaje: string, color: 'success' | 'warning' | 'danger' = 'success') => {
@@ -653,6 +705,8 @@ onMounted(async () => {
   width: 120px;
   height: 120px;
   margin: 0 auto;
+  border-radius: 8px;
+  background-color: var(--ion-color-light);
 }
 
 .imagen-preview {
@@ -661,10 +715,40 @@ onMounted(async () => {
   object-fit: cover;
   transition: all 0.3s ease;
   opacity: 0;
+  border-radius: 8px;
 }
 
-.imagen-preview[src] {
+.imagen-preview.imagen-visible {
   opacity: 1;
+}
+
+.imagen-skeleton {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--ion-color-light);
+  border-radius: 8px;
+}
+
+.imagen-error {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--ion-color-light);
+  border-radius: 8px;
+  color: var(--ion-color-medium);
+}
+
+.imagen-error p {
+  font-size: 12px;
+  margin-top: 8px;
+  text-align: center;
 }
 
 .imagen-overlay {
@@ -680,6 +764,7 @@ onMounted(async () => {
   gap: 8px;
   opacity: 0;
   transition: opacity 0.3s ease;
+  border-radius: 8px;
 }
 
 .imagen-container:hover .imagen-overlay {
@@ -689,6 +774,7 @@ onMounted(async () => {
 .imagen-container:hover .imagen-preview {
   transform: scale(1.05);
 }
+
 .imagen-col {
   display: flex;
   justify-content: center;
@@ -724,6 +810,18 @@ ion-card-content p {
   .gallery-header ion-card-title {
     justify-content: center;
     text-align: center;
+  }
+  
+  .imagen-container {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+@media (min-width: 768px) {
+  .imagen-container {
+    width: 140px;
+    height: 140px;
   }
 }
 </style>

@@ -54,7 +54,7 @@ const items = computed<Item[]>(() => [
 const hide = ['/login', '/registro', '/restablecer', '/grupo']
 const show = computed(() => {
   const p = route.path
-  if (hide.includes(p)) return false
+  if (hide.includes(p) || /\/crear|\/editar/.test(p)) return false
   return !!grupoId.value
 })
 

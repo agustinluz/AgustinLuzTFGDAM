@@ -129,7 +129,7 @@ onMounted(async () => {
 
 
 const irACrearNota = () => {
-  router.push(`/dashboard/${grupoId}/notas/crear`)
+  router.push(`/dashboard/${grupoId}/crear/nota`)
 }
 
 const editarNota = (nota) => {

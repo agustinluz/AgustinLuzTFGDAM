@@ -25,7 +25,7 @@ const route = useRoute()
 const hideQuickActions = ['/login', '/registro', '/restablecer', '/grupo']
 const showQuickActions = computed(() => {
   const path = route.path
-  if (hideQuickActions.includes(path)) return false
+  if (hideQuickActions.includes(path) || /\/crear|\/editar/.test(path)) return false
   const grupoId = localStorage.getItem('grupoActivoId')
   return !!grupoId
 })
@@ -43,6 +43,10 @@ const showQuickActions = computed(() => {
 /* Cuando hay quick actions, ajustar el layout */
 #main-page.has-quick-footer {
   padding-bottom: var(--quick-footer-height);
+}
+#main-page.has-quick-footer .main-content ::v-deep(ion-content) {
+  --padding-bottom: var(--quick-footer-height);
+  --offset-bottom: var(--quick-footer-height);
 }
 
 .main-content {
@@ -94,5 +98,10 @@ const showQuickActions = computed(() => {
   .main-content ::v-deep(ion-page) {
     background: var(--ion-color-dark);
   }
+}
+/* Ajustar la posición de los botones flotantes cuando
+   está visible la barra de acciones rápidas */
+#main-page.has-quick-footer ion-fab {
+  bottom: calc(var(--quick-footer-height) + 16px);
 }
 </style>
