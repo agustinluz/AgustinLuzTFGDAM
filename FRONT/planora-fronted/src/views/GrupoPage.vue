@@ -117,7 +117,7 @@ onMounted(() => {
   if (stored) {
     usuario.value = JSON.parse(stored)
     localStorage.setItem('usuario', stored)
-    localStorage.setItem('currentUser', stored)
+    localStorage.removeItem('currentUser')
     localStorage.setItem('usuarioId', usuario.value.id.toString())
     cargarGrupos()
   }

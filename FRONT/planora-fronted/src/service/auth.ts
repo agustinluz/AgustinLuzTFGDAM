@@ -43,10 +43,9 @@ export const useAuthStore = defineStore('auth', {
         this.isAuthenticated = true
 
         localStorage.setItem('token', token)
-        localStorage.setItem('currentUser', JSON.stringify(usuario))
-         // Mantener compatibilidad con código existente
         localStorage.setItem('usuario', JSON.stringify(usuario))
-        localStorage.setItem('usuarioId', usuario.id.toString())
+        localStorage.removeItem('currentUser')
+         localStorage.setItem('usuarioId', usuario.id.toString())
 
         return { success: true, usuario }
       } catch (error: any) {
@@ -100,7 +99,7 @@ export const useAuthStore = defineStore('auth', {
     initializeFromStorage() {
       const token = localStorage.getItem('token')
       const datosUsuario =
-        localStorage.getItem('currentUser') || localStorage.getItem('usuario')
+        localStorage.getItem('usuario') || localStorage.getItem('currentUser')
 
       if (token && datosUsuario) {
         try {
@@ -108,12 +107,8 @@ export const useAuthStore = defineStore('auth', {
           this.usuarioActual = JSON.parse(datosUsuario)
           this.isAuthenticated = true
 
-           // Sincronizar claves para mantener compatibilidad
-          localStorage.setItem('currentUser', JSON.stringify(this.usuarioActual))
-          localStorage.setItem(
-            'usuario',
-            JSON.stringify(this.usuarioActual)
-          )
+           localStorage.setItem('usuario', JSON.stringify(this.usuarioActual))
+          localStorage.removeItem('currentUser')
           if (this.usuarioActual) {
             localStorage.setItem('usuarioId', this.usuarioActual.id.toString())
           }

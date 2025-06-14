@@ -184,7 +184,8 @@ const crearEvento = async () => {
       titulo: titulo.value.trim(),
       descripcion: descripcion.value.trim(),
       ubicacion: ubicacion.value.trim(),
-      fecha: new Date(fecha.value).toISOString()
+       // Pasamos la fecha como objeto Date para que el servicio la convierta
+      fecha: new Date(fecha.value)
     }
 
     if (esEdicion.value && eventoId.value) {

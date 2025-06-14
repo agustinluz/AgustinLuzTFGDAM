@@ -115,7 +115,7 @@ const registrar = async () => {
     const result = await auth.register({ nombre: nombre.value, email: email.value, password: password.value })
     if (result.success) {
       localStorage.setItem('usuario', JSON.stringify(result.usuario))
-      localStorage.setItem('currentUser', JSON.stringify(result.usuario))
+      localStorage.removeItem('currentUser')
       const usuario = result.usuario as { id: number }
       localStorage.setItem('usuarioId', usuario.id.toString())
       router.push('/grupo')
