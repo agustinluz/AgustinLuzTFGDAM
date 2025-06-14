@@ -3,7 +3,9 @@
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
-          <ion-back-button :default-href="`/dashboard/${grupoId}/eventos`" />
+          <ion-button fill="clear" color="light" @click="irDashboard">
+            <ion-icon name="arrow-back" />
+          </ion-button>
         </ion-buttons>
         <ion-title>Asistencia</ion-title>
       </ion-toolbar>
@@ -85,7 +87,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useIonRouter, IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, 
-  IonBackButton, IonSpinner, IonButton, 
+  IonSpinner, IonButton, IonIcon, 
   IonToast, IonSegment, IonSegmentButton, 
   IonLabel, IonList, IonItem, IonAvatar } from '@ionic/vue'
 import { useRoute } from 'vue-router'
@@ -120,6 +122,10 @@ const formatFecha = (iso: string) =>
     hour: '2-digit',
     minute: '2-digit'
   })
+
+  const irDashboard = () => {
+  router.push(`/dashboard/${grupoId.value}/eventos`)
+}
 
 async function cargarEvento() {
   try {

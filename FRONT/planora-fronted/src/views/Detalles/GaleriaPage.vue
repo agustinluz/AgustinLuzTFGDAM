@@ -3,7 +3,9 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button :default-href="`/dashboard/${grupoId}`" />
+          <ion-button fill="clear" color="light" @click="irDashboard">
+            <ion-icon name="arrow-back" />
+          </ion-button>
         </ion-buttons>
         <ion-title>Imágenes del Grupo</ion-title>
         <ion-buttons slot="end">
@@ -270,7 +272,6 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
-  IonCardSubtitle,
   IonSelect,
   IonSelectOption,
   IonGrid,
@@ -283,7 +284,8 @@ import {
   IonChip,
   alertController,
   toastController,
-  IonBackButton
+  
+  
 } from '@ionic/vue'
 import {
   addOutline,
@@ -361,6 +363,11 @@ const api = {
 }
 
 // Métodos principales
+
+const irDashboard = () => {
+  router.push(`/dashboard/${grupoId}`)
+}
+
 const cargarDatosGrupo = async () => {
   try {
     const grupo = await api.obtenerGrupo(contexto.grupoId) as { nombre?: string }

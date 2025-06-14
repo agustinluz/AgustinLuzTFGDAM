@@ -4,7 +4,9 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button @click="handleGoBack" color="light"></ion-back-button>
+          <ion-button expand="block" color="light" class="ion-margin-top" @click="goToDashboard">
+        Volver
+      </ion-button>
         </ion-buttons>
         <ion-title>Crear nuevo elemento</ion-title>
       </ion-toolbar>
@@ -101,7 +103,7 @@
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, 
   IonRow, IonCol, IonCard, IonCardContent, IonIcon, IonButtons, 
-  IonBackButton, useIonRouter
+  useIonRouter, IonButton
 } from '@ionic/vue'
 import { useRoute } from 'vue-router' // Importar desde vue-router
 import { ref, onMounted } from 'vue'
@@ -111,7 +113,11 @@ const route = useRoute()
 
 const grupoId = ref(null)
 const isLoading = ref(true)
-
+const goToDashboard = () => {
+  if (grupoId.value) {
+    router.push(`/dashboard/${grupoId.value}`)
+  }
+}
 onMounted(async () => {
   try {
     // Obtener grupoId desde los parámetros de la ruta

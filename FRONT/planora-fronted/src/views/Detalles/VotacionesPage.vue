@@ -3,7 +3,9 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button :default-href="`/dashboard/${grupoId}`" color="light"></ion-back-button>
+          <ion-button fill="clear" color="light" @click="irDashboard">
+            <ion-icon name="arrow-back" />
+          </ion-button>
         </ion-buttons>
         <ion-title>Votaciones del Grupo</ion-title>
         <ion-buttons slot="end">
@@ -322,7 +324,7 @@
 
 <script setup>
 import {
-  IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, IonBackButton,
+  IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton,
   IonList, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent,
   IonIcon, IonText, IonSpinner, IonSearchbar, IonModal, IonItem, IonLabel, 
   IonInput, IonTextarea, IonDatetime, IonRadioGroup, IonRadio, IonChip, IonBadge,
@@ -334,7 +336,7 @@ import {
   removeCircleOutline
 } from 'ionicons/icons'
 import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { votacionService } from '@/service/VotacionService'
 
 // Estado reactivo
@@ -351,6 +353,7 @@ const mostrarModalEditar = ref(false)
 const mostrarModalVotar = ref(false)
 const mostrarModalResultados = ref(false)
 
+
 // Formulario y edición
 const formularioVotacion = ref({
   pregunta: '',
@@ -366,6 +369,7 @@ const resultadosVotacion = ref(null)
 // Datos de ruta
 const route = useRoute()
 const grupoId = route.params.id
+const router = useRouter()
 
 // Usuario actual
 const usuarioActual = ref(null)
@@ -402,6 +406,10 @@ const cargarVotaciones = async () => {
     cargando.value = false
   }
 }
+const irDashboard = () => {
+  router.push(`/dashboard/${grupoId}`)
+}
+
 
 const verificarEstadoVoto = async (votacion) => {
   try {

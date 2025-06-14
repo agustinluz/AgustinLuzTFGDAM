@@ -3,7 +3,9 @@
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
-          <ion-back-button :default-href="`/dashboard/${grupoId}`"></ion-back-button>
+          <ion-button fill="clear" color="light" @click="irDashboard">
+            <ion-icon name="arrow-back" />
+          </ion-button>
         </ion-buttons>
         <ion-title>📅 Eventos del Grupo</ion-title>
         <ion-buttons slot="end">
@@ -96,7 +98,6 @@ import {
   IonTitle,
   IonContent,
   IonButtons,
-  IonBackButton,
   IonButton,
   IonIcon,
   IonSpinner,
@@ -143,6 +144,10 @@ const toast = ref({
   mensaje: '',
   color: 'success'
 })
+
+const irDashboard = () => {
+  router.push(`/dashboard/${grupoId}`)
+}
 
 const alertEliminar = ref({
   mostrar: false,

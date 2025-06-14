@@ -30,7 +30,7 @@
           style="display: none"
         />
         <ion-button
-          v-if="isAdmin"
+          v-if="isAdmin && isEditing"
           fill="clear"
           size="small"
           @click="changeGroupImage"
@@ -78,7 +78,7 @@
         <div v-else class="edit-buttons">
           <ion-button 
             expand="block" 
-            color="primary"
+            color="light"
             @click="saveChanges"
             :disabled="!hasChanges"
           >
@@ -120,6 +120,7 @@ import {
   cameraOutline, copyOutline, createOutline, saveOutline, 
   closeOutline, refreshOutline 
 } from 'ionicons/icons'
+import { Camera } from '@capacitor/camera'
 
 interface Props {
   grupo: any
@@ -131,6 +132,13 @@ const emit = defineEmits(['update-group', 'generate-code'])
 const cameraInput = ref<HTMLInputElement | null>(null)
 const galleryInput = ref<HTMLInputElement | null>(null)
 const isEditing = ref(false)
+const requestMediaPermissions = async () => {
+  try {
+    await Camera.requestPermissions({ permissions: ['camera', 'photos'] })
+  } catch (error) {
+    console.error('Permission request failed', error)
+  }
+}
 const editData = ref({
   nombre: '',
   imagenPerfil: ''
@@ -201,6 +209,7 @@ const onImageSelected = (event: Event) => {
 }
 
 const changeGroupImage = async () => {
+  await requestMediaPermissions()
   const actionSheet = await actionSheetController.create({
     header: 'Cambiar imagen del grupo',
     buttons: [

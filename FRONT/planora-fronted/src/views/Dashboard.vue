@@ -84,17 +84,11 @@
       </ion-card>
 
       <!-- Botón flotante con drawer de acciones -->
-      <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-        <ion-fab-button color="primary" @click="showFabSheet = true">
+      <ion-fab vertical="bottom" horizontal="end" slot="fixed" style="bottom: 120px;">
+        <ion-fab-button color="primary" @click="goToCreate()">
           <ion-icon :icon="add" />
         </ion-fab-button>
       </ion-fab>
-      <ion-action-sheet
-        :is-open="showFabSheet"
-        header="Crear"
-        :buttons="fabButtons"
-        @did-dismiss="showFabSheet = false"
-      />
       
 
       <!-- Modales -->
@@ -204,32 +198,13 @@ function goToLogout() {
   localStorage.clear()
   router.push('/login')
 }
-function createEvent() {
-  router.push(`/dashboard/${grupoId}/crear/evento`)
-}
-function createGasto() {
-  router.push(`/dashboard/${grupoId}/crear/gasto`)
+function goToCreate() {
+  router.push(`/dashboard/${grupoId}/crear`)
 }
 function createEventOnDay() {
   const date = selectedDate.value.toISOString()
   router.push({ path: `/dashboard/${grupoId}/crear/evento`, query: { fecha: date } })
 }
-const fabButtons = [
-  {
-    text: 'Crear Evento',
-    icon: calendarOutline,
-    handler: () => createEvent()
-  },
-  {
-    text: 'Crear Gasto',
-    icon: cash,
-    handler: () => createGasto()
-  },
-  {
-    text: 'Cancelar',
-    role: 'cancel'
-  }
-]
 </script>
 
 <style scoped lang="scss">

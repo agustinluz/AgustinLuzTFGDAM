@@ -68,7 +68,6 @@
       @join="unirseGrupo"
     />
 
-    <ion-loading :is-open="cargando" message="Cargando..." />
   </ion-page>
 </template>
 
@@ -129,8 +128,15 @@ const cargarGrupos = async () => {
   try {
     const res = await groupService.getUserGroups(usuario.value.id)
     grupos.value = Array.isArray(res.data) ? res.data : []
-    if (grupos.value.length > 0) {
-      for (const g of grupos.value) {
+
+    if (grupos.value.length === 0) {
+      localStorage.removeItem('grupoActivoId')
+      cargando.value = false // 🔧 EVITA el loading infinito
+      return
+    }
+
+    for (const g of grupos.value) {
+      try {
         const [usuariosRes, eventosRes, imagenes] = await Promise.all([
           groupService.getGroupUsers(g.id),
           EventosService.obtenerEventosGrupo(g.id),
@@ -140,14 +146,20 @@ const cargarGrupos = async () => {
         g.eventosCount = eventosRes.length
         g.fotosCount = Array.isArray(imagenes)
           ? imagenes.length
-          : imagenes.total || (imagenes.imagenes ? imagenes.imagenes.length : 0)
+          : imagenes.total || (imagenes.imagenes?.length || 0)
+      } catch (innerErr) {
+        console.error('Error al cargar datos del grupo:', innerErr)
       }
     }
   } catch (err) {
     console.error('Error al cargar grupos:', err)
+    grupos.value = []
+    localStorage.removeItem('grupoActivoId')
+  } finally {
+    cargando.value = false // 🔒 Se ejecuta siempre, excepto si ya se puso antes
   }
-  cargando.value = false
 }
+
 
 const manejarImagenGrupo = (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]

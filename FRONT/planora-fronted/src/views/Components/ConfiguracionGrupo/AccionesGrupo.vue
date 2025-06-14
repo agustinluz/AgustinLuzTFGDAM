@@ -118,7 +118,7 @@
                     Cancelar
                   </ion-button>
                   <ion-button 
-                    color="primary"
+                    color="light"
                     :disabled="!selectedNewAdmin"
                     @click="executeTransferAdmin"
                   >

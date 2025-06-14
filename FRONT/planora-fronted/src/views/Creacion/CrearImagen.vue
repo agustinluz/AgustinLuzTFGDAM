@@ -155,11 +155,14 @@
         <IonIcon :icon="imagesOutline" size="large" color="medium" />
         <h3>No hay imágenes</h3>
         <p>Sube la primera imagen del grupo</p>
-        <IonButton @click="abrirModalSubida" color="primary">
+        <IonButton @click="abrirModalSubida" color="light" fill="solid">
           <IonIcon :icon="addOutline" slot="start" />
           Subir imagen
         </IonButton>
       </div>
+      <IonButton expand="block" color="light" class="ion-margin-top" @click="goToDashboard">
+        Volver al Dashboard
+      </IonButton>
     </IonContent>
 
     <!-- Modal de subida -->
@@ -168,7 +171,7 @@
         <IonToolbar>
           <IonTitle>Subir imagen</IonTitle>
           <IonButtons slot="end">
-            <IonButton @click="cerrarModalSubida" fill="clear" color="primary">
+            <IonButton @click="cerrarModalSubida" fill="clear" color="light">
               <IonIcon :icon="closeOutline" />
             </IonButton>
           </IonButtons>
@@ -250,7 +253,7 @@
         <IonToolbar>
           <IonTitle>{{ modalVistaPrevia.imagen?.nombre }}</IonTitle>
           <IonButtons slot="end">
-            <IonButton @click="cerrarVistaPrevia" fill="clear" color="primary">
+            <IonButton @click="cerrarVistaPrevia" fill="clear" color="light">
               <IonIcon :icon="closeOutline" />
             </IonButton>
           </IonButtons>
@@ -387,6 +390,7 @@ const contexto = reactive({
   usuarioNombre: usuario.nombre || ''
 });
 
+
 const filtros = reactive({
   tipo: 'grupo' as 'grupo' | 'usuario' | 'evento',
   eventoId: null as number | null
@@ -417,6 +421,9 @@ const fileInput = ref<HTMLInputElement>();
 // Computed properties
 const eventosDisponibles = computed(() => eventos.value);
 
+const goToDashboard = () => {
+  router.push(`/dashboard/${contexto.grupoId}`);
+};
 // Métodos principales
 const cargarDatosGrupo = async () => {
   try {

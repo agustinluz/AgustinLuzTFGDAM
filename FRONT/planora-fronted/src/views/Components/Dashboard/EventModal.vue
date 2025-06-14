@@ -24,7 +24,7 @@
       <ion-button
         v-if="isUpcoming"
         expand="block"
-        color="primary"
+        color="light"
         @click="goToAsistir"
       >
         Confirmar asistencia

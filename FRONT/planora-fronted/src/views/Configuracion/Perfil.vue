@@ -18,7 +18,7 @@
           </div>
           <div class="upload-controls">
             <label class="upload-btn">
-              <input type="file" accept="image/*" @change="onFileChange" />
+              <input type="file" accept="image/*" @click="requestMediaPermissions" @change="onFileChange" />
               <ion-icon :icon="imageOutline" />
               Cambiar foto
             </label>
@@ -119,7 +119,7 @@
 
         <!-- Botones de Acción -->
         <div class="action-buttons">
-          <ion-button expand="block" type="submit" :disabled="loading" color="primary" class="save-button"
+          <ion-button expand="block" type="submit" :disabled="loading" color="light" class="save-button"
             @click="actualizarPerfil">
             <ion-spinner v-if="loading" name="crescent" />
             <template v-else>
@@ -161,6 +161,7 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { useIonRouter } from '@ionic/vue'
+import { Camera } from '@capacitor/camera'
 import {
   IonPage,
   IonContent,
@@ -216,7 +217,15 @@ const formData = reactive({
 const confirmPassword = ref('')
 const loading = ref(false)
 const showImageModal = ref(false)
+const requestMediaPermissions = async () => {
+  try {
+    await Camera.requestPermissions({ permissions: ['camera', 'photos'] })
+  } catch (error) {
+    console.error('Permission request failed', error)
+  }
+}
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
+
 
 // Control de visibilidad de contraseñas
 const showCurrentPassword = ref(false)

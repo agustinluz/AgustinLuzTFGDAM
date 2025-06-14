@@ -2,7 +2,9 @@
   <ion-header :translucent="true" class="ion-no-border">
     <ion-toolbar color="primary">
       <ion-buttons slot="start">
-        <ion-back-button :default-href="`/dashboard/${grupoId}`" color="light" />
+        <ion-button fill="clear" color="light" @click="irDashboard">
+          <ion-icon :icon="arrowBack" />
+        </ion-button>
       </ion-buttons>
       <ion-title>
         <div class="title-container">
@@ -20,11 +22,16 @@
 </template>
 
 <script setup>
-import { IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton, IonIcon } from '@ionic/vue';
+import { IonHeader, IonToolbar, IonButtons, IonTitle, IonButton, IonIcon } from '@ionic/vue';
 import { defineProps } from 'vue';
-import { ellipsisVertical } from 'ionicons/icons';
-defineProps(['grupo', 'cantidad', 'total','grupoId']);
-defineEmits([ 'abrirOpciones']);
+import { ellipsisVertical, arrowBack } from 'ionicons/icons';
+import { useRouter } from 'vue-router';
+
+const props = defineProps(['grupo', 'cantidad', 'total', 'grupoId']);
+defineEmits(['abrirOpciones']);
+
+const router = useRouter();
+const irDashboard = () => router.push(`/dashboard/${props.grupoId}`);
 </script>
 
 <style scoped>

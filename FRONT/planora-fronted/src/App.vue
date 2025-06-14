@@ -103,5 +103,6 @@ const showQuickActions = computed(() => {
    está visible la barra de acciones rápidas */
 #main-page.has-quick-footer ion-fab {
   bottom: calc(var(--quick-footer-height) + 16px);
+  z-index: 1101;
 }
 </style>

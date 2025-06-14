@@ -120,7 +120,7 @@
                     </ion-label>
                     <ion-button 
                       fill="clear" 
-                      color="primary"
+                      color="light"
                       @click="inviteUser"
                     >
                       Invitar
