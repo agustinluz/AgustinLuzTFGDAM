@@ -5,13 +5,13 @@
         <IonButtons slot="start">
           <IonBackButton
             text="Volver"
-            color="primary"
+            color="light"
             :default-href="`/dashboard/${contexto.grupoId}/galeria`"
           />
         </IonButtons>
         <IonTitle>Galería - {{ contexto.grupoNombre }}</IonTitle>
         <IonButtons slot="end">
-          <IonButton @click="abrirModalSubida" fill="clear" color="primary">
+          <IonButton @click="abrirModalSubida" fill="clear" color="light">
             <IonIcon :icon="addOutline" />
           </IonButton>
         </IonButtons>
@@ -333,7 +333,7 @@ import {
   IonCardTitle, IonCardContent, IonItem, IonLabel, IonButton, IonGrid,
   IonRow, IonCol, IonButtons, IonIcon, IonSpinner, IonChip, IonModal,
   IonCardSubtitle, IonSelect, IonSelectOption, IonCheckbox, toastController, 
-  alertController
+  alertController, IonBackButton
 } from '@ionic/vue';
 import { 
   addOutline, imagesOutline, eyeOutline, trashOutline, closeOutline,
