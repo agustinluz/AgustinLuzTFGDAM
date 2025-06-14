@@ -81,6 +81,10 @@ import {
 } from '@ionic/vue'
 import { mailOutline, person, logOutOutline, add } from 'ionicons/icons'
 import { toastController } from '@ionic/vue'
+import { groupService } from '@/service/GrupoService'
+import { EventosService } from '@/service/EventoService'
+import { imageService } from '@/service/imagenService'
+import { invitacionService } from '@/service/InvitacionService'
 
 import ActiveGroupBanner from '@/views/Components/Grupo/ActiveGroupBanner.vue'
 import GroupList from '@/views/Components/Grupo/GroupList.vue'
@@ -118,26 +122,19 @@ const cargarGrupos = async () => {
   if (!usuario.value) return
   cargando.value = true
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos/usuario/${usuario.value.id}`)
-    if (res.ok) {
-      grupos.value = await res.json()
-      for (const g of grupos.value) {
-        const [uRes, eRes, fRes] = await Promise.all([
-          fetch(`${import.meta.env.VITE_API_URL}/grupos/${g.id}/usuarios`),
-          fetch(`${import.meta.env.VITE_API_URL}/eventos/${g.id}/eventos`),
-          fetch(`${import.meta.env.VITE_API_URL}/imagenes/grupo/${g.id}`)
-        ])
-        g.participantesCount = uRes.ok ? (await uRes.json()).length : 0
-        g.eventosCount = eRes.ok ? (await eRes.json()).length : 0
-        if (fRes.ok) {
-          const data = await fRes.json()
-          g.fotosCount = data.total || 0
-        } else {
-          g.fotosCount = 0
-        }
-      }
-    } else {
-      grupos.value = []
+    const res = await groupService.getUserGroups(usuario.value.id)
+    grupos.value = res.data
+    for (const g of grupos.value) {
+      const [usuariosRes, eventosRes, imagenes] = await Promise.all([
+        groupService.getGroupUsers(g.id),
+        EventosService.obtenerEventosGrupo(g.id),
+        imageService.getByGrupo(g.id)
+      ])
+      g.participantesCount = usuariosRes.data.length
+      g.eventosCount = eventosRes.length
+      g.fotosCount = Array.isArray(imagenes)
+        ? imagenes.length
+        : imagenes.total || (imagenes.imagenes ? imagenes.imagenes.length : 0)
     }
   } catch (err) {
     console.error('Error al cargar grupos:', err)
@@ -170,16 +167,7 @@ const crearGrupo = async () => {
   error.value = ''
   cargando.value = true
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/grupos`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'usuarioId': usuario.value.id.toString()
-      },
-      body: JSON.stringify({ nombre: nombreGrupo.value, imagenPerfil: imagenGrupo.value })
-    })
-    if (!res.ok) throw new Error('Error al crear grupo')
-    const grupo = await res.json()
+    const { data: grupo } = await groupService.createGroup({ nombre: nombreGrupo.value, imagenPerfil: imagenGrupo.value })
     localStorage.setItem('grupoActivoId', grupo.id)
     cerrarModalCrear()
     const toast = await toastController.create({
@@ -204,17 +192,11 @@ const unirseGrupo = async () => {
   error.value = ''
   cargando.value = true
   try {
-    const resGrupo = await fetch(`${import.meta.env.VITE_API_URL}/auth/invitacion/${codigo.value}`)
-    if (!resGrupo.ok) throw new Error('Código no válido')
-    const grupo = await resGrupo.json()
-    await fetch(`${import.meta.env.VITE_API_URL}/grupos/${grupo.id}/usuarios`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        nombre: usuario.value.nombre,
-        email: usuario.value.email,
-        password: usuario.value.password
-      })
+    const grupo = await invitacionService.obtenerGrupoPorCodigo(codigo.value)
+    await groupService.registerUserInGroup(grupo.id, {
+      nombre: usuario.value.nombre,
+      email: usuario.value.email,
+      password: usuario.value.password
     })
     localStorage.setItem('grupoActivoId', grupo.id)
     cerrarModal()

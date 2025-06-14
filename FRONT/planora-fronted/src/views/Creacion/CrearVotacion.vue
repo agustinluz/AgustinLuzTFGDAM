@@ -182,6 +182,7 @@ import {
 } from '@ionic/vue'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { votacionService } from '@/service/VotacionService'
 
 const route = useRoute()
 const router = useRouter()
@@ -316,24 +317,7 @@ const crearVotacion = async () => {
 
     console.log('Payload a enviar:', payload)
 
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/grupos/${grupoId.value}/votaciones`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      }
-    )
-
-    if (!response.ok) {
-      const errorData = await response.text()
-      throw new Error(errorData || `Error ${response.status}: ${response.statusText}`)
-    }
-
-    const votacionCreada = await response.json()
+    const votacionCreada = await votacionService.guardar(grupoId.value, payload, token)
     console.log('Votación creada:', votacionCreada)
 
     mostrarToast('Votación creada correctamente', 'success')

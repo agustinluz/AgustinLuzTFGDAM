@@ -76,6 +76,7 @@ import { useRoute, useRouter } from 'vue-router'
 import BasicInfoSection from '@/views/Components/CrearEvento/BasicInfoSection.vue'
 import DateTimeSection from '@/views/Components/CrearEvento/DateTimeSection.vue'
 import LocationSection from '@/views/Components/CrearEvento/LocationSection.vue'
+import { EventosService } from '@/service/EventoService'
 
 const route = useRoute()
 const router = useRouter()
@@ -172,24 +173,8 @@ const crearEvento = async () => {
     }
 
     // Realiza el POST para crear el evento.
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/eventos/${grupoId.value}/crear`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(eventData)
-      }
-    )
+    const eventoCreado = await EventosService.crearEvento(grupoId.value, eventData, token)
 
-    if (!response.ok) {
-      const errorData = await response.text()
-      throw new Error(errorData || `Error ${response.status}: ${response.statusText}`)
-    }
-
-    const eventoCreado = await response.json()
     console.log('Evento creado:', eventoCreado)
 
     mostrarToast('Evento creado correctamente', 'success')

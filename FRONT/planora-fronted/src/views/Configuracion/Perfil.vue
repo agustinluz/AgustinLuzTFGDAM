@@ -200,6 +200,7 @@ import {
   cameraOutline,
   imageOutline
 } from 'ionicons/icons'
+import { usuarioService } from '@/service/UsuarioService'
 
 const router = useIonRouter()
 
@@ -231,8 +232,6 @@ onMounted(async () => {
 const cargarDatosUsuario = async () => {
   try {
     const usuario = JSON.parse(localStorage.getItem('usuario'))
-    const token = localStorage.getItem('token')
-
     const usuarioId = usuario?.id
 
     if (!usuarioId) {
@@ -241,37 +240,12 @@ const cargarDatosUsuario = async () => {
       return
     }
 
-    if (!token) {
-      mostrarError('Sesión expirada')
-      router.push('/login')
-      return
-    }
+    const { data } = await usuarioService.getById(usuarioId)
 
-    const url = `${import.meta.env.VITE_API_URL}/usuarios/${usuarioId}`
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-
-    if (response.ok) {
-      const usuarioData = await response.json()
-
-      formData.nombre = usuarioData.nombre
-      formData.email = usuarioData.email
-      formData.fotoPerfil = usuarioData.fotoPerfil || ''
-      usuarioCargado.value = true
-    } else if (response.status === 401) {
-      mostrarError('Sesión expirada')
-      router.push('/login')
-    } else {
-      mostrarError(`Error al cargar los datos del usuario`)
-      usuarioCargado.value = true
-    }
+    formData.nombre = data.nombre
+    formData.email = data.email
+    formData.fotoPerfil = data.fotoPerfil || ''
+    usuarioCargado.value = true
   } catch (error) {
     mostrarError('Error de conexión al cargar los datos')
     usuarioCargado.value = true
@@ -359,7 +333,6 @@ const actualizarPerfil = async () => {
 
   try {
     const usuario = JSON.parse(localStorage.getItem('usuario'))
-    const token = localStorage.getItem('token')
     const usuarioId = usuario?.id
 
     if (!usuarioId) {
@@ -367,11 +340,6 @@ const actualizarPerfil = async () => {
       return
     }
 
-    if (!token) {
-      mostrarError('Sesión expirada')
-      router.push('/login')
-      return
-    }
 
     // Preparar datos para enviar
     const datosActualizacion = {
@@ -384,20 +352,9 @@ const actualizarPerfil = async () => {
       })
     }
 
-    const url = `${import.meta.env.VITE_API_URL}/usuarios/${usuarioId}`
+    const { data: usuarioActualizado } = await usuarioService.update(usuarioId, datosActualizacion)
 
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(datosActualizacion)
-    })
-
-    if (response.ok) {
-      const usuarioActualizado = await response.json()
+    if (usuarioActualizado) {
 
       // Actualizar datos en localStorage
       const usuarioLocal = JSON.parse(localStorage.getItem('usuario'))
@@ -408,22 +365,8 @@ const actualizarPerfil = async () => {
 
       mostrarExito('Perfil actualizado correctamente')
       router.back()
-    } else if (response.status === 401) {
-      mostrarError('Sesión expirada')
-      router.push('/login')
     } else {
-      const errorText = await response.text()
-
-      try {
-        const errorData = JSON.parse(errorText)
-         if (errorData.mensaje && errorData.mensaje.includes('anterior')) {
-          mostrarAvisoAbajo(errorData.mensaje)
-        } else {
-          mostrarError(errorData.mensaje || 'Error al actualizar el perfil')
-        }
-      } catch {
-        mostrarError('Error al actualizar el perfil')
-      }
+      mostrarError('Error al actualizar el perfil')
     }
 
   } catch (error) {

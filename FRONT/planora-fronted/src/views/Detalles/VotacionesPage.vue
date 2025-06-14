@@ -335,6 +335,7 @@ import {
 } from 'ionicons/icons'
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { votacionService } from '@/service/VotacionService'
 
 // Estado reactivo
 const votaciones = ref([])
@@ -380,20 +381,12 @@ onMounted(() => {
   cargarUsuarioActual()
   cargarVotaciones()
 })
-
 const cargarVotaciones = async () => {
   try {
     cargando.value = true
     const token = localStorage.getItem('token')
-    
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/grupos/${grupoId}/votaciones`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    
-    if (response.ok) {
-      votaciones.value = await response.json()
+    const { data } = await votacionService.listarPorGrupo(grupoId, token)
+    votaciones.value = data
       
       // Verificar el estado de voto para cada votación
       for (const votacion of votaciones.value) {
@@ -401,9 +394,7 @@ const cargarVotaciones = async () => {
       }
       
       votacionesFiltradas.value = [...votaciones.value]
-    } else {
-      mostrarToast('Error al cargar las votaciones', 'danger')
-    }
+    
   } catch (error) {
     console.error('Error:', error)
     mostrarToast('Error de conexión', 'danger')
@@ -415,29 +406,25 @@ const cargarVotaciones = async () => {
 const verificarEstadoVoto = async (votacion) => {
   try {
     const token = localStorage.getItem('token')
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/votaciones/${votacion.id}/mi-voto`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    
-    if (response.ok) {
-      const voto = await response.json()
+    try {
+      const { data } = await votacionService.obtenerMiVoto(votacion.id, token)
       votacion.yaVote = true
-      votacion.miVoto = voto.opcion
-    } else if (response.status === 404) {
+      votacion.miVoto = data.opcion
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
       // No ha votado, esto es normal
       votacion.yaVote = false
-    } else {
-      console.error('Error verificando voto:', response.status)
-      votacion.yaVote = false
+      return
+      } else {
+        console.error('Error verificando voto:', err)
+        votacion.yaVote = false
+      }
     }
   } catch (error) {
     console.error('Error de conexión verificando voto:', error)
     votacion.yaVote = false
   }
 }
-
 const cargarUsuarioActual = () => {
   const usuarioData = localStorage.getItem('usuario')
   if (usuarioData) {
@@ -496,35 +483,25 @@ const guardarVotacion = async () => {
       ? `${import.meta.env.VITE_API_URL}/votaciones/${votacionEditando.value.id}`
       : `${import.meta.env.VITE_API_URL}/grupos/${grupoId}/votaciones`
     
-    const method = votacionEditando.value ? 'PUT' : 'POST'
-    
     const body = {
       pregunta: formularioVotacion.value.pregunta,
       descripcion: formularioVotacion.value.descripcion,
       opciones: formularioVotacion.value.opciones.filter(opcion => opcion.trim()),
       fechaLimite: formularioVotacion.value.fechaLimite
     }
-    
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(body)
-    })
-    
-    if (response.ok) {
-      await cargarVotaciones()
-      cerrarModales()
-      mostrarToast(
-        votacionEditando.value ? 'Votación actualizada exitosamente' : 'Votación creada exitosamente',
-        'success'
-      )
+
+    if (votacionEditando.value) {
+      await votacionService.actualizar(votacionEditando.value.id, body, token)
     } else {
-      const errorData = await response.json()
-      mostrarToast('Error al guardar la votación: ' + (errorData.error || 'Error desconocido'), 'danger')
+      await votacionService.guardar(grupoId, body, token)
     }
+
+    await cargarVotaciones()
+    cerrarModales()
+    mostrarToast(
+      votacionEditando.value ? 'Votación actualizada exitosamente' : 'Votación creada exitosamente',
+      'success'
+    )
   } catch (error) {
     console.error('Error:', error)
     mostrarToast('Error de conexión', 'danger')
@@ -532,7 +509,6 @@ const guardarVotacion = async () => {
     guardandoVotacion.value = false
   }
 }
-
 const abrirModalVotar = (votacion) => {
   if (votacion.yaVote) {
     mostrarToast('Ya has votado en esta votación', 'warning')
@@ -549,25 +525,11 @@ const confirmarVoto = async () => {
     enviandoVoto.value = true
     const token = localStorage.getItem('token')
     
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/votaciones/${votacionParaVotar.value.id}/votar`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        opcion: opcionSeleccionada.value
-      })
-    })
-    
-    if (response.ok) {
-      mostrarModalVotar.value = false
-      await cargarVotaciones()
-      mostrarToast('Voto registrado exitosamente', 'success')
-    } else {
-      const errorData = await response.json()
-      mostrarToast('Error al votar: ' + (errorData.error || 'Error desconocido'), 'danger')
-    }
+    await votacionService.votar(votacionParaVotar.value.id, opcionSeleccionada.value, token)
+
+    mostrarModalVotar.value = false
+    await cargarVotaciones()
+    mostrarToast('Voto registrado exitosamente', 'success')
   } catch (error) {
     console.error('Error:', error)
     mostrarToast('Error de conexión', 'danger')
@@ -578,14 +540,9 @@ const confirmarVoto = async () => {
 
 const verResultados = async (votacion) => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/votaciones/${votacion.id}/resultados`)
-    
-    if (response.ok) {
-      resultadosVotacion.value = await response.json()
-      mostrarModalResultados.value = true
-    } else {
-      mostrarToast('Error al cargar los resultados', 'danger')
-    }
+    const { data } = await votacionService.resultados(votacion.id)
+    resultadosVotacion.value = data
+    mostrarModalResultados.value = true
   } catch (error) {
     console.error('Error:', error)
     mostrarToast('Error de conexión', 'danger')
@@ -607,19 +564,9 @@ const cerrarVotacion = async (votacion) => {
         handler: async () => {
           try {
             const token = localStorage.getItem('token')
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/votaciones/${votacion.id}/cerrar`, {
-              method: 'PUT',
-              headers: {
-                'Authorization': `Bearer ${token}`
-              }
-            })
-            
-            if (response.ok) {
-              await cargarVotaciones()
-              mostrarToast('Votación cerrada exitosamente', 'success')
-            } else {
-              mostrarToast('Error al cerrar la votación', 'danger')
-            }
+            await votacionService.cerrar(votacion.id, token)
+            await cargarVotaciones()
+            mostrarToast('Votación cerrada exitosamente', 'success')
           } catch (error) {
             console.error('Error:', error)
             mostrarToast('Error de conexión', 'danger')
@@ -631,6 +578,7 @@ const cerrarVotacion = async (votacion) => {
   
   await alert.present()
 }
+
 
 const confirmarEliminar = async (votacion) => {
   const alert = await alertController.create({
@@ -655,25 +603,15 @@ const confirmarEliminar = async (votacion) => {
 const eliminarVotacion = async (votacion) => {
   try {
     const token = localStorage.getItem('token')
-    
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/votaciones/${votacion.id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    
-    if (response.ok) {
-      await cargarVotaciones()
-      mostrarToast('Votación eliminada exitosamente', 'success')
-    } else {
-      mostrarToast('Error al eliminar la votación', 'danger')
-    }
+    await votacionService.eliminar(votacion.id, token)
+    await cargarVotaciones()
+    mostrarToast('Votación eliminada exitosamente', 'success')
   } catch (error) {
     console.error('Error:', error)
     mostrarToast('Error de conexión', 'danger')
   }
 }
+
 
 const cerrarModales = () => {
   mostrarModalCrear.value = false

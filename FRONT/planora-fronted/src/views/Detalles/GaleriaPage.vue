@@ -280,6 +280,8 @@ import {
   personOutline
 } from 'ionicons/icons'
 import { imageService } from '@/service/imagenService'
+import { groupService } from '@/service/GrupoService'
+import { EventosService } from '@/service/EventoService'
 
 const route = useRoute()
 const router = useRouter()
@@ -320,45 +322,32 @@ const API_BASE = `${import.meta.env.VITE_API_URL}`
 // Computed properties
 const eventosDisponibles = computed(() => eventos.value)
 
-// Métodos de la API
 const api = {
   async obtenerImagenesPorGrupo(grupoId: number) {
-    const response = await fetch(`${API_BASE}/imagenes/grupo/${grupoId}`)
-    if (!response.ok) throw new Error('Error al obtener imágenes')
-    const data = await response.json()
-    return data.imagenes ?? data
+    return await imageService.getByGrupo(grupoId)
   },
 
   async obtenerImagenCompleta(id: number) {
-    const response = await fetch(`${API_BASE}/imagenes/${id}`)
-    if (!response.ok) throw new Error('Error al obtener imagen completa')
-    return response.json()
+    return await imageService.getFullImage(id)
   },
 
   async eliminarImagen(id: number) {
-    const response = await fetch(`${API_BASE}/imagenes/${id}`, {
-      method: 'DELETE'
-    })
-    if (!response.ok) throw new Error('Error al eliminar imagen')
+    await imageService.deleteImage(id)
   },
 
   async obtenerGrupo(id: number) {
-    const response = await fetch(`${API_BASE}/grupos/${id}`)
-    if (!response.ok) throw new Error('Error al obtener grupo')
-    return response.json()
+    const res = await groupService.getGroupById(id)
+    return res.data
   },
 
   async obtenerEventos(grupoId: number) {
-    const response = await fetch(`${API_BASE}/eventos/${grupoId}/eventos`)
-    if (!response.ok) throw new Error('Error al obtener eventos')
-    return response.json()
+    return await EventosService.obtenerEventosGrupo(grupoId)
   }
 }
-
 // Métodos principales
 const cargarDatosGrupo = async () => {
   try {
-    const grupo = await api.obtenerGrupo(contexto.grupoId)
+    const grupo = await api.obtenerGrupo(contexto.grupoId) as { nombre?: string }
     if (grupo?.nombre) {
       contexto.grupoNombre = grupo.nombre
     }

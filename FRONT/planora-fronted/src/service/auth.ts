@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
-
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}`
+import api from './api'
 
 interface User {
   id: number
@@ -37,7 +35,7 @@ export const useAuthStore = defineStore('auth', {
     // Login tradicional
     async login(credentials: LoginCredentials) {
       try {
-        const response = await axios.post<{ token: string; usuario: User }>(`${API_BASE_URL}/login`, credentials)
+        const response = await api.post<{ token: string; usuario: User }>('/auth/login', credentials)
         const { token, usuario } = response.data
 
         this.token = token
@@ -60,13 +58,25 @@ export const useAuthStore = defineStore('auth', {
     // Registro
     async register(credentials: RegisterCredentials) {
       try {
-        const response = await axios.post(`${API_BASE_URL}/registro`, credentials)
+        const response = await api.post('/auth/registro', credentials)
         return { success: true, usuario: response.data }
       } catch (error: any) {
         console.error('Error en registro:', error)
         return { 
           success: false, 
           message: error.response?.data || 'Error al registrarse' 
+        }
+      }
+    },
+    async resetPassword(email: string, password: string) {
+      try {
+        const response = await api.post('/auth/reset-password', { email, password })
+        return { success: true, data: response.data }
+      } catch (error: any) {
+        console.error('Error al restablecer contraseña:', error)
+        return {
+          success: false,
+          message: error.response?.data?.error || 'Error al restablecer'
         }
       }
     },

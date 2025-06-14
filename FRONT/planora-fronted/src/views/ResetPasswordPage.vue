@@ -24,12 +24,18 @@
             v-model="password"
             label="Nueva contraseña"
             label-placement="floating"
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
             fill="outline"
             placeholder="••••••"
             class="input"
           >
             <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+            <ion-icon
+              :name="showPassword ? 'eye-off-outline' : 'eye-outline'"
+              slot="end"
+              class="toggle-password"
+              @click="toggleShowPassword"
+            ></ion-icon>
           </ion-input>
 
           <ion-button expand="block" class="reset-button" @click="reset">
@@ -61,13 +67,20 @@ import {
 } from '@ionic/vue'
 import PageHeader from '../components/PageHeader.vue'
 import { ref } from 'vue'
+import { useAuthStore } from '../service/auth'
 
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const mensaje = ref('')
 const router = useIonRouter()
+const auth = useAuthStore()
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
+const showPassword = ref(false)
+const toggleShowPassword = () => {
+  showPassword.value = !showPassword.value
+}
+
 
 const showToast = async (msg: string, color: 'success' | 'danger' | 'warning' = 'danger') => {
   const toast = await toastController.create({
@@ -87,21 +100,16 @@ const reset = async () => {
     return
   }
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/reset-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email.value, password: password.value })
-    })
-
-    if (!response.ok) {
-      const data = await response.json()
-      await showToast(data.error || 'Error al restablecer', 'danger')
-      throw new Error(data.error || 'Error al restablecer')
+    const result = await auth.resetPassword(email.value, password.value)
+    if (result.success) {
+      mensaje.value = 'Contraseña actualizada'
+      await showToast('Contraseña actualizada', 'success')
+      router.push('/login')
+    } else {
+      await showToast(result.message, 'danger')
+      throw new Error(result.message)
     }
-    mensaje.value = 'Contraseña actualizada'
-    await showToast('Contraseña actualizada', 'success')
-    router.push('/login')
-  } catch (err) {
+  } catch (err: any) {
     error.value = err.message
   }
 }
@@ -171,5 +179,8 @@ const goToLogin = () => {
   display: block;
   margin-top: 16px;
   font-weight: 500;
+}
+.toggle-password {
+  cursor: pointer;
 }
 </style>

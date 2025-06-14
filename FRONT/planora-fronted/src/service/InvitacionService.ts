@@ -20,5 +20,9 @@ export const invitacionService = {
   },
   async rechazar(id: number) {
     await api.post(`/invitaciones/${id}/rechazar`)
+  },
+  async obtenerGrupoPorCodigo(codigo: string) {
+    const res = await api.get(`/auth/invitacion/${codigo}`)
+    return res.data
   }
 }
