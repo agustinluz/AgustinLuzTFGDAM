@@ -4,7 +4,7 @@ import api from './api';
 // Función helper para obtener el token y usuarioId del localStorage
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
-  const usuario = localStorage.getItem('usuario');
+  const usuario = localStorage.getItem('usuario') || localStorage.getItem('currentUser');
   let usuarioId = localStorage.getItem('usuarioId');
   
   // Si no hay usuarioId pero hay usuario, extraerlo del objeto usuario
@@ -33,7 +33,7 @@ const getAuthHeaders = () => {
 // Función helper para obtener headers de admin
 const getAdminHeaders = () => {
   const token = localStorage.getItem('token');
-  const usuario = localStorage.getItem('usuario');
+  const usuario = localStorage.getItem('usuario') || localStorage.getItem('currentUser');
   let adminId = localStorage.getItem('usuarioId');
   
   if (!adminId && usuario) {
@@ -238,7 +238,8 @@ export const groupService = {
       throw new Error(`IDs inválidos - Grupo: ${groupId}, Usuario: ${usuarioId}`);
     }
     
-    const usuario = localStorage.getItem('usuario');
+    const usuario =
+      localStorage.getItem('usuario') || localStorage.getItem('currentUser');
     const token = localStorage.getItem('token');
     let solicitanteId = localStorage.getItem('usuarioId');
     

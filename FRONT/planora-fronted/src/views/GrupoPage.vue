@@ -107,34 +107,41 @@ const previsualizacionImagen = ref('')
 
 const grupoActivo = computed(() => {
   const grupoActivoId = localStorage.getItem('grupoActivoId')
-  return grupos.value.find(g => g.id.toString() === grupoActivoId)
+  return Array.isArray(grupos.value)
+    ? grupos.value.find(g => g.id.toString() === grupoActivoId)
+    : undefined
 })
 
 onMounted(() => {
-  const stored = localStorage.getItem('usuario')
+  const stored =
+    localStorage.getItem('usuario') || localStorage.getItem('currentUser')
   if (stored) {
     usuario.value = JSON.parse(stored)
+    localStorage.setItem('usuario', stored)
+    localStorage.setItem('currentUser', stored)
+    localStorage.setItem('usuarioId', usuario.value.id.toString())
     cargarGrupos()
   }
 })
-
 const cargarGrupos = async () => {
   if (!usuario.value) return
   cargando.value = true
   try {
     const res = await groupService.getUserGroups(usuario.value.id)
-    grupos.value = res.data
-    for (const g of grupos.value) {
-      const [usuariosRes, eventosRes, imagenes] = await Promise.all([
-        groupService.getGroupUsers(g.id),
-        EventosService.obtenerEventosGrupo(g.id),
-        imageService.getByGrupo(g.id)
-      ])
-      g.participantesCount = usuariosRes.data.length
-      g.eventosCount = eventosRes.length
-      g.fotosCount = Array.isArray(imagenes)
-        ? imagenes.length
-        : imagenes.total || (imagenes.imagenes ? imagenes.imagenes.length : 0)
+    grupos.value = Array.isArray(res.data) ? res.data : []
+    if (grupos.value.length > 0) {
+      for (const g of grupos.value) {
+        const [usuariosRes, eventosRes, imagenes] = await Promise.all([
+          groupService.getGroupUsers(g.id),
+          EventosService.obtenerEventosGrupo(g.id),
+          imageService.getByGrupo(g.id)
+        ])
+        g.participantesCount = (usuariosRes.data as any[]).length
+        g.eventosCount = eventosRes.length
+        g.fotosCount = Array.isArray(imagenes)
+          ? imagenes.length
+          : imagenes.total || (imagenes.imagenes ? imagenes.imagenes.length : 0)
+      }
     }
   } catch (err) {
     console.error('Error al cargar grupos:', err)
@@ -167,8 +174,9 @@ const crearGrupo = async () => {
   error.value = ''
   cargando.value = true
   try {
-    const { data: grupo } = await groupService.createGroup({ nombre: nombreGrupo.value, imagenPerfil: imagenGrupo.value })
-    localStorage.setItem('grupoActivoId', grupo.id)
+    const { data } = await groupService.createGroup({ nombre: nombreGrupo.value, imagenPerfil: imagenGrupo.value })
+    const grupo = data as { id: number, nombre: string, codigoInvitacion: string }
+    localStorage.setItem('grupoActivoId', grupo.id.toString())
     cerrarModalCrear()
     const toast = await toastController.create({
       message: `Grupo "${grupo.nombre}" creado exitosamente. Código: ${grupo.codigoInvitacion}`,
@@ -192,13 +200,13 @@ const unirseGrupo = async () => {
   error.value = ''
   cargando.value = true
   try {
-    const grupo = await invitacionService.obtenerGrupoPorCodigo(codigo.value)
+    const grupo = await invitacionService.obtenerGrupoPorCodigo(codigo.value) as { id: number, nombre: string, [key: string]: any }
     await groupService.registerUserInGroup(grupo.id, {
       nombre: usuario.value.nombre,
       email: usuario.value.email,
       password: usuario.value.password
     })
-    localStorage.setItem('grupoActivoId', grupo.id)
+    localStorage.setItem('grupoActivoId', grupo.id.toString())
     cerrarModal()
     const toast = await toastController.create({
       message: `Te has unido al grupo "${grupo.nombre}" exitosamente`,

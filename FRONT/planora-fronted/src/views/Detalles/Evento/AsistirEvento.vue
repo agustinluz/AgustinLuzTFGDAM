@@ -52,7 +52,7 @@
         <ion-list v-if="segment==='asistentes'">
           <ion-item v-for="a in asistentesConfirmados" :key="a.usuarioId">
             <ion-avatar slot="start">
-              <img :src="avatarUrl(a.usuarioId)" />
+              <img :src="avatarUrl(a.fotoPerfil, a.usuarioId)" />
             </ion-avatar>
             <ion-label>{{ a.nombre }}</ion-label>
           </ion-item>
@@ -60,7 +60,7 @@
         <ion-list v-else>
           <ion-item v-for="a in asistentesRechazados" :key="a.usuarioId">
             <ion-avatar slot="start">
-              <img :src="avatarUrl(a.usuarioId)" />
+              <img :src="avatarUrl(a.fotoPerfil, a.usuarioId)" />
             </ion-avatar>
             <ion-label>{{ a.nombre }}</ion-label>
           </ion-item>
@@ -142,8 +142,8 @@ async function marcar(asistio: boolean) {
 
 onMounted(cargarEvento)
 
-function avatarUrl(id: number) {
-  return `https://i.pravatar.cc/64?u=${id}`
+function avatarUrl(foto: string | null | undefined, id: number) {
+  return foto || `https://i.pravatar.cc/64?u=${id}`
 }
 </script>
 

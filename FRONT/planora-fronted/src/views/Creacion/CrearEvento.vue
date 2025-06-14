@@ -169,7 +169,7 @@ const crearEvento = async () => {
       titulo: titulo.value.trim(),
       descripcion: descripcion.value.trim(),
       ubicacion: ubicacion.value.trim(), // Verifica que en el formulario se llene correctamente con el formato esperado (ej: "lat, lng" o una dirección).
-      fecha: new Date(fecha.value).toISOString()
+      fecha: new Date(fecha.value)
     }
 
     // Realiza el POST para crear el evento.

@@ -6,5 +6,6 @@ import lombok.Data;
 public class EventoAsistenteDTO {
     private Long usuarioId;
     private String nombre;
+    private String fotoPerfil;
     private boolean asistio;
 }
