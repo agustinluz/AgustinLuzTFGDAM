@@ -356,17 +356,17 @@ const crearVotacion = async () => {
   padding: 0 16px;
 }
 
-.section-header ion-icon {
-  font-size: 20px;
-  color: var(--ion-color-primary);
-}
+  .section-header ion-icon {
+    font-size: var(--font-size-lg);
+    color: var(--ion-color-primary);
+  }
 
-.section-header h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ion-color-primary);
-}
+  .section-header h3 {
+    margin: 0;
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    color: var(--ion-color-primary);
+  }
 
 .textarea-item {
   --inner-padding-end: 16px;

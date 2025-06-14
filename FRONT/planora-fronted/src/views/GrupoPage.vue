@@ -211,7 +211,7 @@ const unirseGrupo = async () => {
     const toast = await toastController.create({
       message: `Te has unido al grupo "${grupo.nombre}" exitosamente`,
       duration: 3000,
-      position: 'top',
+      position: 'bottom',
       color: 'success'
     })
     toast.present()

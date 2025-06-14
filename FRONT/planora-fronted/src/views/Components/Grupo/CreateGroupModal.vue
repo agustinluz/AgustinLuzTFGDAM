@@ -58,7 +58,7 @@ const input = ref<HTMLInputElement>()
 .preview-imagen img { width: 100%; height: 100%; object-fit: cover; }
 .overlay-upload { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.3s ease; }
 .preview-imagen:hover .overlay-upload { opacity:1; }
-.selector-imagen p { color: var(--ion-color-medium); font-size: 0.9em; }
+.selector-imagen p { color: var(--ion-color-medium); font-size: var(--font-size-sm); }
 .create-btn { --border-radius: 12px; height: 48px; font-weight: 600; margin-top: 24px; }
 .input-item { border-radius: 12px; background: white; margin: 8px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 .error-text { text-align: center; margin-top: 12px; }

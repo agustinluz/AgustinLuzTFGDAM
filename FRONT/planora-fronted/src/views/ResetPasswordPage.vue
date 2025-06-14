@@ -133,53 +133,53 @@ const goToLogin = () => {
 }
 
 .reset-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  padding: 32px 24px;
-  width: 100%;
-  max-width: 380px;
-  text-align: center;
-}
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    padding: calc(var(--spacing-unit) * 4) calc(var(--spacing-unit) * 3);
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
 
-.logo {
-  width: 100px;
-  margin: 0 auto 20px;
-}
+  .logo {
+    width: 100px;
+    margin: 0 auto calc(var(--spacing-unit) * 2.5);
+  }
 
-.title {
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
+  .title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: calc(var(--spacing-unit) * 0.5);
+  }
 
-.subtitle {
-  color: #6b7280;
-  margin-bottom: 24px;
-  font-size: 14px;
-}
+  .subtitle {
+    color: #6b7280;
+    margin-bottom: calc(var(--spacing-unit) * 3);
+    font-size: var(--font-size-sm);
+  }
 
-.input {
-  margin-top: 16px;
-}
+  .input {
+    margin-top: calc(var(--spacing-unit) * 2);
+  }
 
-.reset-button {
-  margin-top: 24px;
-  --background: #3880ff;
-  --border-radius: 8px;
-}
+  .reset-button {
+    margin-top: calc(var(--spacing-unit) * 3);
+    --background: #3880ff;
+    --border-radius: 8px;
+  }
 
-.login-link {
-  margin-top: 12px;
-  color: #3880ff;
-  font-size: 15px;
-}
+  .login-link {
+    margin-top: calc(var(--spacing-unit) * 1.5);
+    color: #3880ff;
+    font-size: var(--font-size-sm);
+  }
 
-.error-text, .success-text {
-  display: block;
-  margin-top: 16px;
-  font-weight: 500;
-}
+  .error-text, .success-text {
+    display: block;
+    margin-top: calc(var(--spacing-unit) * 2);
+    font-weight: 500;
+  }
 .toggle-password {
   cursor: pointer;
 }

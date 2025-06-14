@@ -186,7 +186,7 @@ const onImageSelected = (event: Event) => {
           message: 'La imagen no puede superar los 5MB',
           duration: 2000,
           color: 'warning',
-          position: 'top'
+          position: 'bottom'
         })
         .then(t => t.present())
       return
@@ -237,7 +237,7 @@ const copyInviteCode = async () => {
       message: 'Código copiado al portapapeles',
       duration: 2000,
       color: 'success',
-      position: 'top'
+      position: 'bottom'
     })
     await toast.present()
   } catch (error) {
@@ -245,7 +245,7 @@ const copyInviteCode = async () => {
       message: 'Error al copiar código',
       duration: 2000,
       color: 'danger',
-      position: 'top'
+      position: 'bottom'
     })
     await toast.present()
   }

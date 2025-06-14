@@ -400,8 +400,8 @@ const cancelar = async () => {
 const mostrarExito = async (mensaje) => {
   const toast = await toastController.create({
     message: mensaje,
-    duration: 3000,
-    position: 'top',
+    duration: 2000,
+    position: 'bottom',
     color: 'success'
   })
   await toast.present()
@@ -410,8 +410,8 @@ const mostrarExito = async (mensaje) => {
 const mostrarError = async (mensaje) => {
   const toast = await toastController.create({
     message: mensaje,
-    duration: 4000,
-    position: 'top',
+    duration: 2000,
+    position: 'bottom',
     color: 'danger'
   })
   await toast.present()
@@ -522,21 +522,21 @@ const mostrarAvisoAbajo = async (mensaje) => {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--ion-color-primary);
-  margin-bottom: 8px;
-}
+ .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    margin-bottom: 8px;
+  }
 
-.section-subtitle {
-  color: var(--ion-color-medium);
-  font-size: 0.9rem;
-  margin-top: 4px;
-}
+  .section-subtitle {
+    color: var(--ion-color-medium);
+    font-size: var(--font-size-sm);
+    margin-top: 4px;
+  }
 
 /* Inputs */
 .input-group {
@@ -652,7 +652,7 @@ const mostrarAvisoAbajo = async (mensaje) => {
   }
 
   .section-title {
-    font-size: 1.2rem;
+    font-size: var(--font-size-lg);
   }
 }
 

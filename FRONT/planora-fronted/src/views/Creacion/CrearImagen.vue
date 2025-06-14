@@ -3,11 +3,15 @@
     <IonHeader>
       <IonToolbar>
         <IonButtons slot="start">
-          <IonBackButton :default-href="`/dashboard/${contexto.grupoId}/galeria`" />
+          <IonBackButton
+            text="Volver"
+            color="primary"
+            :default-href="`/dashboard/${contexto.grupoId}/galeria`"
+          />
         </IonButtons>
         <IonTitle>Galería - {{ contexto.grupoNombre }}</IonTitle>
         <IonButtons slot="end">
-          <IonButton @click="abrirModalSubida" fill="clear">
+          <IonButton @click="abrirModalSubida" fill="clear" color="primary">
             <IonIcon :icon="addOutline" />
           </IonButton>
         </IonButtons>
@@ -67,7 +71,7 @@
                 </IonButton>
               </IonCol>
               <IonCol size="auto">
-                <IonButton @click="limpiarSeleccion" fill="clear" size="small">
+                <IonButton @click="limpiarSeleccion" fill="clear" size="small" color="primary">
                   Cancelar
                 </IonButton>
               </IonCol>
@@ -164,7 +168,7 @@
         <IonToolbar>
           <IonTitle>Subir imagen</IonTitle>
           <IonButtons slot="end">
-            <IonButton @click="cerrarModalSubida" fill="clear">
+            <IonButton @click="cerrarModalSubida" fill="clear" color="primary">
               <IonIcon :icon="closeOutline" />
             </IonButton>
           </IonButtons>
@@ -219,6 +223,7 @@
           <IonButton 
             @click="subirImagen" 
             expand="block" 
+            color="primary"
             :disabled="!modalSubida.archivo || estado.subiendo"
           >
             <IonSpinner v-if="estado.subiendo" slot="start" />
@@ -245,7 +250,7 @@
         <IonToolbar>
           <IonTitle>{{ modalVistaPrevia.imagen?.nombre }}</IonTitle>
           <IonButtons slot="end">
-            <IonButton @click="cerrarVistaPrevia" fill="clear">
+            <IonButton @click="cerrarVistaPrevia" fill="clear" color="primary">
               <IonIcon :icon="closeOutline" />
             </IonButton>
           </IonButtons>

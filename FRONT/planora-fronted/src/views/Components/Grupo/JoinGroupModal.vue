@@ -44,7 +44,7 @@ const emit = defineEmits(['close', 'create', 'join'])
 .modal-content { padding: 8px 0; }
 .divider { text-align: center; margin: 20px 0; position: relative; }
 .divider::before { content:''; position:absolute; top:50%; left:0; right:0; height:1px; background: var(--ion-color-light); }
-.divider span { background: var(--ion-background-color); padding:0 16px; color: var(--ion-color-medium); font-size:0.9em; }
+.divider span { background: var(--ion-background-color); padding:0 16px; color: var(--ion-color-medium); font-size:var(--font-size-sm); }
 .primary-action { --border-radius:12px; height:48px; font-weight:600; margin-bottom:8px; }
 .secondary-action { --border-radius:12px; height:48px; font-weight:600; margin-top:8px; }
 .input-item { border-radius:12px; background:white; margin:8px 0; box-shadow:0 2px 8px rgba(0,0,0,0.05); }

@@ -568,7 +568,8 @@ const mostrarToast = async (mensaje, color = 'primary') => {
   const toast = await toastController.create({
     message: mensaje,
     duration: 2000,
-    color: color
+    color: color,
+    position: 'bottom',
   })
   await toast.present()
 }

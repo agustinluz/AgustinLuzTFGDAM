@@ -51,16 +51,18 @@
         </ion-segment>
         <ion-list v-if="segment==='asistentes'">
           <ion-item v-for="a in asistentesConfirmados" :key="a.usuarioId">
-            <ion-avatar slot="start">
-              <img :src="avatarUrl(a.fotoPerfil, a.usuarioId)" />
+            <ion-avatar slot="start" class="avatar" :title="a.nombre">
+              <img v-if="a.fotoPerfil" :src="a.fotoPerfil" />
+              <span v-else class="initials">{{ getInitials(a.nombre) }}</span>
             </ion-avatar>
             <ion-label>{{ a.nombre }}</ion-label>
           </ion-item>
         </ion-list>
         <ion-list v-else>
           <ion-item v-for="a in asistentesRechazados" :key="a.usuarioId">
-            <ion-avatar slot="start">
-              <img :src="avatarUrl(a.fotoPerfil, a.usuarioId)" />
+            <ion-avatar slot="start" class="avatar" :title="a.nombre">
+              <img v-if="a.fotoPerfil" :src="a.fotoPerfil" />
+              <span v-else class="initials">{{ getInitials(a.nombre) }}</span>
             </ion-avatar>
             <ion-label>{{ a.nombre }}</ion-label>
           </ion-item>
@@ -68,7 +70,14 @@
         
         
       </div>
-      <ion-toast :is-open="mostrarToast" :message="mensajeToast" :color="toastColor" @did-dismiss="mostrarToast=false" />
+      <ion-toast
+        :is-open="mostrarToast"
+        :message="mensajeToast"
+        :color="toastColor"
+        :duration="2000"
+        position="bottom"
+        @did-dismiss="mostrarToast=false"
+      />
     </ion-content>
   </ion-page>
 </template>
@@ -81,10 +90,11 @@ import { useIonRouter, IonPage, IonHeader, IonToolbar, IonTitle, IonContent, Ion
   IonLabel, IonList, IonItem, IonAvatar } from '@ionic/vue'
 import { useRoute } from 'vue-router'
 import { EventosService } from '@/service/EventoService'
+import { getInitials } from '@/utils/string'
 
 const route = useRoute()
 const router = useIonRouter()
-const grupoId = route.params.grupoId || route.params.id || ''
+const grupoId = ref(route.params.grupoId || route.params.id || '')
 const eventoId = Number(route.params.eventoId || route.params.id)
 const token = localStorage.getItem('token') || ''
 
@@ -114,6 +124,9 @@ const formatFecha = (iso: string) =>
 async function cargarEvento() {
   try {
     evento.value = await EventosService.obtenerEventoPorId(eventoId)
+    if (!grupoId.value && evento.value) {
+      grupoId.value = evento.value.grupoId
+    }
     asistentes.value = await EventosService.obtenerAsistentes(eventoId)
   } catch (e) {
     mensajeToast.value = 'Error al cargar evento'
@@ -142,9 +155,7 @@ async function marcar(asistio: boolean) {
 
 onMounted(cargarEvento)
 
-function avatarUrl(foto: string | null | undefined, id: number) {
-  return foto || `https://i.pravatar.cc/64?u=${id}`
-}
+
 </script>
 
 <style scoped>
@@ -152,4 +163,22 @@ function avatarUrl(foto: string | null | undefined, id: number) {
 .content { display: flex; flex-direction: column; gap: 1rem; }
 .list-segment { margin-top: 1rem; }
 .volver-btn { margin-top: 1.5rem; }
+.avatar {
+  --size: 48px;
+  background: var(--ion-color-primary-tint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.initials {
+  font-weight: 600;
+  color: #fff;
+}
 </style>

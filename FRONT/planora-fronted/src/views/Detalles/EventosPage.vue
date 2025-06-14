@@ -67,6 +67,7 @@
         :message="toast.mensaje"
         :duration="2500"
         :color="toast.color"
+        position="bottom"
         @did-dismiss="toast.mostrar = false"
       />
 
@@ -156,10 +157,8 @@ const irCrearEvento = () => {
 
 
 const editarEvento = (evento: Evento) => {
-  eventoEditando.value = evento
-  modalAbierto.value = true
+  router.push(`/dashboard/${grupoId}/eventos/${evento.id}/editar`)
 }
-
 const cerrarModal = () => {
   modalAbierto.value = false
   eventoEditando.value = null

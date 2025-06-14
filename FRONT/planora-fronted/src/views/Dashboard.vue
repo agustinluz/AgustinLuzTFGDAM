@@ -76,7 +76,6 @@
         <ion-card-content>
           <div v-if="!store.loading">
             <ParticipantGrid :participants="store.participantes" />
-            <QuickActions />  
           </div>
           <div v-else class="loading-placeholder">
             <ion-skeleton-text animated style="width: 100%; height: 4rem" />
@@ -131,7 +130,6 @@ import StatsGrid        from '@/views/Components/Dashboard/StatsGrid.vue'
 import CompactCalendar  from '@/views/Components/Dashboard/CompactCalendar.vue'
 import EventsList       from '@/views/Components/Dashboard/EventList.vue'
 import ParticipantGrid  from '@/views/Components/Dashboard/ParticipantGrid.vue'
-import QuickActions     from '@/views/Components/Dashboard/QuickAction.vue'
 import EventModal       from '@/views/Components/Dashboard/EventModal.vue'
 import UserStatsModal   from '@/views/Components/Dashboard/UserStatsModal.vue'
 

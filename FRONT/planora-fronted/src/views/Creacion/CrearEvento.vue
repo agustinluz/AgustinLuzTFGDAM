@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button :default-href="backHref" @click="$emit('back')" color="light" />
         </ion-buttons>
-        <ion-title>Nuevo evento</ion-title>
+        <ion-title>{{ esEdicion ? 'Editar evento' : 'Nuevo evento' }}</ion-title>
         <ion-buttons slot="end">
           <ion-button 
             @click="crearEvento" 
@@ -34,14 +34,17 @@
 
         <!-- Botón de guardar -->
         <div class="action-section">
-          <ion-button 
-            expand="block" 
+          <ion-button
+            expand="block"
             type="submit"
             :disabled="!puedeGuardar || isLoading"
             size="large"
           >
             <ion-icon name="calendar-outline" slot="start"></ion-icon>
-            {{ isLoading ? 'Creando evento...' : 'Crear evento' }}
+            {{ isLoading ? (esEdicion ? 'Guardando...' : 'Creando evento...') : esEdicion ? 'Guardar cambios' : 'Crear evento' }}
+          </ion-button>
+          <ion-button expand="block" fill="clear" color="medium" @click="cancelar">
+            Cancelar
           </ion-button>
         </div>
       </form>
@@ -81,6 +84,9 @@ import { EventosService } from '@/service/EventoService'
 const route = useRoute()
 const router = useRouter()
 
+const eventoId = ref(route.params.eventoId ? Number(route.params.eventoId) : null)
+const esEdicion = computed(() => eventoId.value !== null)
+
 // Estado del formulario
 const titulo = ref('')
 const descripcion = ref('')
@@ -106,6 +112,9 @@ const puedeGuardar = computed(() => {
 onMounted(async () => {
   try {
     grupoId.value = route.params.grupoId || route.params.id
+    if (esEdicion.value) {
+      eventoId.value = Number(route.params.eventoId)
+    }
     
     const usuarioString = localStorage.getItem('usuario')
     if (!usuarioString) {
@@ -121,6 +130,13 @@ onMounted(async () => {
     
     if (!grupoId.value) {
       throw new Error('Grupo no especificado')
+    }
+    if (esEdicion.value && eventoId.value) {
+      const evento = await EventosService.obtenerEventoPorId(eventoId.value)
+      titulo.value = evento.titulo
+      descripcion.value = evento.descripcion
+      ubicacion.value = evento.ubicacion || ''
+      fecha.value = evento.fecha
     }
     
   } catch (error) {
@@ -163,21 +179,21 @@ const crearEvento = async () => {
       throw new Error('Token de autenticación no encontrado')
     }
 
-    // Construimos el objeto eventData. 
-    // Nota: El uso de new Date(fecha.value).toISOString() asegura que la fecha se envía en formato ISO 8601.
+    // Construimos el objeto eventData.
     const eventData = {
       titulo: titulo.value.trim(),
       descripcion: descripcion.value.trim(),
-      ubicacion: ubicacion.value.trim(), // Verifica que en el formulario se llene correctamente con el formato esperado (ej: "lat, lng" o una dirección).
-      fecha: new Date(fecha.value)
+      ubicacion: ubicacion.value.trim(),
+      fecha: new Date(fecha.value).toISOString()
     }
 
-    // Realiza el POST para crear el evento.
-    const eventoCreado = await EventosService.crearEvento(grupoId.value, eventData, token)
-
-    console.log('Evento creado:', eventoCreado)
-
-    mostrarToast('Evento creado correctamente', 'success')
+    if (esEdicion.value && eventoId.value) {
+      await EventosService.actualizarEvento(eventoId.value, eventData, token)
+      mostrarToast('Evento actualizado correctamente', 'success')
+    } else {
+      await EventosService.crearEvento(grupoId.value, eventData, token)
+      mostrarToast('Evento creado correctamente', 'success')
+    }
 
     // Limpiar formulario
     titulo.value = ''
@@ -192,15 +208,20 @@ const crearEvento = async () => {
     }, 1500)
 
   } catch (error) {
-    console.error('Error al crear evento:', error)
+    console.error('Error al guardar evento:', error)
     mostrarToast(
-      error.message || 'Error al crear el evento. Inténtalo de nuevo.',
+      error.message || (esEdicion.value ? 'Error al actualizar el evento. Inténtalo de nuevo.' : 'Error al crear el evento. Inténtalo de nuevo.'),
       'danger'
     )
   } finally {
     isLoading.value = false
   }
 }
+
+const cancelar = () => {
+  router.back()
+}
+
 
 </script>
 
@@ -215,15 +236,15 @@ const crearEvento = async () => {
   margin-bottom: 2rem;
 }
 
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0 0 1rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--ion-color-primary);
-}
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1rem 0;
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    color: var(--ion-color-primary);
+  }
 
 .textarea-item {
   margin-top: 1rem;

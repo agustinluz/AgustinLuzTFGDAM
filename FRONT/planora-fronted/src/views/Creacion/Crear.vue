@@ -160,10 +160,10 @@ const handleGoBack = () => {
   margin-bottom: 0.5rem;
 }
 
-.welcome-section p {
-  color: var(--ion-color-medium);
-  font-size: 1rem;
-}
+  .welcome-section p {
+    color: var(--ion-color-medium);
+    font-size: var(--font-size-md);
+  }
 
 .creation-card {
   height: 160px;
@@ -175,20 +175,20 @@ const handleGoBack = () => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.card-icon {
-  font-size: 2.5rem;
-  color: var(--ion-color-primary);
-  margin-bottom: 0.5rem;
-}
+  .card-icon {
+    font-size: var(--font-size-xl);
+    color: var(--ion-color-primary);
+    margin-bottom: 0.5rem;
+  }
 
 .creation-card h3 {
   margin: 0.5rem 0;
   color: var(--ion-color-dark);
 }
 
-.creation-card p {
-  color: var(--ion-color-medium);
-  font-size: 0.9rem;
-  margin: 0;
-}
+  .creation-card p {
+    color: var(--ion-color-medium);
+    font-size: var(--font-size-sm);
+    margin: 0;
+  }
 </style>

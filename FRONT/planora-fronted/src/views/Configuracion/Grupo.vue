@@ -310,7 +310,7 @@ const handleShowUserStats = async () => {
       message,
       duration: 2000,
       color,
-      position: 'top'
+      position: 'bottom'
     })
     await toast.present()
   }

@@ -2,8 +2,8 @@
     $primary-tint: rgba(59, 130, 246, 0.1);
     $secondary: #f59e0b;
     $tertiary: #6b7280;
-    $shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    $shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+    $shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    $shadow-hover: 0 6px 18px rgba(0, 0, 0, 0.15);
 
     @mixin card-base {
       border-radius: 1rem;
@@ -17,27 +17,26 @@
     }
 
     // src/styles/_responsive.scss
-
 @media (max-width: 767px) {
   .dashboard-grid {
-    padding: 0 0.5rem;
-    row-gap: 1rem;
+    padding: 0 0.75rem;
+    row-gap: 1.25rem;
   }
   .stat-card .stat-number {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 }
 
 @media (min-width: 768px) and (max-width: 1199px) {
   .dashboard-grid {
-    padding: 0 1rem;
-    row-gap: 1.5rem;
+    padding: 0 1.5rem;
+    row-gap: 2rem;
   }
 }
 
 @media (min-width: 1200px) {
   .dashboard-grid {
-    padding: 0 2rem;
-    row-gap: 2rem;
+    padding: 0 3rem;
+    row-gap: 2.5rem;
   }
 }
