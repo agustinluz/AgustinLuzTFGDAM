@@ -115,6 +115,7 @@ public class EventoController {
                 var dto = new com.ejemplos.DTO.Evento.EventoAsistenteDTO();
                 dto.setUsuarioId(ea.getUsuario().getId());
                 dto.setNombre(ea.getUsuario().getNombre());
+                dto.setFotoPerfil(ea.getUsuario().getFotoPerfil());
                 dto.setAsistio(ea.isAsistio());
                 return dto;
             }).toList();

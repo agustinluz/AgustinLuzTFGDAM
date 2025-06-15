@@ -7,23 +7,32 @@
     </ion-header>
     <ion-content>
       <ion-list>
-        <ion-item router-link="/grupo">Grupos</ion-item>
-        <ion-item v-if="grupoId" :router-link="`/dashboard/${grupoId}`">Dashboard</ion-item>
-        <ion-item v-if="grupoId" :router-link="`/dashboard/${grupoId}/eventos`">Eventos</ion-item>
-        <ion-item v-if="grupoId" :router-link="`/dashboard/${grupoId}/gastos`">Gastos</ion-item>
-        <ion-item v-if="grupoId" :router-link="`/dashboard/${grupoId}/votaciones`">Votaciones</ion-item>
-        <ion-item v-if="grupoId" :router-link="`/dashboard/${grupoId}/notas`">Notas</ion-item>
-        <ion-item v-if="grupoId" :router-link="`/dashboard/${grupoId}/galeria`">Galería</ion-item>
-        <ion-item v-if="grupoId" :router-link="`/grupo/${grupoId}/resumen`">Resumen</ion-item>
-        <ion-item v-if="grupoId" :router-link="`/grupo/${grupoId}/configuracion`">Configuración</ion-item>
-        <ion-item router-link="/perfil">Perfil</ion-item>
-        <ion-item router-link="/invitaciones">Invitaciones</ion-item>
+        <ion-item router-link="/grupo" @click="closeMenu">Grupos</ion-item>
+        <ion-item v-if="grupoId" :router-link="`/dashboard/${grupoId}`" @click="closeMenu">Dashboard</ion-item>
+        <ion-item v-if="grupoId" :router-link="`/dashboard/${grupoId}/eventos`" @click="closeMenu">Eventos</ion-item>
+        <ion-item v-if="grupoId" :router-link="`/dashboard/${grupoId}/gastos`" @click="closeMenu">Gastos</ion-item>
+        <ion-item v-if="grupoId" :router-link="`/dashboard/${grupoId}/votaciones`" @click="closeMenu">Votaciones</ion-item>
+        <ion-item v-if="grupoId" :router-link="`/dashboard/${grupoId}/notas`" @click="closeMenu">Notas</ion-item>
+        <ion-item v-if="grupoId" :router-link="`/dashboard/${grupoId}/galeria`" @click="closeMenu">Galería</ion-item>
+        <ion-item v-if="grupoId" :router-link="`/grupo/${grupoId}/resumen`" @click="closeMenu">Resumen</ion-item>
+        <ion-item v-if="grupoId" :router-link="`/grupo/${grupoId}/configuracion`" @click="closeMenu">Configuración</ion-item>
+        <ion-item router-link="/perfil" @click="closeMenu">Perfil</ion-item>
+        <ion-item router-link="/invitaciones" @click="closeMenu">Invitaciones</ion-item>
       </ion-list>
     </ion-content>
   </ion-menu>
 </template>
 
-<script setup lang="ts">
-import { IonMenu, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem } from '@ionic/vue'
-const grupoId = localStorage.getItem('grupoActivoId') || ''
+<script setup lang="ts">import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { menuController, IonMenu, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem } from '@ionic/vue'
+
+const route = useRoute()
+const grupoId = ref(localStorage.getItem('grupoActivoId') || '')
+
+watch(() => route.fullPath, () => {
+  grupoId.value = localStorage.getItem('grupoActivoId') || ''
+})
+
+const closeMenu = () => menuController.close()
 </script>

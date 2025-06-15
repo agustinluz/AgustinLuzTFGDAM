@@ -3,7 +3,9 @@
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
-          <ion-back-button :default-href="`/dashboard/${grupoId}`"></ion-back-button>
+          <ion-button fill="clear" color="light" @click="irDashboard">
+            <ion-icon name="arrow-back" />
+          </ion-button>
         </ion-buttons>
         <ion-title>📅 Eventos del Grupo</ion-title>
         <ion-buttons slot="end">
@@ -67,6 +69,7 @@
         :message="toast.mensaje"
         :duration="2500"
         :color="toast.color"
+        position="bottom"
         @did-dismiss="toast.mostrar = false"
       />
 
@@ -95,7 +98,6 @@ import {
   IonTitle,
   IonContent,
   IonButtons,
-  IonBackButton,
   IonButton,
   IonIcon,
   IonSpinner,
@@ -143,6 +145,10 @@ const toast = ref({
   color: 'success'
 })
 
+const irDashboard = () => {
+  router.push(`/dashboard/${grupoId}`)
+}
+
 const alertEliminar = ref({
   mostrar: false,
   evento: null as Evento | null
@@ -156,10 +162,8 @@ const irCrearEvento = () => {
 
 
 const editarEvento = (evento: Evento) => {
-  eventoEditando.value = evento
-  modalAbierto.value = true
+  router.push(`/dashboard/${grupoId}/eventos/${evento.id}/editar`)
 }
-
 const cerrarModal = () => {
   modalAbierto.value = false
   eventoEditando.value = null

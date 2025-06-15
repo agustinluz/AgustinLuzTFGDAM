@@ -151,9 +151,9 @@ onMounted(cargarDatos);
 </script>
 
 <style scoped>
-.title-container h1{margin:0;font-size:20px;font-weight:700}
-.subtitle{margin:0;font-size:14px;color:var(--ion-color-medium)}
-.loading-container{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:16px}
+.title-container h1{margin:0;font-size:var(--font-size-lg);font-weight:700}
+.subtitle{margin:0;font-size:var(--font-size-sm);color:var(--ion-color-medium)}
+.loading-container{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:calc(var(--spacing-unit)*2)}
 .form-container{max-width:600px;margin:0 auto}
 </style>
 

@@ -46,6 +46,12 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/Creacion/CrearEvento.vue'),
     props: true
   },
+  {
+    path: '/dashboard/:grupoId/eventos/:eventoId/editar',
+    name: 'EditarEvento',
+    component: () => import('../views/Creacion/CrearEvento.vue'),
+    props: true
+  },
    {
     path: '/dashboard/:id/crear/imagen',
     name: 'crear-imagen',
@@ -53,7 +59,7 @@ const routes: Array<RouteRecordRaw> = [
     props: true
   },
   {
-  path: '/dashboard/:grupoId/notas/crear',
+  path: '/dashboard/:grupoId/crear/nota',
   name: 'CrearNota',
   component: () => import('@/views/Creacion/CrearEditarNotaPage.vue')
 },

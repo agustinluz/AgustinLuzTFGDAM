@@ -4,7 +4,9 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button @click="handleGoBack" color="light"></ion-back-button>
+          <ion-button expand="block" color="light" class="ion-margin-top" @click="goToDashboard">
+        Volver
+      </ion-button>
         </ion-buttons>
         <ion-title>Crear nuevo elemento</ion-title>
       </ion-toolbar>
@@ -101,7 +103,7 @@
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, 
   IonRow, IonCol, IonCard, IonCardContent, IonIcon, IonButtons, 
-  IonBackButton, useIonRouter
+  useIonRouter, IonButton
 } from '@ionic/vue'
 import { useRoute } from 'vue-router' // Importar desde vue-router
 import { ref, onMounted } from 'vue'
@@ -111,7 +113,11 @@ const route = useRoute()
 
 const grupoId = ref(null)
 const isLoading = ref(true)
-
+const goToDashboard = () => {
+  if (grupoId.value) {
+    router.push(`/dashboard/${grupoId.value}`)
+  }
+}
 onMounted(async () => {
   try {
     // Obtener grupoId desde los parámetros de la ruta
@@ -160,10 +166,10 @@ const handleGoBack = () => {
   margin-bottom: 0.5rem;
 }
 
-.welcome-section p {
-  color: var(--ion-color-medium);
-  font-size: 1rem;
-}
+  .welcome-section p {
+    color: var(--ion-color-medium);
+    font-size: var(--font-size-md);
+  }
 
 .creation-card {
   height: 160px;
@@ -175,20 +181,20 @@ const handleGoBack = () => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.card-icon {
-  font-size: 2.5rem;
-  color: var(--ion-color-primary);
-  margin-bottom: 0.5rem;
-}
+  .card-icon {
+    font-size: var(--font-size-xl);
+    color: var(--ion-color-primary);
+    margin-bottom: 0.5rem;
+  }
 
 .creation-card h3 {
   margin: 0.5rem 0;
   color: var(--ion-color-dark);
 }
 
-.creation-card p {
-  color: var(--ion-color-medium);
-  font-size: 0.9rem;
-  margin: 0;
-}
+  .creation-card p {
+    color: var(--ion-color-medium);
+    font-size: var(--font-size-sm);
+    margin: 0;
+  }
 </style>

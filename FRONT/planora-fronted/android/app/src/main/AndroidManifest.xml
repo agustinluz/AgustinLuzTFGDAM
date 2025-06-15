@@ -36,6 +36,11 @@
     </application>
 
     <!-- Permissions -->
+     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Required to open the device camera -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Required to access images from the gallery -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

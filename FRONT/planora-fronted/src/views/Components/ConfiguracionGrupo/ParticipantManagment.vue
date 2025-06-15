@@ -120,7 +120,7 @@
                     </ion-label>
                     <ion-button 
                       fill="clear" 
-                      color="primary"
+                      color="light"
                       @click="inviteUser"
                     >
                       Invitar
@@ -387,7 +387,7 @@ const showToast = async (message: string, color: string) => {
     message,
     duration: 2000,
     color,
-    position: 'top'
+    position: 'bottom'
   })
   await toast.present()
 }

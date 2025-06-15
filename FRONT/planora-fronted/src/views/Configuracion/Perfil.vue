@@ -18,7 +18,7 @@
           </div>
           <div class="upload-controls">
             <label class="upload-btn">
-              <input type="file" accept="image/*" @change="onFileChange" />
+              <input type="file" accept="image/*" @click="requestMediaPermissions" @change="onFileChange" />
               <ion-icon :icon="imageOutline" />
               Cambiar foto
             </label>
@@ -119,7 +119,7 @@
 
         <!-- Botones de Acción -->
         <div class="action-buttons">
-          <ion-button expand="block" type="submit" :disabled="loading" color="primary" class="save-button"
+          <ion-button expand="block" type="submit" :disabled="loading" color="light" class="save-button"
             @click="actualizarPerfil">
             <ion-spinner v-if="loading" name="crescent" />
             <template v-else>
@@ -161,6 +161,7 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { useIonRouter } from '@ionic/vue'
+import { Camera } from '@capacitor/camera'
 import {
   IonPage,
   IonContent,
@@ -200,6 +201,7 @@ import {
   cameraOutline,
   imageOutline
 } from 'ionicons/icons'
+import { usuarioService } from '@/service/UsuarioService'
 
 const router = useIonRouter()
 
@@ -215,7 +217,15 @@ const formData = reactive({
 const confirmPassword = ref('')
 const loading = ref(false)
 const showImageModal = ref(false)
+const requestMediaPermissions = async () => {
+  try {
+    await Camera.requestPermissions({ permissions: ['camera', 'photos'] })
+  } catch (error) {
+    console.error('Permission request failed', error)
+  }
+}
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
+
 
 // Control de visibilidad de contraseñas
 const showCurrentPassword = ref(false)
@@ -231,8 +241,6 @@ onMounted(async () => {
 const cargarDatosUsuario = async () => {
   try {
     const usuario = JSON.parse(localStorage.getItem('usuario'))
-    const token = localStorage.getItem('token')
-
     const usuarioId = usuario?.id
 
     if (!usuarioId) {
@@ -241,37 +249,12 @@ const cargarDatosUsuario = async () => {
       return
     }
 
-    if (!token) {
-      mostrarError('Sesión expirada')
-      router.push('/login')
-      return
-    }
+    const { data } = await usuarioService.getById(usuarioId)
 
-    const url = `${import.meta.env.VITE_API_URL}/usuarios/${usuarioId}`
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-
-    if (response.ok) {
-      const usuarioData = await response.json()
-
-      formData.nombre = usuarioData.nombre
-      formData.email = usuarioData.email
-      formData.fotoPerfil = usuarioData.fotoPerfil || ''
-      usuarioCargado.value = true
-    } else if (response.status === 401) {
-      mostrarError('Sesión expirada')
-      router.push('/login')
-    } else {
-      mostrarError(`Error al cargar los datos del usuario`)
-      usuarioCargado.value = true
-    }
+    formData.nombre = data.nombre
+    formData.email = data.email
+    formData.fotoPerfil = data.fotoPerfil || ''
+    usuarioCargado.value = true
   } catch (error) {
     mostrarError('Error de conexión al cargar los datos')
     usuarioCargado.value = true
@@ -359,7 +342,6 @@ const actualizarPerfil = async () => {
 
   try {
     const usuario = JSON.parse(localStorage.getItem('usuario'))
-    const token = localStorage.getItem('token')
     const usuarioId = usuario?.id
 
     if (!usuarioId) {
@@ -367,11 +349,6 @@ const actualizarPerfil = async () => {
       return
     }
 
-    if (!token) {
-      mostrarError('Sesión expirada')
-      router.push('/login')
-      return
-    }
 
     // Preparar datos para enviar
     const datosActualizacion = {
@@ -384,20 +361,9 @@ const actualizarPerfil = async () => {
       })
     }
 
-    const url = `${import.meta.env.VITE_API_URL}/usuarios/${usuarioId}`
+    const { data: usuarioActualizado } = await usuarioService.update(usuarioId, datosActualizacion)
 
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(datosActualizacion)
-    })
-
-    if (response.ok) {
-      const usuarioActualizado = await response.json()
+    if (usuarioActualizado) {
 
       // Actualizar datos en localStorage
       const usuarioLocal = JSON.parse(localStorage.getItem('usuario'))
@@ -408,22 +374,8 @@ const actualizarPerfil = async () => {
 
       mostrarExito('Perfil actualizado correctamente')
       router.back()
-    } else if (response.status === 401) {
-      mostrarError('Sesión expirada')
-      router.push('/login')
     } else {
-      const errorText = await response.text()
-
-      try {
-        const errorData = JSON.parse(errorText)
-         if (errorData.mensaje && errorData.mensaje.includes('anterior')) {
-          mostrarAvisoAbajo(errorData.mensaje)
-        } else {
-          mostrarError(errorData.mensaje || 'Error al actualizar el perfil')
-        }
-      } catch {
-        mostrarError('Error al actualizar el perfil')
-      }
+      mostrarError('Error al actualizar el perfil')
     }
 
   } catch (error) {
@@ -457,8 +409,8 @@ const cancelar = async () => {
 const mostrarExito = async (mensaje) => {
   const toast = await toastController.create({
     message: mensaje,
-    duration: 3000,
-    position: 'top',
+    duration: 2000,
+    position: 'bottom',
     color: 'success'
   })
   await toast.present()
@@ -467,8 +419,8 @@ const mostrarExito = async (mensaje) => {
 const mostrarError = async (mensaje) => {
   const toast = await toastController.create({
     message: mensaje,
-    duration: 4000,
-    position: 'top',
+    duration: 2000,
+    position: 'bottom',
     color: 'danger'
   })
   await toast.present()
@@ -579,21 +531,21 @@ const mostrarAvisoAbajo = async (mensaje) => {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--ion-color-primary);
-  margin-bottom: 8px;
-}
+ .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    margin-bottom: 8px;
+  }
 
-.section-subtitle {
-  color: var(--ion-color-medium);
-  font-size: 0.9rem;
-  margin-top: 4px;
-}
+  .section-subtitle {
+    color: var(--ion-color-medium);
+    font-size: var(--font-size-sm);
+    margin-top: 4px;
+  }
 
 /* Inputs */
 .input-group {
@@ -709,7 +661,7 @@ const mostrarAvisoAbajo = async (mensaje) => {
   }
 
   .section-title {
-    font-size: 1.2rem;
+    font-size: var(--font-size-lg);
   }
 }
 

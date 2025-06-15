@@ -3,7 +3,9 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button default-href="/grupo" />
+          <ion-button fill="clear" color="light" @click="irDashboard">
+            <ion-icon name="arrow-back" />
+          </ion-button>
         </ion-buttons>
         <ion-title>Notas del Grupo</ion-title>
         <ion-buttons slot="end">
@@ -24,7 +26,7 @@
         <ion-searchbar v-model="busqueda" placeholder="Buscar notas..." class="ion-margin-bottom" />
         <ion-item class="ion-margin-bottom">
           <ion-label position="stacked">Filtrar por evento</ion-label>
-          <ion-select v-model="eventoId" interface="popover" placeholder="Todos">
+          <ion-select v-model.number="eventoId" interface="popover" placeholder="Todos">
             <ion-select-option :value="null">Todos los eventos</ion-select-option>
             <ion-select-option v-for="ev in eventos" :key="ev.id" :value="ev.id">
               {{ ev.titulo }}
@@ -63,7 +65,7 @@
             text: 'Cancelar',
             role: 'cancel',
             handler: () => {
-              mostrarAlertaEliminar.value = false
+              mostrarAlertaEliminar = false
             }
           },
           {
@@ -77,32 +79,35 @@
   </ion-page>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, IonBackButton,
   IonList, IonText, IonSpinner, IonSearchbar, IonIcon, IonAlert, IonSelect, IonSelectOption, IonItem, IonLabel
 } from '@ionic/vue'
 import { addOutline } from 'ionicons/icons'
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, Ref, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotas } from './Nota/Composable/UseNotas'
 import { EventosService } from '@/service/EventoService'
 import NotaCard from './Nota/NotaCard.vue'
 import NotaDetalle from './Nota/NotaDetalle.vue'
 import NotaEmptyState from './Nota/NotaEmptyState.vue'
+import { Evento } from '@/service/EventoService'
 
 const route = useRoute()
 const router = useRouter()
 const grupoId = Number(route.params.id)
 
-const eventoId = ref<null>(null)
-const eventos = ref([])
+const eventoId = ref(null) as Ref<number | null>
+
+const eventos = ref<Evento[]>([])
 
 const usuarioActual = ref(null)
 const notaSeleccionada = ref(null)
 const mostrarModalVer = ref(false)
 const mostrarAlertaEliminar = ref(false)
-const notaPendienteEliminar = ref(null)
+import type { Nota } from './Nota/Composable/UseNotas'
+const notaPendienteEliminar = ref<Nota | null>(null)
 
 watch(eventoId, async () => {
   await cargarNotas()
@@ -116,6 +121,9 @@ const {
   eliminarNota
 } = useNotas(grupoId, eventoId)
 
+const irDashboard = () => {
+  router.push(`/dashboard/${grupoId}`)
+}
 onMounted(async () => {
   await cargarNotas()
   try {
@@ -129,14 +137,14 @@ onMounted(async () => {
 
 
 const irACrearNota = () => {
-  router.push(`/dashboard/${grupoId}/notas/crear`)
+  router.push(`/dashboard/${grupoId}/crear/nota`)
 }
 
-const editarNota = (nota) => {
+const editarNota = (nota: { id: any }) => {
   router.push(`/dashboard/${grupoId}/notas/editar/${nota.id}`)
 }
 
-const verNotaCompleta = (nota) => {
+const verNotaCompleta = (nota: null) => {
   notaSeleccionada.value = nota
   mostrarModalVer.value = true
 }
@@ -146,7 +154,7 @@ const cerrarDetalle = () => {
   notaSeleccionada.value = null
 }
 
-const confirmarEliminar = (nota) => {
+const confirmarEliminar = (nota: Nota | { id: number; titulo: string; contenido: string; grupoId: number; grupoNombre?: string | undefined; eventoId?: number | undefined; creadaPorId: number; creadaPorNombre?: string | undefined; fechaCreacion: string } | null) => {
   notaPendienteEliminar.value = nota
   mostrarAlertaEliminar.value = true
 }
@@ -155,7 +163,9 @@ const eliminarNotaSeleccionada = async () => {
   try {
     const token = localStorage.getItem('token')
     if (!token) throw new Error('Token no encontrado')
-    await eliminarNota(notaPendienteEliminar.value.id, token)
+    if (notaPendienteEliminar.value) {
+      await eliminarNota(notaPendienteEliminar.value.id)
+    }
   } catch (error) {
     console.error('Error al eliminar:', error)
   } finally {

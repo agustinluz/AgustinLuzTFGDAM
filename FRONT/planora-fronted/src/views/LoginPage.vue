@@ -24,12 +24,18 @@
             v-model="password"
             label="Contraseña"
             label-placement="floating"
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
             fill="outline"
             placeholder="••••••"
             class="input"
           >
             <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+            <ion-icon
+              :name="showPassword ? 'eye-off-outline' : 'eye-outline'"
+              slot="end"
+              class="toggle-password"
+              @click="toggleShowPassword"
+            ></ion-icon>
           </ion-input>
 
           <ion-button expand="block" class="login-button" @click="login">
@@ -49,7 +55,7 @@
   </ion-page>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
   IonPage,
   IonContent,
@@ -61,34 +67,28 @@ import {
 } from '@ionic/vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { ref } from 'vue'
+import { useAuthStore } from '@/service/auth'
 
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const router = useIonRouter()
+const auth = useAuthStore()
+const showPassword = ref(false)
 
+const toggleShowPassword = () => {
+  showPassword.value = !showPassword.value
+}
 const login = async () => {
   error.value = ''
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: email.value,
-        password: password.value
-      })
-    })
-
-    if (!response.ok) throw new Error('Credenciales incorrectas')
-
-    const data = await response.json()
-
-    localStorage.setItem('token', data.token)
-    localStorage.setItem('usuario', JSON.stringify(data.usuario))
-
-    router.push('/grupo')
-
-  } catch (err) {
+    const result = await auth.login({ email: email.value, password: password.value })
+    if (result.success) {
+      router.push('/grupo')
+    } else {
+      throw new Error(result.message)
+    }
+  } catch (err: any) {
     error.value = err.message
   }
 }
@@ -166,5 +166,8 @@ const goToReset = () => {
   display: block;
   margin-top: 16px;
   font-weight: 500;
+}
+.toggle-password {
+  cursor: pointer;
 }
 </style>

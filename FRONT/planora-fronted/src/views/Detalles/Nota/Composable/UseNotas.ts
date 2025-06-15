@@ -8,13 +8,27 @@ export function useNotas(grupoId: number, eventoIdRef?: Ref<number | null> | num
   const busqueda = ref('')
 
   const notasFiltradas = computed(() => {
+    let filtered = notas.value
+
+    let evId: number | null = null
+    if (eventoIdRef !== null && eventoIdRef !== undefined) {
+      const raw = typeof eventoIdRef === 'object' ? eventoIdRef.value : eventoIdRef
+      evId = raw === null ? null : Number(raw)
+    }
+
+    if (evId !== null) {
+      filtered = filtered.filter(n => n.eventoId === evId)
+    }
+
     const termino = busqueda.value.trim().toLowerCase()
-    if (!termino) return notas.value
-    return notas.value.filter(nota =>
+    if (!termino) return filtered
+
+    return filtered.filter(nota =>
       nota.titulo.toLowerCase().includes(termino) ||
       nota.contenido.toLowerCase().includes(termino)
     )
   })
+
 
 
   const cargarNotas = async () => {
@@ -24,7 +38,8 @@ export function useNotas(grupoId: number, eventoIdRef?: Ref<number | null> | num
     if (!token) throw new Error('Token no encontrado')
         let evId: number | null = null
         if (eventoIdRef !== null && eventoIdRef !== undefined) {
-          evId = typeof eventoIdRef === 'object' ? eventoIdRef.value : eventoIdRef
+          const raw = typeof eventoIdRef === 'object' ? eventoIdRef.value : eventoIdRef
+          evId = raw === null ? null : Number(raw)
         }
         notas.value = await NotasService.obtenerNotasPorGrupo(grupoId, token, evId)
     } catch (error) {
@@ -77,3 +92,5 @@ export function useNotas(grupoId: number, eventoIdRef?: Ref<number | null> | num
     eliminarNota
   }
 }
+export { Nota }
+

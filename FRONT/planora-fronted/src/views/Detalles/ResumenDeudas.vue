@@ -3,7 +3,9 @@
     <ion-header>
       <ion-toolbar color="primary">
       <ion-buttons slot="start">
-        <ion-back-button :default-href="`/dashboard/${grupoId}`" color="light" />
+        <ion-button fill="clear" color="light" @click="irDashboard">
+          <ion-icon :icon="arrowBack" />
+        </ion-button>
       </ion-buttons>
         <ion-title>Resumen de Deudas</ion-title>
       </ion-toolbar>
@@ -45,7 +47,7 @@
 <script setup>
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
-  IonList, IonItem, IonLabel, IonText, IonBackButton, IonButtons, 
+  IonList, IonItem, IonLabel, IonText, IonBackButton, IonButtons, IonButton, IonIcon
 } from '@ionic/vue'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -59,6 +61,9 @@ const grupoId = route.params.grupoId
 const usuarios = ref([])
 // Resumen de deudas por usuario
 const resumenes = ref([])
+const irDashboard = () => {
+  router.push(`/dashboard/${grupoId}`)
+}
 
 onMounted(async () => {
   try {

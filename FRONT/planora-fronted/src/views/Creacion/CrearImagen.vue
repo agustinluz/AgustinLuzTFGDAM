@@ -3,11 +3,15 @@
     <IonHeader>
       <IonToolbar>
         <IonButtons slot="start">
-          <IonBackButton :default-href="`/dashboard/${contexto.grupoId}/galeria`" />
+          <IonBackButton
+            text="Volver"
+            color="light"
+            :default-href="`/dashboard/${contexto.grupoId}/galeria`"
+          />
         </IonButtons>
         <IonTitle>Galería - {{ contexto.grupoNombre }}</IonTitle>
         <IonButtons slot="end">
-          <IonButton @click="abrirModalSubida" fill="clear">
+          <IonButton @click="abrirModalSubida" fill="clear" color="light">
             <IonIcon :icon="addOutline" />
           </IonButton>
         </IonButtons>
@@ -67,7 +71,7 @@
                 </IonButton>
               </IonCol>
               <IonCol size="auto">
-                <IonButton @click="limpiarSeleccion" fill="clear" size="small">
+                <IonButton @click="limpiarSeleccion" fill="clear" size="small" color="primary">
                   Cancelar
                 </IonButton>
               </IonCol>
@@ -151,11 +155,14 @@
         <IonIcon :icon="imagesOutline" size="large" color="medium" />
         <h3>No hay imágenes</h3>
         <p>Sube la primera imagen del grupo</p>
-        <IonButton @click="abrirModalSubida" color="primary">
+        <IonButton @click="abrirModalSubida" color="light" fill="solid">
           <IonIcon :icon="addOutline" slot="start" />
           Subir imagen
         </IonButton>
       </div>
+      <IonButton expand="block" color="light" class="ion-margin-top" @click="goToDashboard">
+        Volver al Dashboard
+      </IonButton>
     </IonContent>
 
     <!-- Modal de subida -->
@@ -164,7 +171,7 @@
         <IonToolbar>
           <IonTitle>Subir imagen</IonTitle>
           <IonButtons slot="end">
-            <IonButton @click="cerrarModalSubida" fill="clear">
+            <IonButton @click="cerrarModalSubida" fill="clear" color="light">
               <IonIcon :icon="closeOutline" />
             </IonButton>
           </IonButtons>
@@ -219,6 +226,7 @@
           <IonButton 
             @click="subirImagen" 
             expand="block" 
+            color="primary"
             :disabled="!modalSubida.archivo || estado.subiendo"
           >
             <IonSpinner v-if="estado.subiendo" slot="start" />
@@ -245,7 +253,7 @@
         <IonToolbar>
           <IonTitle>{{ modalVistaPrevia.imagen?.nombre }}</IonTitle>
           <IonButtons slot="end">
-            <IonButton @click="cerrarVistaPrevia" fill="clear">
+            <IonButton @click="cerrarVistaPrevia" fill="clear" color="light">
               <IonIcon :icon="closeOutline" />
             </IonButton>
           </IonButtons>
@@ -328,7 +336,7 @@ import {
   IonCardTitle, IonCardContent, IonItem, IonLabel, IonButton, IonGrid,
   IonRow, IonCol, IonButtons, IonIcon, IonSpinner, IonChip, IonModal,
   IonCardSubtitle, IonSelect, IonSelectOption, IonCheckbox, toastController, 
-  alertController
+  alertController, IonBackButton
 } from '@ionic/vue';
 import { 
   addOutline, imagesOutline, eyeOutline, trashOutline, closeOutline,
@@ -382,6 +390,7 @@ const contexto = reactive({
   usuarioNombre: usuario.nombre || ''
 });
 
+
 const filtros = reactive({
   tipo: 'grupo' as 'grupo' | 'usuario' | 'evento',
   eventoId: null as number | null
@@ -412,6 +421,9 @@ const fileInput = ref<HTMLInputElement>();
 // Computed properties
 const eventosDisponibles = computed(() => eventos.value);
 
+const goToDashboard = () => {
+  router.push(`/dashboard/${contexto.grupoId}`);
+};
 // Métodos principales
 const cargarDatosGrupo = async () => {
   try {

@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
-
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}`
+import api from './api'
 
 interface User {
   id: number
@@ -37,7 +35,7 @@ export const useAuthStore = defineStore('auth', {
     // Login tradicional
     async login(credentials: LoginCredentials) {
       try {
-        const response = await axios.post<{ token: string; usuario: User }>(`${API_BASE_URL}/login`, credentials)
+        const response = await api.post<{ token: string; usuario: User }>('/auth/login', credentials)
         const { token, usuario } = response.data
 
         this.token = token
@@ -45,7 +43,9 @@ export const useAuthStore = defineStore('auth', {
         this.isAuthenticated = true
 
         localStorage.setItem('token', token)
-        localStorage.setItem('currentUser', JSON.stringify(usuario))
+        localStorage.setItem('usuario', JSON.stringify(usuario))
+        localStorage.removeItem('currentUser')
+         localStorage.setItem('usuarioId', usuario.id.toString())
 
         return { success: true, usuario }
       } catch (error: any) {
@@ -60,13 +60,25 @@ export const useAuthStore = defineStore('auth', {
     // Registro
     async register(credentials: RegisterCredentials) {
       try {
-        const response = await axios.post(`${API_BASE_URL}/registro`, credentials)
+        const response = await api.post('/auth/registro', credentials)
         return { success: true, usuario: response.data }
       } catch (error: any) {
         console.error('Error en registro:', error)
         return { 
           success: false, 
           message: error.response?.data || 'Error al registrarse' 
+        }
+      }
+    },
+    async resetPassword(email: string, password: string) {
+      try {
+        const response = await api.post('/auth/reset-password', { email, password })
+        return { success: true, data: response.data }
+      } catch (error: any) {
+        console.error('Error al restablecer contraseña:', error)
+        return {
+          success: false,
+          message: error.response?.data?.error || 'Error al restablecer'
         }
       }
     },
@@ -79,18 +91,27 @@ export const useAuthStore = defineStore('auth', {
       
       localStorage.removeItem('token')
       localStorage.removeItem('currentUser')
+      localStorage.removeItem('usuario')
+      localStorage.removeItem('usuarioId')
     },
 
     // Inicializar desde localStorage
     initializeFromStorage() {
       const token = localStorage.getItem('token')
-      const datosUsuario = localStorage.getItem('currentUser')
+      const datosUsuario =
+        localStorage.getItem('usuario') || localStorage.getItem('currentUser')
 
       if (token && datosUsuario) {
         try {
           this.token = token
           this.usuarioActual = JSON.parse(datosUsuario)
           this.isAuthenticated = true
+
+           localStorage.setItem('usuario', JSON.stringify(this.usuarioActual))
+          localStorage.removeItem('currentUser')
+          if (this.usuarioActual) {
+            localStorage.setItem('usuarioId', this.usuarioActual.id.toString())
+          }
         } catch (error) {
           console.error('Error al parsear datos de usuario:', error)
           this.logout()

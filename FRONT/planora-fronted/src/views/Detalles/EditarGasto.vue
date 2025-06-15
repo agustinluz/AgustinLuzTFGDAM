@@ -296,6 +296,7 @@ import {
 
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import api from '@/service/api'
 
 const router = useIonRouter()
 const route = useRoute()
@@ -361,26 +362,20 @@ const formularioValido = computed(() => {
           totalPersonalizado.value === parseFloat(formulario.value.monto))
 })
 
-// Función helper para hacer peticiones
 const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_URL}${endpoint}`
+  const { body, ...rest } = options
   const config = {
     headers: {
       'Content-Type': 'application/json',
-      ...options.headers
+      ...rest.headers
     },
-    ...options
+    ...rest
   }
 
-  const response = await fetch(url, config)
-  
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
-  }
-  
-  return response.json()
+  const response = await api({ url, ...config })
+  return response.data
 }
-
 // Métodos de carga de datos
 const cargarDatosIniciales = async () => {
   cargandoInicial.value = true
@@ -574,7 +569,8 @@ const mostrarToast = async (mensaje, color = 'primary') => {
   const toast = await toastController.create({
     message: mensaje,
     duration: 2000,
-    color: color
+    color: color,
+    position: 'bottom',
   })
   await toast.present()
 }

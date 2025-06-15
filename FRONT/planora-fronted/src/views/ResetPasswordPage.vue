@@ -24,12 +24,18 @@
             v-model="password"
             label="Nueva contraseña"
             label-placement="floating"
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
             fill="outline"
             placeholder="••••••"
             class="input"
           >
             <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+            <ion-icon
+              :name="showPassword ? 'eye-off-outline' : 'eye-outline'"
+              slot="end"
+              class="toggle-password"
+              @click="toggleShowPassword"
+            ></ion-icon>
           </ion-input>
 
           <ion-button expand="block" class="reset-button" @click="reset">
@@ -61,13 +67,20 @@ import {
 } from '@ionic/vue'
 import PageHeader from '../components/PageHeader.vue'
 import { ref } from 'vue'
+import { useAuthStore } from '../service/auth'
 
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const mensaje = ref('')
 const router = useIonRouter()
+const auth = useAuthStore()
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
+const showPassword = ref(false)
+const toggleShowPassword = () => {
+  showPassword.value = !showPassword.value
+}
+
 
 const showToast = async (msg: string, color: 'success' | 'danger' | 'warning' = 'danger') => {
   const toast = await toastController.create({
@@ -87,21 +100,16 @@ const reset = async () => {
     return
   }
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/reset-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email.value, password: password.value })
-    })
-
-    if (!response.ok) {
-      const data = await response.json()
-      await showToast(data.error || 'Error al restablecer', 'danger')
-      throw new Error(data.error || 'Error al restablecer')
+    const result = await auth.resetPassword(email.value, password.value)
+    if (result.success) {
+      mensaje.value = 'Contraseña actualizada'
+      await showToast('Contraseña actualizada', 'success')
+      router.push('/login')
+    } else {
+      await showToast(result.message, 'danger')
+      throw new Error(result.message)
     }
-    mensaje.value = 'Contraseña actualizada'
-    await showToast('Contraseña actualizada', 'success')
-    router.push('/login')
-  } catch (err) {
+  } catch (err: any) {
     error.value = err.message
   }
 }
@@ -125,51 +133,54 @@ const goToLogin = () => {
 }
 
 .reset-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  padding: 32px 24px;
-  width: 100%;
-  max-width: 380px;
-  text-align: center;
-}
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    padding: calc(var(--spacing-unit) * 4) calc(var(--spacing-unit) * 3);
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
 
-.logo {
-  width: 100px;
-  margin: 0 auto 20px;
-}
+  .logo {
+    width: 100px;
+    margin: 0 auto calc(var(--spacing-unit) * 2.5);
+  }
 
-.title {
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
+  .title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: calc(var(--spacing-unit) * 0.5);
+  }
 
-.subtitle {
-  color: #6b7280;
-  margin-bottom: 24px;
-  font-size: 14px;
-}
+  .subtitle {
+    color: #6b7280;
+    margin-bottom: calc(var(--spacing-unit) * 3);
+    font-size: var(--font-size-sm);
+  }
 
-.input {
-  margin-top: 16px;
-}
+  .input {
+    margin-top: calc(var(--spacing-unit) * 2);
+  }
 
-.reset-button {
-  margin-top: 24px;
-  --background: #3880ff;
-  --border-radius: 8px;
-}
+  .reset-button {
+    margin-top: calc(var(--spacing-unit) * 3);
+    --background: #3880ff;
+    --border-radius: 8px;
+  }
 
-.login-link {
-  margin-top: 12px;
-  color: #3880ff;
-  font-size: 15px;
-}
+  .login-link {
+    margin-top: calc(var(--spacing-unit) * 1.5);
+    color: #3880ff;
+    font-size: var(--font-size-sm);
+  }
 
-.error-text, .success-text {
-  display: block;
-  margin-top: 16px;
-  font-weight: 500;
+  .error-text, .success-text {
+    display: block;
+    margin-top: calc(var(--spacing-unit) * 2);
+    font-weight: 500;
+  }
+.toggle-password {
+  cursor: pointer;
 }
 </style>

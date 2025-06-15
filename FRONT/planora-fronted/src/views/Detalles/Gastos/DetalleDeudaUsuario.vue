@@ -2,8 +2,10 @@
   <ion-page>
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-buttons slot="start">
-          <ion-back-button  @click="volver" />
+        <ion-buttons slot="start" color="light">
+          <ion-button @click="volver" color="light">
+  <ion-icon slot="icon-only" name="arrow-back" />
+</ion-button>
         </ion-buttons>
         <ion-title>Detalle de Deudas</ion-title>
       </ion-toolbar>
@@ -27,6 +29,7 @@
       </ion-list>
 
       <ion-text v-else>No tiene deudas con nadie del grupo.</ion-text>
+
     </ion-content>
   </ion-page>
 </template>
@@ -34,7 +37,7 @@
 <script setup lang="ts">
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
-  IonItem, IonList, IonLabel, IonBackButton, IonButtons, IonText
+  IonItem, IonList, IonLabel, IonButton, IonButtons, IonText, IonIcon
 } from '@ionic/vue'
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -98,7 +101,7 @@ const formatMonto = (monto: number | string): string =>
   }).format(parseFloat(monto as string) || 0)
 
 const volver = () => {
-  router.push(`/grupo/${grupoId}/resumen`)
+  router.push(`/dashboard/${grupoId}/gastos`)
 }
 </script>
 

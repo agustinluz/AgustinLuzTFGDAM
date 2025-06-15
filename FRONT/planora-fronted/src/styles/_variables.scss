@@ -1,9 +1,9 @@
-    $primary: #3b82f6;
-    $primary-tint: rgba(59, 130, 246, 0.1);
-    $secondary: #f59e0b;
-    $tertiary: #6b7280;
-    $shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    $shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+    $primary: #1e88e5;
+    $primary-tint: rgba(30, 136, 229, 0.1);
+    $secondary: #ff7043;
+    $tertiary: #8e24aa;
+    $shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    $shadow-hover: 0 6px 18px rgba(0, 0, 0, 0.15);
 
     @mixin card-base {
       border-radius: 1rem;
@@ -17,9 +17,9 @@
     }
     :root {
   /* Colores */
-  --ion-color-primary:    #3366FF;
-  --ion-color-primary-shade: #2a57cc;
-  --ion-color-secondary:  #FF5A5F;
+  --ion-color-primary:    #1E88E5;
+  --ion-color-primary-shade: #1669B2;
+  --ion-color-secondary:  #FF7043;
   --ion-color-background: #F5F6F8;
   --ion-color-surface:    #FFFFFF;
 

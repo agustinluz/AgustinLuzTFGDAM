@@ -76,7 +76,6 @@
         <ion-card-content>
           <div v-if="!store.loading">
             <ParticipantGrid :participants="store.participantes" />
-            <QuickActions />  
           </div>
           <div v-else class="loading-placeholder">
             <ion-skeleton-text animated style="width: 100%; height: 4rem" />
@@ -85,17 +84,11 @@
       </ion-card>
 
       <!-- Botón flotante con drawer de acciones -->
-      <ion-fab vertical="bottom" horizontal="end">
-        <ion-fab-button color="primary" @click="showFabSheet = true">
+      <ion-fab vertical="bottom" horizontal="end" slot="fixed" style="bottom: 120px;">
+        <ion-fab-button color="primary" @click="goToCreate()">
           <ion-icon :icon="add" />
         </ion-fab-button>
       </ion-fab>
-      <ion-action-sheet
-        :is-open="showFabSheet"
-        header="Crear"
-        :buttons="fabButtons"
-        @did-dismiss="showFabSheet = false"
-      />
       
 
       <!-- Modales -->
@@ -131,7 +124,6 @@ import StatsGrid        from '@/views/Components/Dashboard/StatsGrid.vue'
 import CompactCalendar  from '@/views/Components/Dashboard/CompactCalendar.vue'
 import EventsList       from '@/views/Components/Dashboard/EventList.vue'
 import ParticipantGrid  from '@/views/Components/Dashboard/ParticipantGrid.vue'
-import QuickActions     from '@/views/Components/Dashboard/QuickAction.vue'
 import EventModal       from '@/views/Components/Dashboard/EventModal.vue'
 import UserStatsModal   from '@/views/Components/Dashboard/UserStatsModal.vue'
 
@@ -206,32 +198,13 @@ function goToLogout() {
   localStorage.clear()
   router.push('/login')
 }
-function createEvent() {
-  router.push(`/dashboard/${grupoId}/crear/evento`)
-}
-function createGasto() {
-  router.push(`/dashboard/${grupoId}/crear/gasto`)
+function goToCreate() {
+  router.push(`/dashboard/${grupoId}/crear`)
 }
 function createEventOnDay() {
   const date = selectedDate.value.toISOString()
   router.push({ path: `/dashboard/${grupoId}/crear/evento`, query: { fecha: date } })
 }
-const fabButtons = [
-  {
-    text: 'Crear Evento',
-    icon: calendarOutline,
-    handler: () => createEvent()
-  },
-  {
-    text: 'Crear Gasto',
-    icon: cash,
-    handler: () => createGasto()
-  },
-  {
-    text: 'Cancelar',
-    role: 'cancel'
-  }
-]
 </script>
 
 <style scoped lang="scss">

@@ -33,15 +33,15 @@ defineProps<{ grupos: any[], activoId: number | null, isAdmin: (g:any)=>boolean 
 .section-header {
   margin-bottom: 20px;
 }
-.section-header h2 {
-  font-size: 1.4em;
-  font-weight: 600;
-  margin: 0 0 4px 0;
-  color: var(--ion-color-dark);
-}
-.section-header p {
-  margin: 0;
-  color: var(--ion-color-medium);
-  font-size: 0.9em;
-}
+  .section-header h2 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: var(--ion-color-dark);
+  }
+  .section-header p {
+    margin: 0;
+    color: var(--ion-color-medium);
+    font-size: var(--font-size-sm);
+  }
 </style>
